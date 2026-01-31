@@ -1,0 +1,13 @@
+{
+  "name": "all-you-need-is-git",
+  "version": "0.0.1",
+  "description": "Agents orchestrator based on just git",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node --watch index.js",
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
