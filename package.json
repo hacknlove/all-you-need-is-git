@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "Agents orchestrator based on just git",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "dev": "node --watch index.js",
     "start": "node index.js",
