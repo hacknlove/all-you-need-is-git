@@ -40,3 +40,4 @@ Thumbs.db
 
 # Optional eslint cache
 .eslintcache
+config.json
