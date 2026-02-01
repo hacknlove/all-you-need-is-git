@@ -4,6 +4,9 @@
   "description": "Agents orchestrator based on just git",
   "main": "index.js",
   "type": "module",
+  "bin": {
+    "aynig": "./index.js"
+  },
   "scripts": {
     "dev": "node --watch index.js",
     "start": "node index.js",
@@ -12,6 +15,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "commander": "^14.0.3",
     "simple-git": "^3.30.0"
   }
 }

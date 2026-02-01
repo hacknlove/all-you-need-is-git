@@ -1,5 +1,6 @@
 import { resolve } from 'path';
-import { homedir, cwd } from 'process';
+import { homedir } from 'os';
+import { cwd } from 'process';
 
 export class Command {
     constructor({
@@ -31,8 +32,6 @@ export class Command {
             cwd(),                      // current working directory
         ];
 
-        const 
-
-        // create worktree for the branch
+        // TODO: Complete command execution logic
     }
 }
