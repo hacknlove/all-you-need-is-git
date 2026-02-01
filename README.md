@@ -1,3 +1,8 @@
+# DO NOT USE
+# WORK IN PROGRESS
+# NOT READY YET
+# IT WON'T WORK
+
 # AYNIG
 
 **Agentic Yet Native in Git**  
