@@ -1,4 +1,4 @@
 {
-    "useRemote": "origin",
-    "workTree": ".worktrees" 
+    "useRemote": false,
+    "workTree": ".worktrees"
 }

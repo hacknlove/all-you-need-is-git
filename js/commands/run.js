@@ -6,8 +6,8 @@ import { Repo } from '../AgentsOrchestrator/Repo.js';
  * Run command - runs AYNIG for the current repository
  *
  * It:
- * 1. instantiates Repo objects for each repository defined in the config
- * 2. runs them
+ * 1. instantiates Repo objects for the current repository
+ * 2. runs it
  * 3. waits for all to complete
  */
 async function action(options) {
@@ -29,6 +29,6 @@ export function registerRunCommand(program) {
     .command('run')
     .description('Run AYNIG for the current repository')
     .option('-w, --worktree <path>', 'Specify custom worktree directory (default: .worktrees)')
-    .option('--use-remote <name>', 'Specify which remote to use (default: origin)')
+    .option('--use-remote <name>', 'Use remote branches instead of local (specify remote name, e.g., origin)')
     .action(action);
 }
