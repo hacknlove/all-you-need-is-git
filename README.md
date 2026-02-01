@@ -253,7 +253,7 @@ Commands:
       -w, --worktree <path>   Specify custom worktree directory (default: .worktrees)
       --use-remote <name>     Specify which remote to use (default: origin)
 
-  install <repo> <ref> [subfolder]
+  install <repo> [ref] [subfolder]
                        Install AYNIG workflows from another repository
 
   help [command]       display help for command
