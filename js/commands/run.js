@@ -3,7 +3,7 @@ import defaultConfig from '../defaultConfig.json' with { type: 'json' };
 import { Repo } from '../AgentsOrchestrator/Repo.js';
 
 /**
- * Iterate command - runs AYNIG iteration for the current repository
+ * Run command - runs AYNIG for the current repository
  *
  * It:
  * 1. instantiates Repo objects for each repository defined in the config
@@ -24,10 +24,10 @@ async function action(options) {
   }
 }
 
-export function registerIterateCommand(program) {
+export function registerRunCommand(program) {
   program
-    .command('iterate')
-    .description('Run AYNIG iteration for the current repository')
+    .command('run')
+    .description('Run AYNIG for the current repository')
     .option('-w, --worktree <path>', 'Specify custom worktree directory (default: .worktrees)')
     .option('--use-remote <name>', 'Specify which remote to use (default: origin)')
     .action(action);

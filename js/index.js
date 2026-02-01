@@ -1,7 +1,7 @@
 #!/usr/bin/env -S node --no-warnings
 
 import { Command } from 'commander';
-import { registerIterateCommand } from './commands/iterate.js';
+import { registerRunCommand } from './commands/run.js';
 import { registerInitCommand } from './commands/init.js';
 import { registerInstallCommand } from './commands/install.js';
 
@@ -14,7 +14,7 @@ program
   .version('0.0.1');
 
 // Register commands
-registerIterateCommand(program);
+registerRunCommand(program);
 registerInitCommand(program);
 registerInstallCommand(program);
 

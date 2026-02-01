@@ -104,7 +104,7 @@ The agent is then responsible for:
 
 After that, the agent may:
 
-* call `aynig iterate` to continue immediately,
+* call `aynig run` to continue immediately,
 * or rely on the human calling it, on cron, or any other mechanism.
 
 AYNIG does not care how you keep it running.
@@ -248,7 +248,7 @@ Global Options:
 Commands:
   init                 Initialize AYNIG in the current repository
 
-  iterate [options]    Run AYNIG iteration for the current repository
+  run [options]        Run AYNIG for the current repository
     Options:
       -w, --worktree <path>   Specify custom worktree directory (default: .worktrees)
       --use-remote <name>     Specify which remote to use (default: origin)
