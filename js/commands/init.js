@@ -1,6 +1,11 @@
 import fs from 'fs/promises';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import simpleGit from 'simple-git';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const ASSETS_DIR = path.join(__dirname, '..', 'assets');
 
 /**
  * Init command - initializes AYNIG in the current repository
@@ -33,28 +38,16 @@ async function action() {
 
   // Only create files if directory was just created
   if (aynigCreated) {
-    // Create COMMANDS.md
-    const commandsContent = `# Available Commands
-
-clean: Clean up the worktree and mark workflow as done
-`;
-
-    await fs.writeFile(path.join(aynigDir, 'COMMANDS.md'), commandsContent);
+    // Copy COMMANDS.md
+    await fs.copyFile(
+      path.join(ASSETS_DIR, 'COMMANDS.md'),
+      path.join(aynigDir, 'COMMANDS.md')
+    );
     console.log(`✓ Created COMMANDS.md`);
 
-    // Create clean script
-    const cleanScript = `#!/bin/bash
-# Clean workflow - removes worktree and marks workflow as done
-
-# Commit completion to current branch
-git commit --allow-empty -m "chore: aynig is done"
-
-# Remove the worktree
-rm -rf "$AYNIG_WORKTREE_PATH"
-`;
-
+    // Copy clean script
     const cleanPath = path.join(aynigDir, 'clean');
-    await fs.writeFile(cleanPath, cleanScript);
+    await fs.copyFile(path.join(ASSETS_DIR, 'clean'), cleanPath);
     await fs.chmod(cleanPath, 0o755);
     console.log(`✓ Created clean script`);
   }
