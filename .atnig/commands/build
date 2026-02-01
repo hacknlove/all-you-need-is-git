@@ -1,0 +1,12 @@
+#!/bin/bash
+
+cd $_WORK_TREE
+
+PROMPT=$(cat <<EOF
+Build this spec:
+$BODY
+EOF
+)
+
+claude -p "$PROMPT" --session-id "$_COMMIT_UUID"
+
