@@ -29,5 +29,6 @@ export function registerRunCommand(program) {
     .description('Run AYNIG for the current repository')
     .option('-w, --worktree <path>', 'Specify custom worktree directory (default: .worktrees)')
     .option('--use-remote <name>', 'Use remote branches instead of local (specify remote name, e.g., origin)')
+    .option('--current-branch <mode>', 'How to handle the current branch: skip (default), include, only', 'skip')
     .action(action);
 }

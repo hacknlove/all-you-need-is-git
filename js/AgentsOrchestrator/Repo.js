@@ -18,6 +18,16 @@ export class Repo {
         this.config = config;
     }
 
+    filterBranches(branchesInfo, mode) {
+        switch (mode) {
+            case 'skip':
+                return branchesInfo.all.filter(name => name !== branchesInfo.current); 
+            case 'only':
+                return [branchesInfo.current];
+            default:
+                return branchesInfo.all; 
+        }
+    }
 
     async run() {
         // Only fetch if using remote branches
@@ -26,14 +36,17 @@ export class Repo {
         }
 
         // Get remote branches if useRemote is set, otherwise get local branches
-        const branchesName = this.config.useRemote
+        const branchesInfo = this.config.useRemote
             ? await git.branch(['-r'])
             : await git.branchLocal();
 
-        this.branches = branchesName.all.map(branchesName => new Branch({
+        const branchNames = this.filterBranches(branchesInfo, this.config.currentBranch || 'skip');
+
+        this.branches = branchNames.map(name => new Branch({
             config: this.config,
-            branchName: branchesName,
-        }))
+            branchName: name,
+            isCurrentBranch: name === currentBranchName,
+        }));
 
         await Promise.all(this.branches.map(branch => branch.run()));
     }

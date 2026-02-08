@@ -13,9 +13,10 @@ import { Command } from './Command.js';
  * It has no clue about what the Command does internally.
  */
 export class Branch {
-    constructor({ config, branchName }) {
+    constructor({ config, branchName, isCurrentBranch }) {
         this.config = config;
         this.branchName = branchName;
+        this.isCurrentBranch = isCurrentBranch;
     }
 
     async parseLastCommitMessage() {
@@ -38,6 +39,7 @@ export class Branch {
         const command = new Command({
             config: this.config,
             branchName: this.branchName,
+            isCurrentBranch: this.isCurrentBranch,
             command: trailers.aynig?.trim().toLowerCase(),
             trailers,
             body

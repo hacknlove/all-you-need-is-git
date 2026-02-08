@@ -1,4 +1,5 @@
 {
     "useRemote": false,
-    "workTree": ".worktrees"
+    "workTree": ".worktrees",
+    "currentBranch": "skip"
 }
