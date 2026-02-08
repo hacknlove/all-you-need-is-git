@@ -30,6 +30,9 @@ export class Repo {
     }
 
     async run() {
+        // Resolve repo root once and share it via config
+        this.config.repoRoot = await git.revparse(['--show-toplevel']);
+
         // Only fetch if using remote branches
         if (this.config.useRemote) {
             await git.fetch();
@@ -45,7 +48,7 @@ export class Repo {
         this.branches = branchNames.map(name => new Branch({
             config: this.config,
             branchName: name,
-            isCurrentBranch: name === currentBranchName,
+            isCurrentBranch: name === branchesInfo.current,
         }));
 
         await Promise.all(this.branches.map(branch => branch.run()));
