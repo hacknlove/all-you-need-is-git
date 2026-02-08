@@ -39,6 +39,7 @@ export class Branch {
             config: this.config,
             branchName: this.branchName,
             command: trailers.aynig?.trim().toLowerCase(),
+            trailers,
             body
         });
         await command.run();

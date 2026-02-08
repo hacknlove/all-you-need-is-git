@@ -1,4 +1,3 @@
-import { Command } from 'commander';
 import defaultConfig from '../defaultConfig.json' with { type: 'json' };
 import { Repo } from '../AgentsOrchestrator/Repo.js';
 

@@ -8,11 +8,13 @@ export class Command {
         config,
         branchName,
         command,
+        trailers,
         body
     }) {
         this.config = config;
         this.branchName = branchName;
         this.command = command;
+        this.trailers = trailers;
         this.body = body;
     }
 
