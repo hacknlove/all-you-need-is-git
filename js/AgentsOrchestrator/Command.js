@@ -41,14 +41,13 @@ export class Command {
         config,
         branchName,
         isCurrentBranch,
-        command,
         trailers,
         body
     }) {
         this.config = config;
         this.branchName = branchName;
         this.isCurrentBranch = isCurrentBranch;
-        this.command = command;
+        this.command = trailers['aynig-state']?.trim().toLowerCase();
         this.trailers = trailers;
         this.body = body;
     }
@@ -135,7 +134,7 @@ export class Command {
 
 The command is about to start
 
-aynig: working
+aynig-state: working
 aynig-run-id: ${runId}
 aynig-runner-id: ${runnerId}
 aynig-pid: ${process.pid}
@@ -170,7 +169,7 @@ aynig-lease-seconds: 5
 
 The command takes control
 
-aynig: working
+aynig-state: working
 aynig-run-id: ${runId}
 aynig-runner-id: ${runnerId}
 aynig-pid: ${child.pid}

@@ -40,7 +40,6 @@ export class Branch {
             config: this.config,
             branchName: this.branchName,
             isCurrentBranch: this.isCurrentBranch,
-            command: trailers.aynig?.trim().toLowerCase(),
             trailers,
             body
         });

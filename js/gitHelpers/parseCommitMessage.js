@@ -1,4 +1,42 @@
-export function parseCommitMessage(log) {
+import { spawn } from 'child_process';
+import { parseGitTrailersStrict } from './parseTrailers.js'; 
+
+function interpretTrailers(body) {
+    return new Promise((resolve, reject) => {
+        const child = spawn('git', ['interpret-trailers', '--parse', '--only-trailers']);
+        let stdout = '';
+        let stderr = '';
+
+        child.stdout.on('data', chunk => {
+            stdout += chunk;
+        });
+
+        child.stderr.on('data', chunk => {
+            stderr += chunk;
+        });
+
+        child.on('error', reject);
+
+        child.on('close', code => {
+            if (code === 0) {
+                resolve(stdout);
+                return;
+            }
+            const suffix = stderr.trim() ? `: ${stderr.trim()}` : '';
+            reject(new Error(`git interpret-trailers failed with code ${code}${suffix}`));
+        });
+
+        child.stdin.on('error', error => {
+            if (error?.code !== 'EPIPE') {
+                reject(error);
+            }
+        });
+
+        child.stdin.end(body);
+    });
+}
+
+export async function parseCommitMessage(log) {
     if (!log) {
         return {
             firstLine: '',
@@ -8,43 +46,22 @@ export function parseCommitMessage(log) {
     }
 
     const firstLine = log.message || '';
-    const body = log.body || '';
 
-    // Parse trailers from the body
-    const trailers = {};
-    const lines = body.trim().split('\n');
-
-    // Trailers are at the end of the commit message
-    // They follow the format "Key: value" or "Key-Name: value"
-    const trailerPattern = /^([A-Z][A-Za-z0-9-]*)\s*:\s*(.+)$/;
-
-    // Start from the end and collect trailers
-    let foundTrailers = false;
-    for (let i = lines.length - 1; i >= 0; i--) {
-        const line = lines[i].trim();
-
-        if (!line) {
-            // Empty line might separate trailers from body
-            if (foundTrailers) {
-                break;
-            }
-            continue;
-        }
-
-        const match = line.match(trailerPattern);
-        if (match) {
-            const [, key, value] = match;
-            trailers[key] = value.trim();
-            foundTrailers = true;
-        } else if (foundTrailers) {
-            // If we've found trailers and hit a non-trailer line, stop
-            break;
-        }
+    if (!log.body) {
+        return {
+            firstLine,
+            body: '',
+            trailers: {}
+        };
     }
+
+    const trailersRaw = await interpretTrailers(log.body);
+
+    const trailers = parseGitTrailersStrict(trailersRaw);
 
     return {
         firstLine,
-        body,
+        body: log.body,
         trailers
     };
 }
