@@ -94,7 +94,18 @@ export class Command {
     }
 
     async getCommandPath(worktreePath) {
-        const commandPath = resolve(worktreePath, '.aynig', 'commands', this.command);
+        const baseDir = resolve(worktreePath, '.aynig', 'command');
+        const commandName = this.command;
+
+        if (!commandName) {
+            return false;
+        }
+
+        const commandPath = resolve(baseDir, commandName);
+        if (!commandPath.startsWith(`${baseDir}/`)) {
+            return false;
+        }
+
         try {
             await access(commandPath, constants.X_OK);
             return commandPath;
