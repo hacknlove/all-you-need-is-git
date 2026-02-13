@@ -42,7 +42,10 @@ export class Command {
         branchName,
         isCurrentBranch,
         trailers,
-        body
+        body,
+        commitDate,
+        gitFactory,
+        spawnImpl
     }) {
         this.config = config;
         this.branchName = branchName;
@@ -51,6 +54,8 @@ export class Command {
         this.trailers = trailers;
         this.body = body;
         this.commitDate = commitDate;
+        this.gitFactory = gitFactory || simpleGit;
+        this.spawnImpl = spawnImpl || spawn;
     }
 
     async findExistingWorktree() {
@@ -139,13 +144,7 @@ export class Command {
             return;
         }
 
-        const worktreeGit = simpleGit(worktreePath);
-
-        const newTrailers = {
-            ...trailers,
-            'aynig-state': 'stalled',
-        }
-
+        const worktreeGit = this.gitFactory(worktreePath);
 
         await worktreeGit.commit(`chore: stalled
 
@@ -187,7 +186,7 @@ aynig-stalled-run: ${stalledRun}
         const runId = randomUUID();
         const runnerId = hostname();
 
-        const worktreeGit = simpleGit(worktreePath);
+        const worktreeGit = this.gitFactory(worktreePath);
         const currentCommitHash = (await worktreeGit.revparse(['HEAD'])).trim();
 
         await worktreeGit.commit(`chore: working
@@ -217,7 +216,7 @@ aynig-lease-seconds: ${leaseSeconds}
             env[`AYNIG_TRAILER_${key.toUpperCase()}`] = value;
         }
 
-        const child = spawn(commandPath, [], {
+        const child = this.spawnImpl(commandPath, [], {
             cwd: worktreePath,
             env,
             detached: true,
