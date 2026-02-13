@@ -22,7 +22,11 @@ export class Branch {
     async parseLastCommitMessage() {
         const log = await git.log([this.branchName, '-1']);
         const lastCommit = log.latest;
-        return parseCommitMessage(lastCommit);
+        const parsed = await parseCommitMessage(lastCommit);
+        return {
+            ...parsed,
+            commitDate: lastCommit?.date
+        };
     }
 
     async run() {
@@ -34,6 +38,7 @@ export class Branch {
         const {
             trailers,
             body,
+            commitDate
         } = await this.parseLastCommitMessage();
 
         const command = new Command({
@@ -41,7 +46,8 @@ export class Branch {
             branchName: this.branchName,
             isCurrentBranch: this.isCurrentBranch,
             trailers,
-            body
+            body,
+            commitDate
         });
         await command.run();
     }

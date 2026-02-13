@@ -50,6 +50,7 @@ export class Command {
         this.command = trailers['aynig-state']?.trim().toLowerCase();
         this.trailers = trailers;
         this.body = body;
+        this.commitDate = commitDate;
     }
 
     async findExistingWorktree() {
@@ -114,7 +115,53 @@ export class Command {
         }
     }
 
-    checkWorking() {
+    async checkWorking() {
+        const trailers = this.trailers || {};
+
+        const leaseSeconds = Number(trailers['aynig-lease-seconds']);
+        if (!Number.isFinite(leaseSeconds) || leaseSeconds <= 0) {
+            return;
+        }
+
+        const committedAt = new Date(this.commitDate).getTime();
+        if (!Number.isFinite(committedAt)) {
+            return;
+        }
+
+        const expired = Date.now() > committedAt + (leaseSeconds * 1000);
+        if (!expired) {
+            return;
+        }
+
+        const stalledRun = trailers['aynig-run-id']?.trim() || 'unknown';
+        const worktreePath = await this.getWorkspace();
+        if (!worktreePath) {
+            return;
+        }
+
+        const worktreeGit = simpleGit(worktreePath);
+
+        const newTrailers = {
+            ...trailers,
+            'aynig-state': 'stalled',
+        }
+
+
+        await worktreeGit.commit(`chore: stalled
+
+Lease expired
+
+aynig-state: stalled
+aynig-stalled-run: ${stalledRun}
+`, { '--allow-empty': null });
+
+        if (this.config.useRemote) {
+            try {
+                await worktreeGit.push(this.config.useRemote, this.branchName);
+            } catch {
+                return;
+            }
+        }
     }
 
     async run() {
@@ -143,13 +190,12 @@ export class Command {
         const worktreeGit = simpleGit(worktreePath);
         await worktreeGit.commit(`chore: working
 
-The command is about to start
+command ${this.command} takes control of the branch
 
 aynig-state: working
 aynig-run-id: ${runId}
 aynig-runner-id: ${runnerId}
-aynig-pid: ${process.pid}
-aynig-lease-seconds: 5
+aynig-lease-seconds: leaseSeconds
 `, { '--allow-empty': null });
 
         if (this.config.useRemote) {
@@ -175,20 +221,5 @@ aynig-lease-seconds: 5
             stdio: 'ignore'
         });
         child.unref();
-
-        await worktreeGit.commit(`chore: working
-
-The command takes control
-
-aynig-state: working
-aynig-run-id: ${runId}
-aynig-runner-id: ${runnerId}
-aynig-pid: ${child.pid}
-aynig-lease-seconds: ${leaseSeconds}
-`, { '--allow-empty': null });
-
-        if (this.config.useRemote) {
-            await worktreeGit.push(this.config.useRemote, this.branchName);
-        }
     }
 }
