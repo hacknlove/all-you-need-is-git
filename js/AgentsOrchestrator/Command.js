@@ -188,6 +188,8 @@ aynig-stalled-run: ${stalledRun}
         const runnerId = hostname();
 
         const worktreeGit = simpleGit(worktreePath);
+        const currentCommitHash = (await worktreeGit.revparse(['HEAD'])).trim();
+
         await worktreeGit.commit(`chore: working
 
 command ${this.command} takes control of the branch
@@ -195,7 +197,7 @@ command ${this.command} takes control of the branch
 aynig-state: working
 aynig-run-id: ${runId}
 aynig-runner-id: ${runnerId}
-aynig-lease-seconds: leaseSeconds
+aynig-lease-seconds: ${leaseSeconds}
 `, { '--allow-empty': null });
 
         if (this.config.useRemote) {
@@ -208,7 +210,8 @@ aynig-lease-seconds: leaseSeconds
 
         const env = {
             ...process.env,
-            AYNIG_BODY: this.body
+            AYNIG_BODY: this.body,
+            AYNIG_COMMIT_HASH: currentCommitHash
         };
         for (const [key, value] of Object.entries(this.trailers)) {
             env[`AYNIG_TRAILER_${key.toUpperCase()}`] = value;
