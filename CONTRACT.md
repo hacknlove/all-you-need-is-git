@@ -210,15 +210,3 @@ execute → validate → observe.
 All intelligence lives above it.
 
 ---
-
-## TODO
-
-- [x] Parse the mandatory `aynig-state: <state>` trailer from `HEAD` and use it for dispatch.
-- [x] Update runner-generated state commits to use `aynig-state` trailers (current `working` commits still use `aynig:`).
-- [x] Align command resolution path with the contract/docs (`.aynig/command/<state>`).
-- [x] Implement `working` state handling in the runner (`checkWorking`) with lease-expiry evaluation on `HEAD` committer date.
-- [x] Implement takeover flow for expired leases by emitting `aynig-state: stalled` with `aynig-stalled-run: <run-id>`.
-- [ ] Expose all required execution metadata to commands via environment variables, including commit hash and runner configuration.
-- [ ] Use the configured lease duration in `working` commits (initial commit currently hardcodes `aynig-lease-seconds: 5`).
-- [ ] Add post-execution validation that only inspects new `HEAD` and accepts completion only when `aynig-state: <state>` and `state != working`.
-- [ ] Ensure runner behavior matches "does not modify repository during execution" semantics (current second `working` commit happens after command start).
