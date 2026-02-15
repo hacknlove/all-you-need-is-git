@@ -1,5 +1,4 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
+import { test, expect } from 'vitest';
 import { Command } from '../AgentsOrchestrator/Command.js';
 
 function createCommand(overrides = {}) {
@@ -34,8 +33,8 @@ test('run writes working commit with configured lease seconds', async () => {
 
   await command.run();
 
-  assert.equal(calls.length, 1);
-  assert.match(calls[0], /aynig-lease-seconds: 123/);
+  expect(calls.length).toBe(1);
+  expect(calls[0]).toMatch(/aynig-lease-seconds: 123/);
 });
 
 test('run passes trailers, body, and commit hash to env', async () => {
@@ -59,8 +58,8 @@ test('run passes trailers, body, and commit hash to env', async () => {
 
   await command.run();
 
-  assert.equal(spawnEnv.AYNIG_BODY, 'do the thing');
-  assert.equal(spawnEnv.AYNIG_COMMIT_HASH, 'deadbeef');
-  assert.equal(spawnEnv.AYNIG_TRAILER_AYNIG_STATE, 'build');
-  assert.equal(spawnEnv.AYNIG_TRAILER_AYNIG_RUN_ID, 'run-123');
+  expect(spawnEnv.AYNIG_BODY).toBe('do the thing');
+  expect(spawnEnv.AYNIG_COMMIT_HASH).toBe('deadbeef');
+  expect(spawnEnv['AYNIG_TRAILER_AYNIG-STATE']).toBe('build');
+  expect(spawnEnv['AYNIG_TRAILER_AYNIG-RUN-ID']).toBe('run-123');
 });

@@ -1,5 +1,4 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
+import { test, expect } from 'vitest';
 import { Command } from '../AgentsOrchestrator/Command.js';
 
 function createCommand(overrides = {}) {
@@ -18,7 +17,7 @@ function createCommand(overrides = {}) {
   });
 }
 
-test('checkWorking skips when lease not expired', async (t) => {
+test('checkWorking skips when lease not expired', async () => {
   const commitCalls = [];
   const gitStub = {
     commit: async (message) => commitCalls.push(message),
@@ -33,16 +32,15 @@ test('checkWorking skips when lease not expired', async (t) => {
 
   const originalNow = Date.now;
   Date.now = () => new Date('2025-01-01T00:00:05.000Z').getTime();
-  t.after(() => {
+  try {
+    await command.checkWorking();
+  } finally {
     Date.now = originalNow;
-  });
-
-  await command.checkWorking();
-
-  assert.equal(commitCalls.length, 0);
+  }
+  expect(commitCalls.length).toBe(0);
 });
 
-test('checkWorking emits stalled commit when lease expired', async (t) => {
+test('checkWorking emits stalled commit when lease expired', async () => {
   const commitCalls = [];
   const gitStub = {
     commit: async (message) => commitCalls.push(message),
@@ -57,13 +55,13 @@ test('checkWorking emits stalled commit when lease expired', async (t) => {
 
   const originalNow = Date.now;
   Date.now = () => new Date('2025-01-01T00:00:20.000Z').getTime();
-  t.after(() => {
+  try {
+    await command.checkWorking();
+  } finally {
     Date.now = originalNow;
-  });
+  }
 
-  await command.checkWorking();
-
-  assert.equal(commitCalls.length, 1);
-  assert.match(commitCalls[0], /aynig-state: stalled/);
-  assert.match(commitCalls[0], /aynig-stalled-run: run-789/);
+  expect(commitCalls.length).toBe(1);
+  expect(commitCalls[0]).toMatch(/aynig-state: stalled/);
+  expect(commitCalls[0]).toMatch(/aynig-stalled-run: run-789/);
 });
