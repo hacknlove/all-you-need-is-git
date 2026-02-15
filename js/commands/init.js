@@ -36,6 +36,19 @@ async function action() {
     }
   }
 
+  // Ensure command directory exists
+  const commandDir = path.join(aynigDir, 'command');
+  try {
+    await fs.mkdir(commandDir, { recursive: false });
+    console.log(`✓ Created ${commandDir}/`);
+  } catch (error) {
+    if (error.code === 'EEXIST') {
+      console.log(`⊘ ${commandDir}/ already exists, skipping`);
+    } else {
+      throw error;
+    }
+  }
+
   // Only create files if directory was just created
   if (aynigCreated) {
     // Copy COMMANDS.md
@@ -44,12 +57,17 @@ async function action() {
       path.join(aynigDir, 'COMMANDS.md')
     );
     console.log(`✓ Created COMMANDS.md`);
+  }
 
-    // Copy clean script
-    const cleanPath = path.join(aynigDir, 'clean');
+  // Ensure clean command exists
+  const cleanPath = path.join(commandDir, 'clean');
+  try {
+    await fs.access(cleanPath);
+    console.log('⊘ clean command already exists, skipping');
+  } catch {
     await fs.copyFile(path.join(ASSETS_DIR, 'clean'), cleanPath);
     await fs.chmod(cleanPath, 0o755);
-    console.log(`✓ Created clean script`);
+    console.log('✓ Created clean command');
   }
 
   // Create .worktrees/ directory
