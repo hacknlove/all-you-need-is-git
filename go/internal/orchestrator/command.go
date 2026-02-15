@@ -10,7 +10,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"syscall"
 	"time"
 
 	"all-you-need-is-git/go/internal/config"
@@ -113,7 +112,7 @@ func (c *Command) Run() error {
 	cmd.Stdout = nil
 	cmd.Stderr = nil
 	cmd.Stdin = nil
-	cmd.SysProcAttr = &syscall.SysProcAttr{Setsid: true}
+	setDetached(cmd)
 	if err := cmd.Start(); err != nil {
 		return err
 	}
