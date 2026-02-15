@@ -54,14 +54,15 @@ download "$URL" > "$tmpdir/$ARCHIVE"
 
 tar -xzf "$tmpdir/$ARCHIVE" -C "$tmpdir"
 
-if [ ! -f "$tmpdir/aynig" ] && [ ! -f "$tmpdir/aynig.exe" ]; then
-  echo "Error: aynig binary not found in archive." >&2
-  exit 1
-fi
-
 BIN_NAME="aynig"
 if [ "$OS" = "windows" ]; then
   BIN_NAME="aynig.exe"
+fi
+
+BIN_PATH="$(find "$tmpdir" -type f -name "$BIN_NAME" 2>/dev/null | head -n 1)"
+if [ -z "$BIN_PATH" ]; then
+  echo "Error: aynig binary not found in archive." >&2
+  exit 1
 fi
 
 INSTALL_DIR="/usr/local/bin"
@@ -70,7 +71,7 @@ if [ ! -w "$INSTALL_DIR" ]; then
 fi
 
 mkdir -p "$INSTALL_DIR"
-cp "$tmpdir/$BIN_NAME" "$INSTALL_DIR/aynig"
+cp "$BIN_PATH" "$INSTALL_DIR/aynig"
 chmod +x "$INSTALL_DIR/aynig"
 
 echo "Installed aynig to $INSTALL_DIR/aynig"
