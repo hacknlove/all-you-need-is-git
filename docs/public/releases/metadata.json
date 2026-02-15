@@ -1,1 +1,1 @@
-{"project_name":"aynig","tag":"v0.0.1","previous_tag":"","version":"0.0.1","commit":"80f1bb75f97413597d86117bfb34e98b46ab71e0","date":"2026-02-15T10:20:06.127241958+01:00","runtime":{"goos":"linux","goarch":"amd64"}}
+{"project_name":"aynig","tag":"v0.0.2","previous_tag":"v0.0.1","version":"0.0.2","commit":"ef416e471e2bf5fc7117148bcc623f0373fd9b5c","date":"2026-02-15T15:26:35.828900888+01:00","runtime":{"goos":"linux","goarch":"amd64"}}
