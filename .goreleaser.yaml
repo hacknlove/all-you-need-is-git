@@ -30,7 +30,7 @@ builds:
 archives:
   - id: default
     format: tar.gz
-    name_template: "{{ .Tag }}/{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    name_template: "{{ .Tag }}/{{ .ProjectName }}_{{ .Tag }}_{{ .Os }}_{{ .Arch }}"
     files:
       - LICENSE*
       - README*
@@ -48,6 +48,6 @@ nfpms:
       - deb
       - rpm
     bindir: /usr/local/bin
-    file_name_template: "{{ .Tag }}/{{ .ProjectName }}_{{ .Version }}_{{ .Arch }}"
+    file_name_template: "{{ .Tag }}/{{ .ProjectName }}_{{ .Tag }}_{{ .Arch }}"
     builds:
       - aynig

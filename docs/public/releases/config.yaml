@@ -50,7 +50,7 @@ archives:
   - id: default
     builds_info:
       mode: 493
-    name_template: '{{ .Tag }}/{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}'
+    name_template: '{{ .Tag }}/{{ .ProjectName }}_{{ .Tag }}_{{ .Os }}_{{ .Arch }}'
     formats:
       - tar.gz
     files:
@@ -58,7 +58,7 @@ archives:
       - src: README*
     format: tar.gz
 nfpms:
-  - file_name_template: '{{ .Tag }}/{{ .ProjectName }}_{{ .Version }}_{{ .Arch }}'
+  - file_name_template: '{{ .Tag }}/{{ .ProjectName }}_{{ .Tag }}_{{ .Arch }}'
     package_name: aynig
     id: packages
     ids:
