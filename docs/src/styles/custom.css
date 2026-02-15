@@ -1,0 +1,23 @@
+.hero {
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  padding-block: 1.5rem;
+}
+
+.hero > img,
+.hero > .hero-html {
+  width: 100%;
+  height: auto;
+  max-width: none;
+  order: -1;
+  border-radius: 18px;
+  box-shadow: 0 24px 48px rgba(15, 16, 20, 0.25);
+}
+
+.hero .stack {
+  text-align: left;
+}
+
+.hero .copy {
+  align-items: flex-start;
+}
