@@ -26,17 +26,33 @@ func Init() error {
 		aynigCreated = true
 	}
 
+	commandDir := filepath.Join(aynigDir, "command")
+	if err := os.Mkdir(commandDir, 0o755); err != nil {
+		if !os.IsExist(err) {
+			return err
+		}
+		fmt.Printf("⊘ %s/ already exists, skipping\n", commandDir)
+	} else {
+		fmt.Printf("✓ Created %s/\n", commandDir)
+	}
+
 	if aynigCreated {
 		if err := os.WriteFile(filepath.Join(aynigDir, "COMMANDS.md"), []byte(commandsMd), 0o644); err != nil {
 			return err
 		}
 		fmt.Println("✓ Created COMMANDS.md")
+	}
 
-		cleanPath := filepath.Join(aynigDir, "clean")
+	cleanPath := filepath.Join(commandDir, "clean")
+	if _, err := os.Stat(cleanPath); err == nil {
+		fmt.Println("⊘ clean command already exists, skipping")
+	} else if !os.IsNotExist(err) {
+		return err
+	} else {
 		if err := os.WriteFile(cleanPath, []byte(cleanScript), 0o755); err != nil {
 			return err
 		}
-		fmt.Println("✓ Created clean script")
+		fmt.Println("✓ Created clean command")
 	}
 
 	worktreesDir := ".worktrees"
