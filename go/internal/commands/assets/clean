@@ -1,0 +1,8 @@
+#!/bin/bash
+# Clean workflow - removes worktree and marks workflow as done
+
+# Commit completion to current branch
+git commit --allow-empty -m "chore: aynig is done"
+
+# Remove the worktree
+rm -rf "$AYNIG_WORKTREE_PATH"

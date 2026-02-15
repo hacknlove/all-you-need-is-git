@@ -1,0 +1,251 @@
+package orchestrator
+
+import (
+	"crypto/rand"
+	"crypto/sha256"
+	"encoding/hex"
+	"fmt"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"strconv"
+	"strings"
+	"syscall"
+	"time"
+
+	"all-you-need-is-git/go/internal/config"
+	"all-you-need-is-git/go/internal/gitx"
+)
+
+type CommandParams struct {
+	Config          config.Config
+	BranchName      string
+	IsCurrentBranch bool
+	Trailers        map[string][]string
+	Body            string
+	CommitDate      string
+}
+
+type Command struct {
+	config          config.Config
+	branchName      string
+	isCurrentBranch bool
+	command         string
+	trailers        map[string][]string
+	body            string
+	commitDate      string
+}
+
+func NewCommand(params CommandParams) *Command {
+	state := ""
+	if values, ok := params.Trailers["aynig-state"]; ok && len(values) > 0 {
+		state = strings.ToLower(strings.TrimSpace(values[0]))
+	}
+	return &Command{
+		config:          params.Config,
+		branchName:      params.BranchName,
+		isCurrentBranch: params.IsCurrentBranch,
+		command:         state,
+		trailers:        params.Trailers,
+		body:            params.Body,
+		commitDate:      params.CommitDate,
+	}
+}
+
+func (c *Command) Run() error {
+	if c.command == "" {
+		return nil
+	}
+	if c.command == "working" {
+		return c.checkWorking()
+	}
+
+	worktreePath, err := c.getWorkspace()
+	if err != nil || worktreePath == "" {
+		return err
+	}
+	commandPath, err := c.getCommandPath(worktreePath)
+	if err != nil || commandPath == "" {
+		return err
+	}
+
+	leaseSeconds := c.config.LeaseSeconds
+	if leaseSeconds <= 0 {
+		leaseSeconds = 300
+	}
+	runID, err := uuidV4()
+	if err != nil {
+		return err
+	}
+	runnerID, err := os.Hostname()
+	if err != nil {
+		return err
+	}
+
+	currentCommitHash, err := gitx.RevParse(worktreePath, "HEAD")
+	if err != nil {
+		return err
+	}
+
+	message := fmt.Sprintf("chore: working\n\ncommand %s takes control of the branch\n\naynig-state: working\naynig-run-id: %s\naynig-runner-id: %s\naynig-lease-seconds: %d\n", c.command, runID, runnerID, leaseSeconds)
+	if err := gitx.Commit(worktreePath, message, true); err != nil {
+		return err
+	}
+
+	if c.config.UseRemote != "" {
+		if err := gitx.Push(worktreePath, c.config.UseRemote, c.branchName); err != nil {
+			return nil
+		}
+	}
+
+	env := append([]string{}, os.Environ()...)
+	env = append(env, "AYNIG_BODY="+c.body)
+	env = append(env, "AYNIG_COMMIT_HASH="+currentCommitHash)
+	for key, values := range c.trailers {
+		upperKey := strings.ToUpper(key)
+		envValue := strings.Join(values, ",")
+		env = append(env, "AYNIG_TRAILER_"+upperKey+"="+envValue)
+	}
+
+	cmd := exec.Command(commandPath)
+	cmd.Dir = worktreePath
+	cmd.Env = env
+	cmd.Stdout = nil
+	cmd.Stderr = nil
+	cmd.Stdin = nil
+	cmd.SysProcAttr = &syscall.SysProcAttr{Setsid: true}
+	if err := cmd.Start(); err != nil {
+		return err
+	}
+	_ = cmd.Process.Release()
+	return nil
+}
+
+func (c *Command) checkWorking() error {
+	leaseSeconds := parseIntTrailer(c.trailers["aynig-lease-seconds"])
+	if leaseSeconds <= 0 {
+		return nil
+	}
+	committedAt, err := time.Parse(time.RFC3339, c.commitDate)
+	if err != nil {
+		return nil
+	}
+	if time.Now().Before(committedAt.Add(time.Duration(leaseSeconds) * time.Second)) {
+		return nil
+	}
+	stalledRun := firstTrailer(c.trailers["aynig-run-id"], "unknown")
+	worktreePath, err := c.getWorkspace()
+	if err != nil || worktreePath == "" {
+		return err
+	}
+
+	message := fmt.Sprintf("chore: stalled\n\nLease expired\n\naynig-state: stalled\naynig-stalled-run: %s\n", stalledRun)
+	if err := gitx.Commit(worktreePath, message, true); err != nil {
+		return err
+	}
+	if c.config.UseRemote != "" {
+		if err := gitx.Push(worktreePath, c.config.UseRemote, c.branchName); err != nil {
+			return nil
+		}
+	}
+	return nil
+}
+
+func (c *Command) getWorkspace() (string, error) {
+	if c.isCurrentBranch {
+		return os.Getwd()
+	}
+
+	worktrees, err := gitx.WorktreeList(c.config.RepoRoot)
+	if err != nil {
+		return "", err
+	}
+	ref := "refs/heads/" + c.branchName
+	for _, wt := range worktrees {
+		if wt.Branch == ref {
+			return wt.Path, nil
+		}
+	}
+
+	safeName := strings.ReplaceAll(c.branchName, "/", "_")
+	hash := branchHash(c.branchName)
+	baseDir := c.config.WorkTree
+	if baseDir == "" {
+		baseDir = "."
+	}
+	worktreePath := filepath.Join(c.config.RepoRoot, baseDir, "worktree-"+safeName+"-"+hash)
+	if c.config.UseRemote != "" {
+		if err := gitx.WorktreeAdd(c.config.RepoRoot, "-b", c.branchName, worktreePath, c.config.UseRemote+"/"+c.branchName); err != nil {
+			fmt.Printf("Failed to create worktree for branch %s\n", c.branchName)
+			return "", nil
+		}
+	} else {
+		if err := gitx.WorktreeAdd(c.config.RepoRoot, worktreePath, c.branchName); err != nil {
+			fmt.Printf("Failed to create worktree for branch %s\n", c.branchName)
+			return "", nil
+		}
+	}
+
+	return worktreePath, nil
+}
+
+func (c *Command) getCommandPath(worktreePath string) (string, error) {
+	if c.command == "" {
+		return "", nil
+	}
+	baseDir := filepath.Join(worktreePath, ".aynig", "command")
+	baseDirAbs, err := filepath.Abs(baseDir)
+	if err != nil {
+		return "", err
+	}
+	commandPath := filepath.Join(baseDirAbs, filepath.FromSlash(c.command))
+	if !strings.HasPrefix(commandPath, baseDirAbs+string(os.PathSeparator)) {
+		return "", nil
+	}
+	info, err := os.Stat(commandPath)
+	if err != nil {
+		return "", nil
+	}
+	if info.Mode()&0o111 == 0 {
+		return "", nil
+	}
+	return commandPath, nil
+}
+
+func branchHash(name string) string {
+	sum := sha256.Sum256([]byte(name))
+	return hex.EncodeToString(sum[:])[:8]
+}
+
+func uuidV4() (string, error) {
+	b := make([]byte, 16)
+	if _, err := rand.Read(b); err != nil {
+		return "", err
+	}
+	b[6] = (b[6] & 0x0f) | 0x40
+	b[8] = (b[8] & 0x3f) | 0x80
+	return fmt.Sprintf("%x-%x-%x-%x-%x", b[0:4], b[4:6], b[6:8], b[8:10], b[10:16]), nil
+}
+
+func parseIntTrailer(values []string) int {
+	if len(values) == 0 {
+		return 0
+	}
+	value := strings.TrimSpace(values[0])
+	parsed, err := strconv.Atoi(value)
+	if err != nil {
+		return 0
+	}
+	return parsed
+}
+
+func firstTrailer(values []string, fallback string) string {
+	if len(values) == 0 {
+		return fallback
+	}
+	value := strings.TrimSpace(values[0])
+	if value == "" {
+		return fallback
+	}
+	return value
+}
