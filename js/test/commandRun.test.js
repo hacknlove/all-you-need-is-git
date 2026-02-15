@@ -1,4 +1,4 @@
-import { test, expect } from 'vitest';
+import { test, expect, vi } from 'vitest';
 import { Command } from '../AgentsOrchestrator/Command.js';
 
 function createCommand(overrides = {}) {
@@ -62,4 +62,26 @@ test('run passes trailers, body, and commit hash to env', async () => {
   expect(spawnEnv.AYNIG_COMMIT_HASH).toBe('deadbeef');
   expect(spawnEnv['AYNIG_TRAILER_AYNIG-STATE']).toBe('build');
   expect(spawnEnv['AYNIG_TRAILER_AYNIG-RUN-ID']).toBe('run-123');
+});
+
+test('run skips when command path is missing', async () => {
+  const gitStub = {
+    revparse: vi.fn(async () => 'deadbeef\n'),
+    commit: vi.fn(async () => {}),
+    push: vi.fn(async () => {})
+  };
+
+  const command = createCommand({
+    gitFactory: () => gitStub,
+    spawnImpl: () => ({ unref: () => {} })
+  });
+
+  command.getWorkspace = async () => '/tmp/worktree';
+  command.getCommandPath = async () => false;
+
+  await command.run();
+
+  expect(gitStub.revparse).not.toHaveBeenCalled();
+  expect(gitStub.commit).not.toHaveBeenCalled();
+  expect(gitStub.push).not.toHaveBeenCalled();
 });

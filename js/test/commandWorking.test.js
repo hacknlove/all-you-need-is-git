@@ -1,4 +1,4 @@
-import { test, expect } from 'vitest';
+import { test, expect, vi } from 'vitest';
 import { Command } from '../AgentsOrchestrator/Command.js';
 
 function createCommand(overrides = {}) {
@@ -64,4 +64,23 @@ test('checkWorking emits stalled commit when lease expired', async () => {
   expect(commitCalls.length).toBe(1);
   expect(commitCalls[0]).toMatch(/aynig-state: stalled/);
   expect(commitCalls[0]).toMatch(/aynig-stalled-run: run-789/);
+});
+
+test('checkWorking skips when commit date is invalid', async () => {
+  const gitStub = {
+    commit: vi.fn(async () => {}),
+    push: vi.fn(async () => {})
+  };
+
+  const command = createCommand({
+    commitDate: 'not-a-date',
+    gitFactory: () => gitStub
+  });
+
+  command.getWorkspace = async () => '/tmp/worktree';
+
+  await command.checkWorking();
+
+  expect(gitStub.commit).not.toHaveBeenCalled();
+  expect(gitStub.push).not.toHaveBeenCalled();
 });
