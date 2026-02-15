@@ -11,6 +11,7 @@ builds:
     dir: go
     main: ./cmd/aynig
     binary: aynig
+    output: "{{ .Version }}/{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}/{{ .Binary }}"
     env:
       - CGO_ENABLED=0
     goos:
