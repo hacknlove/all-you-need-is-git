@@ -10,7 +10,7 @@
   "scripts": {
     "dev": "node --watch index.js",
     "start": "node --no-warnings index.js",
-    "test": "node --test"
+    "test": "vitest run"
   },
   "author": "",
   "license": "ISC",
@@ -18,5 +18,8 @@
     "commander": "^14.0.3",
     "fs-extra": "^11.3.3",
     "simple-git": "^3.30.0"
+  },
+  "devDependencies": {
+    "vitest": "^4.0.18"
   }
 }

@@ -1,9 +1,8 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
+import { test, expect } from 'vitest';
 import { parseCommitMessage } from '../gitHelpers/parseCommitMessage.js';
 
 test('returns empty values when commit log is missing', async () => {
-  assert.deepEqual(await parseCommitMessage(), {
+  expect(await parseCommitMessage()).toEqual({
     firstLine: '',
     body: '',
     trailers: {}
@@ -22,8 +21,8 @@ test('parses aynig trailers from trailing trailer block', async () => {
     ].join('\n')
   });
 
-  assert.equal(parsed.firstLine, 'feat: schedule next run');
-  assert.deepEqual({...parsed.trailers}, {
+  expect(parsed.firstLine).toBe('feat: schedule next run');
+  expect({ ...parsed.trailers }).toEqual({
     'aynig-state': 'queued',
     'aynig-run-id': 'abc-123',
     'Signed-off-by': 'Example User <example@example.com>'
@@ -39,6 +38,6 @@ test('does not parse trailer-like lines outside trailing trailer block', async (
     ].join('\n')
   });
 
-  assert.equal(parsed.body, 'aynig-state: queued\nThis line is part of prompt and not a trailer block.');
-  assert.deepEqual(parsed.trailers, {});
+  expect(parsed.body).toBe('aynig-state: queued\nThis line is part of prompt and not a trailer block.');
+  expect(parsed.trailers).toEqual({});
 });

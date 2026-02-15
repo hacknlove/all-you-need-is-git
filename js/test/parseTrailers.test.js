@@ -1,28 +1,24 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
+import { test, expect } from 'vitest';
 import { parseGitTrailersStrict } from '../gitHelpers/parseTrailers.js';
 
 test('throws when raw is not a string', () => {
-  assert.throws(
-    () => parseGitTrailersStrict(null),
-    /parseGitTrailersStrict: raw must be a string/
-  );
+  expect(() => parseGitTrailersStrict(null)).toThrow(/parseGitTrailersStrict: raw must be a string/);
 });
 
 test('returns empty object for empty input and trailing newlines', () => {
-  assert.deepEqual(parseGitTrailersStrict(''), {});
-  assert.deepEqual(parseGitTrailersStrict('\n\n\n'), {});
+  expect(parseGitTrailersStrict('')).toEqual({});
+  expect(parseGitTrailersStrict('\n\n\n')).toEqual({});
 });
 
 test('returns a null-prototype object', () => {
   const parsed = parseGitTrailersStrict('Token: value');
-  assert.equal(Object.getPrototypeOf(parsed), null);
+  expect(Object.getPrototypeOf(parsed)).toBe(null);
 });
 
 test('parses a single trailer with optional whitespace around separator and value', () => {
   const parsed = parseGitTrailersStrict('Signed-off-by  :   Example User <x@example.com>');
 
-  assert.deepEqual({ ...parsed }, {
+  expect({ ...parsed }).toEqual({
     'Signed-off-by': 'Example User <x@example.com>'
   });
 });
@@ -34,7 +30,7 @@ test('parses repeated tokens as arrays preserving insertion order', () => {
     'Reviewed-by: C'
   ].join('\n'));
 
-  assert.deepEqual({ ...parsed }, {
+  expect({ ...parsed }).toEqual({
     'Reviewed-by': ['A', 'B', 'C']
   });
 });
@@ -46,7 +42,7 @@ test('parses continuation lines by appending newline and trimmed continuation te
     '\tthird line'
   ].join('\n'));
 
-  assert.deepEqual({ ...parsed }, {
+  expect({ ...parsed }).toEqual({
     Notes: 'first line\nsecond line\nthird line'
   });
 });
@@ -58,7 +54,7 @@ test('continuation lines update the most recent repeated token value', () => {
     '  with continuation'
   ].join('\n'));
 
-  assert.deepEqual({ ...parsed }, {
+  expect({ ...parsed }).toEqual({
     'Co-authored-by': ['One', 'Two\nwith continuation']
   });
 });
@@ -66,7 +62,7 @@ test('continuation lines update the most recent repeated token value', () => {
 test('normalizes CRLF and CR newlines', () => {
   const parsed = parseGitTrailersStrict('A: 1\r\nB: 2\rC: 3\r\n');
 
-  assert.deepEqual({ ...parsed }, {
+  expect({ ...parsed }).toEqual({
     A: '1',
     B: '2',
     C: '3'
@@ -79,7 +75,7 @@ test('supports lowerCaseKeys option and merges differently cased repeated tokens
     'acked-by: Bob'
   ].join('\n'), { lowerCaseKeys: true });
 
-  assert.deepEqual({ ...parsed }, {
+  expect({ ...parsed }).toEqual({
     'acked-by': ['Alice', 'Bob']
   });
 });
@@ -89,7 +85,7 @@ test('supports custom separators and uses the earliest separator occurrence in a
     separators: [':', '=']
   });
 
-  assert.deepEqual({ ...parsed }, {
+  expect({ ...parsed }).toEqual({
     Key: 'left:right'
   });
 });
@@ -97,35 +93,23 @@ test('supports custom separators and uses the earliest separator occurrence in a
 test('allows empty values after a valid trailer token', () => {
   const parsed = parseGitTrailersStrict('Token:   ');
 
-  assert.deepEqual({ ...parsed }, {
+  expect({ ...parsed }).toEqual({
     Token: ''
   });
 });
 
 test('throws on blank lines inside trailer block', () => {
-  assert.throws(
-    () => parseGitTrailersStrict('A: 1\n\nB: 2'),
-    /Invalid trailers: blank line at 2/
-  );
+  expect(() => parseGitTrailersStrict('A: 1\n\nB: 2')).toThrow(/Invalid trailers: blank line at 2/);
 });
 
 test('throws on continuation line without preceding trailer', () => {
-  assert.throws(
-    () => parseGitTrailersStrict('  dangling continuation'),
-    /Invalid trailers: continuation without a preceding trailer at 1/
-  );
+  expect(() => parseGitTrailersStrict('  dangling continuation')).toThrow(/Invalid trailers: continuation without a preceding trailer at 1/);
 });
 
 test('throws on lines that do not contain a valid token separator value form', () => {
-  assert.throws(
-    () => parseGitTrailersStrict('missing separator'),
-    /Invalid trailers: expected "token:|=value" at 1/
-  );
+  expect(() => parseGitTrailersStrict('missing separator')).toThrow(/Invalid trailers: expected "token:|=value" at 1/);
 });
 
 test('throws when separator appears at start of line (empty token)', () => {
-  assert.throws(
-    () => parseGitTrailersStrict(': value'),
-    /Invalid trailers: expected "token:|=value" at 1/
-  );
+  expect(() => parseGitTrailersStrict(': value')).toThrow(/Invalid trailers: expected "token:|=value" at 1/);
 });
