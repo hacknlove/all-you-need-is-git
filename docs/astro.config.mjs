@@ -13,16 +13,57 @@ export default defineConfig({
           label: 'Getting Started',
           items: [
             { label: 'Overview', link: '/' },
-            { label: 'Install', link: '/getting-started/install/' },
-            { label: 'Run', link: '/getting-started/run/' }
+            { label: 'Quick Start', link: '/getting-started/quick-start/' }
           ]
         },
         {
-          label: 'CLI',
+          label: 'Installation',
+          items: [
+            { label: 'Install CLI', link: '/installation/cli/' }
+          ]
+        },
+        {
+          label: 'Repository Setup',
+          items: [
+            { label: 'Initialize', link: '/repository/init/' },
+            { label: 'Repository Layout', link: '/repository/layout/' },
+            { label: 'Install Workflow Packs', link: '/repository/install-workflows/' }
+          ]
+        },
+        {
+          label: 'Run and Operate',
+          items: [
+            { label: 'Run AYNIG', link: '/run/run/' },
+            { label: 'Worktrees and Isolation', link: '/run/worktrees/' },
+            { label: 'Leases and Liveness', link: '/run/leases/' }
+          ]
+        },
+        {
+          label: 'Commands',
+          items: [
+            { label: 'Authoring Commands', link: '/commands/authoring/' },
+            { label: 'Commit Protocol', link: '/commands/protocol/' },
+            { label: 'Environment Variables', link: '/commands/environment/' }
+          ]
+        },
+        {
+          label: 'Workflow Design',
+          items: [
+            { label: 'Workflow Design', link: '/workflows/design/' }
+          ]
+        },
+        {
+          label: 'CLI Reference',
           items: [
             { label: 'init', link: '/cli/init/' },
             { label: 'install', link: '/cli/install/' },
             { label: 'run', link: '/cli/run/' }
+          ]
+        },
+        {
+          label: 'Kernel Contract',
+          items: [
+            { label: 'Kernel Contract', link: '/contract/' }
           ]
         }
       ]

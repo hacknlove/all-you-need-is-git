@@ -1,8 +1,3 @@
-# DO NOT USE
-# WORK IN PROGRESS
-# NOT READY YET
-# IT WON'T WORK
-
 # AYNIG
 
 **Agentic Yet Native in Git**  
@@ -57,7 +52,7 @@ Humans have been using Git to communicate and coordinate work for decades, we ju
 With AYNIG, you:
 
 - fetch refs,
-- inspect commit messages for `aynig:` trailers,
+- inspect commit messages for `aynig-state:` trailers,
 - run the corresponding agents,
 - and let agents respond by creating new commits using the same syntax.
 
@@ -71,14 +66,14 @@ You don't need webhooks, APIs, and keys, and certainly you don't need to be tied
 
 AYNIG scans local branches (or remote branches if `--use-remote` is specified) and inspects the **latest commit**.
 
-If it finds a commit with an `aynig:` trailer, like this:
+If it finds a commit with an `aynig-state:` trailer, like this:
 
 ```
 chore: whatever title for humans
 
 Here goes the prompt to be processed by the agent.
 
-aynig: some-state
+aynig-state: some-state
 foo: bar
 baz: qux
 ```
@@ -86,26 +81,25 @@ baz: qux
 AYNIG will:
 
 1. Detect the state (`some-state`)
-2. Execute the corresponding script:
+2. Execute the corresponding command:
 
 ```
-.aynig/some-state
+.aynig/command/some-state
 ```
 
-3. Expose the commit contents to the script via environment variables:
+3. Expose the commit contents to the command via environment variables:
 
 * `AYNIG_BODY`
-* `AYNIG_FOO`
-* `AYNIG_BAZ`
-* `AYNIG_WORKTREE_PATH`
-* `AYNIG_COMMIT_SHA`
+* `AYNIG_COMMIT_HASH`
+* `AYNIG_TRAILER_FOO`
+* `AYNIG_TRAILER_BAZ`
 * …and others
 
 The agent is then responsible for:
 
 * doing the work, and
 * creating a **new commit** that
-* advances the workflow by setting a new `aynig:` state trailer.
+* advances the workflow by setting a new `aynig-state:` trailer.
 
 After that, the agent may:
 
@@ -135,9 +129,7 @@ This guarantees that:
 * concurrent executions do not interfere with each other,
 * and crashes or partial runs do not leave the repository in an inconsistent state.
 
-The worktree path is exposed to scripts via:
-
-* `AYNIG_WORKTREE_PATH`
+Commands run with the working directory set to the worktree.
 
 Worktree creation, lifecycle, and cleanup are handled entirely by AYNIG.
 Agents should **not** create or manage worktrees themselves.
@@ -177,7 +169,7 @@ If a human commits from the worktree, that commit becomes part of the workflow a
 ## Install
 
 ```bash
-curl -fsSL https://aynig.com/install.sh | bash
+curl -fsSL https://aynig.org/install.sh | bash
 ```
 
 ---
@@ -199,9 +191,9 @@ This will:
 
 ## Workflows
 
-You define workflows by creating executable scripts inside `.aynig/`.
+You define workflows by creating executable commands inside `.aynig/command/`.
 
-Each script corresponds to a state name and is invoked when that state appears in an `aynig:` commit trailer.
+Each command corresponds to a state name and is invoked when that state appears in an `aynig-state:` commit trailer.
 
 You can also install pre-made workflows from other repositories:
 
@@ -209,7 +201,7 @@ You can also install pre-made workflows from other repositories:
 aynig install <git-repo-url> <branch-or-tag> [subfolder]
 ```
 
-AYNIG will copy the `.aynig/` scripts from the source repository into your own, allowing workflows to be **shared, versioned, and forked** like any other code.
+AYNIG will copy the `.aynig/` directory from the source repository into your own, allowing workflows to be **shared, versioned, and forked** like any other code.
 
 It is recommended to create a COMMANDS.md file to document the available workflows in your repository, in case any agent needs to decide the next step based on the available options.
 
@@ -228,15 +220,13 @@ cleanup: Clean the worktree
 ```bash
 #!/bin/bash
 
-cd "$AYNIG_WORKTREE_PATH"
-
 PROMPT=$(cat <<EOF
 Build this spec:
 $AYNIG_BODY
 EOF
 )
 
-claude -p "$PROMPT" --session-id "$AYNIG_COMMIT_SHA"
+claude -p "$PROMPT" --session-id "$AYNIG_COMMIT_HASH"
 ```
 
 ---
