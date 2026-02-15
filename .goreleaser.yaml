@@ -1,0 +1,51 @@
+project_name: aynig
+dist: docs/public/releases
+
+release:
+  github:
+    owner: hacknlove
+    name: all-you-need-is-git
+
+builds:
+  - id: aynig
+    dir: go
+    main: ./cmd/aynig
+    binary: aynig
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    goarm:
+      - "7"
+    goamd64:
+      - v1
+
+archives:
+  - id: default
+    format: tar.gz
+    name_template: "{{ .Version }}/{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    files:
+      - LICENSE*
+      - README*
+
+checksum:
+  name_template: "{{ .Version }}/checksums.txt"
+
+nfpms:
+  - id: packages
+    package_name: aynig
+    maintainer: "AYNIG"
+    description: "Git-native orchestration tool for agentic workflows"
+    license: "MIT"
+    formats:
+      - deb
+      - rpm
+    bindir: /usr/local/bin
+    file_name_template: "{{ .Version }}/{{ .ProjectName }}_{{ .Version }}_{{ .Arch }}"
+    builds:
+      - aynig
