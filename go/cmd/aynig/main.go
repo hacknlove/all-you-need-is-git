@@ -9,6 +9,8 @@ import (
 	"all-you-need-is-git/go/internal/config"
 )
 
+var version = "dev"
+
 func main() {
 	if len(os.Args) < 2 {
 		printUsage()
@@ -16,6 +18,8 @@ func main() {
 	}
 
 	switch os.Args[1] {
+	case "version", "-v", "--version":
+		fmt.Println(version)
 	case "run":
 		runCmd(os.Args[2:])
 	case "init":
@@ -25,6 +29,11 @@ func main() {
 		}
 	case "install":
 		installCmd(os.Args[2:])
+	case "update":
+		if err := commands.Update(); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
 	case "-h", "--help", "help":
 		printUsage()
 	default:
@@ -85,4 +94,6 @@ func printUsage() {
 	fmt.Println("  run       Run AYNIG for the current repository")
 	fmt.Println("  init      Initialize AYNIG in the current repository")
 	fmt.Println("  install   Install AYNIG workflows from another repository")
+	fmt.Println("  update    Download and install the latest AYNIG release")
+	fmt.Println("  version   Print the current AYNIG version")
 }
