@@ -71,8 +71,11 @@ if [ ! -w "$INSTALL_DIR" ]; then
 fi
 
 mkdir -p "$INSTALL_DIR"
-cp "$BIN_PATH" "$INSTALL_DIR/aynig"
-chmod +x "$INSTALL_DIR/aynig"
+
+TMP_BIN="$INSTALL_DIR/.aynig.tmp.$$"
+cp "$BIN_PATH" "$TMP_BIN"
+chmod +x "$TMP_BIN"
+mv -f "$TMP_BIN" "$INSTALL_DIR/aynig"
 
 echo "Installed aynig to $INSTALL_DIR/aynig"
 echo "Make sure $INSTALL_DIR is on your PATH."
