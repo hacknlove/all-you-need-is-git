@@ -17,6 +17,13 @@ AYNIG lets you drive workflows from Git commits. You define commands in `.aynig/
 - A runner that reads `HEAD`, dispatches to a command, and validates the new `HEAD`
 - A system that uses commits as the control plane
 
+## Why use AYNIG
+
+- Zero external control plane: no SaaS, no webhooks, no hidden state
+- Fully auditable workflows: every step is a commit you can inspect
+- Works with your existing Git practices: branching, history, and collaboration
+- Agent-agnostic and composable: bring your own tools and scripts
+
 ## Where to start
 
 - New to AYNIG? Start with [Quick Start](/getting-started/quick-start/)

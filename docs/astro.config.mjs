@@ -53,6 +53,14 @@ export default defineConfig({
           ]
         },
         {
+          label: 'Why AYNIG',
+          items: [
+            { label: 'Why AYNIG', link: '/why/' },
+            { label: 'Benefits', link: '/why/benefits/' },
+            { label: 'Tradeoffs', link: '/why/tradeoffs/' }
+          ]
+        },
+        {
           label: 'CLI Reference',
           items: [
             { label: 'init', link: '/cli/init/' },
