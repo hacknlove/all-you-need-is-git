@@ -32,7 +32,7 @@ The goal is to improve usability, operability, and adoption while keeping the co
   - env exports:
     - `AYNIG_BODY`
     - `AYNIG_COMMIT_HASH`
-    - `AYNIG_TRAILER_<UPPER_KEY>` (hyphens preserved)
+    - `AYNIG_TRAILER_<UPPER_KEY>` (hyphens replaced by underscores)
 - Go runner:
   - `go/internal/orchestrator/command.go`
   - dispatch path: `.aynig/command`
@@ -48,10 +48,10 @@ The goal is to improve usability, operability, and adoption while keeping the co
 Use this section to track progress across phases. Add more checkboxes for any subtask you expect to pause and resume later.
 
 - [x] Phase A (Docs-first ops layer)
-- [ ] Phase B (Observability commands)
-  - [ ] B1 `status`
-  - [ ] B2 `events --json`
-- [ ] Phase C (Env var normalization)
+- [x] Phase B (Observability commands)
+  - [x] B1 `status`
+  - [x] B2 `events --json`
+- [x] Phase C (Env var normalization)
 - [ ] Phase D (Ops workflow pack)
 
 ---
@@ -220,8 +220,7 @@ This provides defaults without forcing policy into kernel.
 - outputs are script-friendly and stable
 
 ## Env ergonomics
-- both raw and normalized trailer env vars are exported
-- existing workflows using raw names continue to work
+- trailer env vars use underscore-normalized keys
 
 ## Testing
 - Unit tests added for:
