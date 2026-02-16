@@ -41,6 +41,16 @@ export default defineConfig({
           ]
         },
         {
+          label: 'Operate AYNIG',
+          items: [
+            { label: 'Runbooks', link: '/operate/runbooks/' },
+            { label: 'Retries', link: '/operate/retries/' },
+            { label: 'History Hygiene', link: '/operate/history-hygiene/' },
+            { label: 'Concurrency Patterns', link: '/operate/concurrency-patterns/' },
+            { label: 'Trailer Conventions', link: '/operate/trailer-conventions/' }
+          ]
+        },
+        {
           label: 'Commands',
           items: [
             { label: 'Authoring Commands', link: '/commands/authoring/' },

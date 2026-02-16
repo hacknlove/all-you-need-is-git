@@ -45,9 +45,9 @@ The goal is to improve usability, operability, and adoption while keeping the co
 
 ## Status
 
-Use this section to track progress across phases.
+Use this section to track progress across phases. Add more checkboxes for any subtask you expect to pause and resume later.
 
-- [ ] Phase A (Docs-first ops layer)
+- [x] Phase A (Docs-first ops layer)
 - [ ] Phase B (Observability commands)
   - [ ] B1 `status`
   - [ ] B2 `events --json`
