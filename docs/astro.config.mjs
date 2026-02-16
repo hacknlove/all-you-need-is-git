@@ -1,7 +1,9 @@
 import { defineConfig } from 'astro/config';
+import sitemap from '@astrojs/sitemap';
 import starlight from '@astrojs/starlight';
 
 export default defineConfig({
+  site: 'https://aynig.org',
   integrations: [
     starlight({
       title: 'All You Need Is Git',
@@ -75,6 +77,7 @@ export default defineConfig({
           ]
         }
       ]
-    })
+    }),
+    sitemap()
   ]
 });

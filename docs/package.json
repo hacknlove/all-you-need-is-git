@@ -10,6 +10,7 @@
   },
   "devDependencies": {
     "@astrojs/starlight": "^0.32.0",
+    "@astrojs/sitemap": "^3.2.1",
     "astro": "^5.2.0"
   }
 }
