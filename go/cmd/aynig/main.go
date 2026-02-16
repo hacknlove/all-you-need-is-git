@@ -22,6 +22,11 @@ func main() {
 		fmt.Println(version)
 	case "run":
 		runCmd(os.Args[2:])
+	case "status":
+		if err := commands.Status(); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
 	case "init":
 		if err := commands.Init(); err != nil {
 			fmt.Fprintln(os.Stderr, err)
@@ -29,6 +34,8 @@ func main() {
 		}
 	case "install":
 		installCmd(os.Args[2:])
+	case "events":
+		eventsCmd(os.Args[2:])
 	case "update":
 		if err := commands.Update(); err != nil {
 			fmt.Fprintln(os.Stderr, err)
@@ -87,13 +94,33 @@ func installCmd(args []string) {
 	}
 }
 
+func eventsCmd(args []string) {
+	fs := flag.NewFlagSet("events", flag.ExitOnError)
+	history := fs.Bool("history", false, "Allow scanning recent history")
+	limit := fs.Int("limit", 10, "Number of commits to inspect (requires --history)")
+	fs.IntVar(limit, "n", 10, "Number of commits to inspect (requires --history)")
+	jsonOut := fs.Bool("json", false, "Output JSON")
+	fs.Parse(args)
+
+	if err := commands.Events(commands.EventsOptions{
+		History: *history,
+		Limit:   *limit,
+		JSON:    *jsonOut,
+	}); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+}
+
 func printUsage() {
 	fmt.Println("Usage: aynig <command> [options]")
 	fmt.Println("")
 	fmt.Println("Commands:")
 	fmt.Println("  run       Run AYNIG for the current repository")
+	fmt.Println("  status    Show current AYNIG state")
 	fmt.Println("  init      Initialize AYNIG in the current repository")
 	fmt.Println("  install   Install AYNIG workflows from another repository")
+	fmt.Println("  events    Show recent AYNIG events")
 	fmt.Println("  update    Download and install the latest AYNIG release")
 	fmt.Println("  version   Print the current AYNIG version")
 }

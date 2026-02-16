@@ -6,6 +6,8 @@ import { registerInitCommand } from './commands/init.js';
 import { registerInstallCommand } from './commands/install.js';
 import { registerUpdateCommand } from './commands/update.js';
 import { registerVersionCommand } from './commands/version.js';
+import { registerStatusCommand } from './commands/status.js';
+import { registerEventsCommand } from './commands/events.js';
 import pkg from './package.json' assert { type: 'json' };
 
 const program = new Command();
@@ -22,6 +24,8 @@ registerInitCommand(program);
 registerInstallCommand(program);
 registerUpdateCommand(program);
 registerVersionCommand(program);
+registerStatusCommand(program);
+registerEventsCommand(program);
 
 // Parse arguments
 program.parse();
