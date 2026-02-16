@@ -28,3 +28,11 @@ aynig-note: manual rollback completed
 ```
 
 Use consistent, lowercase keys. Keep values short and script-friendly.
+
+## Working lease context
+
+```
+aynig-origin-state: build
+```
+
+When a runner writes `aynig-state: working`, it must also include the original state so retries and tools can recover intent.

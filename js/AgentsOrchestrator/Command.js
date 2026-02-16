@@ -185,6 +185,7 @@ aynig-stalled-run: ${stalledRun}
         const leaseSeconds = this.config.leaseSeconds || 300;
         const runId = randomUUID();
         const runnerId = hostname();
+        const originState = this.command;
 
         const worktreeGit = this.gitFactory(worktreePath);
         const currentCommitHash = (await worktreeGit.revparse(['HEAD'])).trim();
@@ -194,6 +195,7 @@ aynig-stalled-run: ${stalledRun}
 command ${this.command} takes control of the branch
 
 aynig-state: working
+aynig-origin-state: ${originState}
 aynig-run-id: ${runId}
 aynig-runner-id: ${runnerId}
 aynig-lease-seconds: ${leaseSeconds}
@@ -213,7 +215,9 @@ aynig-lease-seconds: ${leaseSeconds}
             AYNIG_COMMIT_HASH: currentCommitHash
         };
         for (const [key, value] of Object.entries(this.trailers)) {
-            env[`AYNIG_TRAILER_${key.toUpperCase()}`] = value;
+            const normalizedKey = key.replace(/-/g, '_').toUpperCase();
+            const envValue = Array.isArray(value) ? value.join(',') : value;
+            env[`AYNIG_TRAILER_${normalizedKey}`] = envValue;
         }
 
         const child = this.spawnImpl(commandPath, [], {

@@ -91,6 +91,7 @@ This behaves as a **remote compare-and-swap** without external coordination.
 
 ```
 aynig-state: working
+aynig-origin-state: <state>
 aynig-run-id: <uuid>
 aynig-runner-id: <host-id>
 aynig-lease-seconds: <ttl>

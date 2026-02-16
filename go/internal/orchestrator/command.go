@@ -86,7 +86,7 @@ func (c *Command) Run() error {
 		return err
 	}
 
-	message := fmt.Sprintf("chore: working\n\ncommand %s takes control of the branch\n\naynig-state: working\naynig-run-id: %s\naynig-runner-id: %s\naynig-lease-seconds: %d\n", c.command, runID, runnerID, leaseSeconds)
+	message := fmt.Sprintf("chore: working\n\ncommand %s takes control of the branch\n\naynig-state: working\naynig-origin-state: %s\naynig-run-id: %s\naynig-runner-id: %s\naynig-lease-seconds: %d\n", c.command, c.command, runID, runnerID, leaseSeconds)
 	if err := gitx.Commit(worktreePath, message, true); err != nil {
 		return err
 	}
@@ -101,7 +101,7 @@ func (c *Command) Run() error {
 	env = append(env, "AYNIG_BODY="+c.body)
 	env = append(env, "AYNIG_COMMIT_HASH="+currentCommitHash)
 	for key, values := range c.trailers {
-		upperKey := strings.ToUpper(key)
+		upperKey := strings.ToUpper(strings.ReplaceAll(key, "-", "_"))
 		envValue := strings.Join(values, ",")
 		env = append(env, "AYNIG_TRAILER_"+upperKey+"="+envValue)
 	}

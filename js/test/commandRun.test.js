@@ -60,8 +60,8 @@ test('run passes trailers, body, and commit hash to env', async () => {
 
   expect(spawnEnv.AYNIG_BODY).toBe('do the thing');
   expect(spawnEnv.AYNIG_COMMIT_HASH).toBe('deadbeef');
-  expect(spawnEnv['AYNIG_TRAILER_AYNIG-STATE']).toBe('build');
-  expect(spawnEnv['AYNIG_TRAILER_AYNIG-RUN-ID']).toBe('run-123');
+  expect(spawnEnv['AYNIG_TRAILER_AYNIG_STATE']).toBe('build');
+  expect(spawnEnv['AYNIG_TRAILER_AYNIG_RUN_ID']).toBe('run-123');
 });
 
 test('run skips when command path is missing', async () => {
