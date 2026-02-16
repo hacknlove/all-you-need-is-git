@@ -43,6 +43,19 @@ The goal is to improve usability, operability, and adoption while keeping the co
 
 ---
 
+## Status
+
+Use this section to track progress across phases.
+
+- [ ] Phase A (Docs-first ops layer)
+- [ ] Phase B (Observability commands)
+  - [ ] B1 `status`
+  - [ ] B2 `events --json`
+- [ ] Phase C (Env var normalization)
+- [ ] Phase D (Ops workflow pack)
+
+---
+
 ## 2) Problem Statement
 
 Feedback is positive about kernel elegance, but concerns remain in these areas:
