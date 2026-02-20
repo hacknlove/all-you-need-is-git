@@ -1,0 +1,21 @@
+#!/bin/bash
+
+set -euo pipefail
+
+script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+raw_prompt=$(cat "${script_dir}/stalled.md")
+
+vars=""
+while IFS='=' read -r name _; do
+  if [[ ${name} == YAINIG_* ]]; then
+    vars+='$'
+    vars+="${name} "
+  fi
+done < <(env)
+
+prompt="${raw_prompt}"
+if [[ -n ${vars} ]] && command -v envsubst >/dev/null 2>&1; then
+  prompt=$(printf "%s" "${raw_prompt}" | envsubst "${vars}")
+fi
+
+opencode run "${prompt}"
