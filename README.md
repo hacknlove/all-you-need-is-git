@@ -198,10 +198,18 @@ Each command corresponds to a state name and is invoked when that state appears 
 You can also install pre-made workflows from other repositories:
 
 ```bash
-aynig install <git-repo-url> <branch-or-tag> [subfolder]
+aynig install <repo> [ref] [subfolder]
 ```
 
+If `<repo>` is in the form `owner/name`, AYNIG expands it to `https://github.com/owner/name.git`.
+
 AYNIG will copy the `.aynig/` directory from the source repository into your own, allowing workflows to be **shared, versioned, and forked** like any other code.
+
+An optional ops workflow pack is available in this repository under `ops-workflow-pack/`:
+
+```bash
+aynig install hacknlove/all-you-need-is-git ops-workflow-pack
+```
 
 It is recommended to create a COMMANDS.md file to document the available workflows in your repository, in case any agent needs to decide the next step based on the available options.
 

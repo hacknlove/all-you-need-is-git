@@ -12,6 +12,7 @@ const execAsync = promisify(exec);
  * Install command - installs AYNIG workflows from another repository
  */
 async function action(repo, ref, subfolder) {
+  const normalizedRepo = normalizeRepo(repo);
   const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'aynig-install-'));
   const git = simpleGit();
 
@@ -21,12 +22,12 @@ async function action(repo, ref, subfolder) {
 
     if (ref) {
       cloneOptions.push('--branch', ref);
-      console.log(`Cloning ${repo} at ${ref}...`);
+      console.log(`Cloning ${normalizedRepo} at ${ref}...`);
     } else {
-      console.log(`Cloning ${repo} (default branch)...`);
+      console.log(`Cloning ${normalizedRepo} (default branch)...`);
     }
 
-    await git.clone(repo, tmpDir, cloneOptions);
+    await git.clone(normalizedRepo, tmpDir, cloneOptions);
 
     // Determine source path
     const sourcePath = path.join(tmpDir, subfolder || '.aynig');
@@ -37,7 +38,7 @@ async function action(repo, ref, subfolder) {
     } catch {
       const refInfo = ref ? ` at ${ref}` : '';
       const subfolderInfo = subfolder ? ` in ${subfolder}` : '';
-      console.error(`Error: No .aynig directory found in ${repo}${refInfo}${subfolderInfo}`);
+      console.error(`Error: No .aynig directory found in ${normalizedRepo}${refInfo}${subfolderInfo}`);
       await fs.rm(tmpDir, { recursive: true, force: true });
       process.exit(1);
     }
@@ -130,6 +131,26 @@ ${diff}`;
     } catch {}
     throw error;
   }
+}
+
+function normalizeRepo(repo) {
+  if (isFullRepoUrl(repo)) {
+    return repo;
+  }
+
+  if (isShorthandRepo(repo)) {
+    return `https://github.com/${repo}.git`;
+  }
+
+  return repo;
+}
+
+function isFullRepoUrl(repo) {
+  return /^(https?:\/\/|git@|ssh:\/\/)/i.test(repo);
+}
+
+function isShorthandRepo(repo) {
+  return /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(repo);
 }
 
 /**

@@ -12,6 +12,7 @@ import (
 )
 
 func Install(repo string, ref string, subfolder string) error {
+	repo = normalizeRepo(repo)
 	tmpDir, err := os.MkdirTemp("", "aynig-install-")
 	if err != nil {
 		return err
@@ -121,6 +122,44 @@ func Install(repo string, ref string, subfolder string) error {
 
 	fmt.Println("\n✓ Workflows installed successfully!")
 	return nil
+}
+
+func normalizeRepo(repo string) string {
+	if isFullRepoURL(repo) {
+		return repo
+	}
+	if isShorthandRepo(repo) {
+		return "https://github.com/" + repo + ".git"
+	}
+	return repo
+}
+
+func isFullRepoURL(repo string) bool {
+	return strings.HasPrefix(repo, "http://") ||
+		strings.HasPrefix(repo, "https://") ||
+		strings.HasPrefix(repo, "git@") ||
+		strings.HasPrefix(repo, "ssh://")
+}
+
+func isShorthandRepo(repo string) bool {
+	parts := strings.Split(repo, "/")
+	if len(parts) != 2 {
+		return false
+	}
+	return isRepoSlug(parts[0]) && isRepoSlug(parts[1])
+}
+
+func isRepoSlug(part string) bool {
+	if part == "" {
+		return false
+	}
+	for _, r := range part {
+		if (r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z') || (r >= '0' && r <= '9') || r == '-' || r == '_' || r == '.' {
+			continue
+		}
+		return false
+	}
+	return true
 }
 
 func copyDir(src string, dest string) error {
