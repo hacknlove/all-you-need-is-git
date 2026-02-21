@@ -7,3 +7,6 @@ var commandsMd string
 
 //go:embed assets/clean
 var cleanScript string
+
+//go:embed assets/CONTRACT.md
+var contractMd string

@@ -59,6 +59,19 @@ async function action() {
     console.log(`✓ Created COMMANDS.md`);
   }
 
+  // Ensure CONTRACT.md exists
+  const contractPath = path.join(aynigDir, 'CONTRACT.md');
+  try {
+    await fs.access(contractPath);
+    console.log('⊘ CONTRACT.md already exists, skipping');
+  } catch {
+    await fs.copyFile(
+      path.join(ASSETS_DIR, 'CONTRACT.md'),
+      path.join(aynigDir, 'CONTRACT.md')
+    );
+    console.log('✓ Created CONTRACT.md');
+  }
+
   // Ensure clean command exists
   const cleanPath = path.join(commandDir, 'clean');
   try {

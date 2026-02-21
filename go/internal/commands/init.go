@@ -43,6 +43,18 @@ func Init() error {
 		fmt.Println("✓ Created COMMANDS.md")
 	}
 
+	contractPath := filepath.Join(aynigDir, "CONTRACT.md")
+	if _, err := os.Stat(contractPath); err == nil {
+		fmt.Println("⊘ CONTRACT.md already exists, skipping")
+	} else if !os.IsNotExist(err) {
+		return err
+	} else {
+		if err := os.WriteFile(contractPath, []byte(contractMd), 0o644); err != nil {
+			return err
+		}
+		fmt.Println("✓ Created CONTRACT.md")
+	}
+
 	cleanPath := filepath.Join(commandDir, "clean")
 	if _, err := os.Stat(cleanPath); err == nil {
 		fmt.Println("⊘ clean command already exists, skipping")

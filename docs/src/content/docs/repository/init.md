@@ -12,5 +12,6 @@ aynig init
 This creates:
 
 - `.aynig/` with starter files
+- `.aynig/CONTRACT.md`
 - `.worktrees/` for ephemeral worktrees
 - a `.worktrees/` entry in `.gitignore`

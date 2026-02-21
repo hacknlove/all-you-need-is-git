@@ -5,7 +5,7 @@ description: Understand the folders AYNIG manages.
 
 ## .aynig/
 
-AYNIG stores repo-level configuration and helper scripts here. By default it includes a starter `COMMANDS.md` and a `clean` script.
+AYNIG stores repo-level configuration and helper scripts here. By default it includes a starter `COMMANDS.md`, a `clean` script, and `CONTRACT.md`.
 
 ## .aynig/command/
 

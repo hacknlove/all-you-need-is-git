@@ -61,14 +61,6 @@ func Install(repo string, ref string, subfolder string) error {
 		return err
 	}
 
-	contractPath := filepath.Join(tmpDir, "CONTRACT.md")
-	if info, err := os.Stat(contractPath); err == nil {
-		destContractPath := filepath.Join(destPath, "CONTRACT.md")
-		if err := copyFileMode(contractPath, destContractPath, info.Mode()); err != nil {
-			return err
-		}
-	}
-
 	statusAfter, err := gitx.StatusPorcelain("", destPath)
 	if err != nil {
 		return err

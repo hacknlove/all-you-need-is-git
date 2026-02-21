@@ -11,4 +11,4 @@ The AYNIG kernel is a small, deterministic runner that:
 
 It does not define workflows, interpret business semantics, or retry commands. All intelligence lives above the kernel.
 
-For the full specification, see `CONTRACT.md` in the repository root.
+For the full specification, see `.aynig/CONTRACT.md` in your repository (created by `aynig init`).

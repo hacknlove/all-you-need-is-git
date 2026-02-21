@@ -56,14 +56,6 @@ async function action(repo, ref, subfolder) {
     console.log('Copying workflows...');
     await fse.copy(sourcePath, destPath, { overwrite: true });
 
-    // Copy CONTRACT.md into .aynig when present
-    const contractPath = path.join(tmpDir, 'CONTRACT.md');
-    const destContractPath = path.join(destPath, 'CONTRACT.md');
-    try {
-      await fs.access(contractPath);
-      await fse.copy(contractPath, destContractPath, { overwrite: true });
-    } catch {}
-
     // Use git to detect what changed after the copy
     const statusAfter = await git.status([pathspec(destPath)]);
 
