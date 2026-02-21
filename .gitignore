@@ -45,3 +45,5 @@ config.json
 # assets to create README images
 .assets
 .worktrees/
+
+/temp/
