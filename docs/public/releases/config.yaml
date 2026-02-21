@@ -85,7 +85,7 @@ docker_digest:
   name_template: digests.txt
 changelog:
   format: '{{ .SHA }} {{ .Message }}'
-dist: docs/public/releases
+dist: .dist
 env_files:
   github_token: ~/.config/goreleaser/github_token
   gitlab_token: ~/.config/goreleaser/gitlab_token
