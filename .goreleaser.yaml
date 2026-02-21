@@ -1,6 +1,6 @@
 version: 2
 project_name: aynig
-dist: docs/public/releases
+dist: .dist
 
 release:
   github:
