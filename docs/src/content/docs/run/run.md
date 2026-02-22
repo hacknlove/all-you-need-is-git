@@ -12,6 +12,7 @@ aynig run
 - `-w, --worktree <path>`: worktree directory (default: `.worktrees`)
 - `--use-remote <name>`: use remote branches instead of local
 - `--current-branch <mode>`: `skip` (default), `include`, or `only`
+- `--log-level <level>`: `debug`, `info`, `warn`, or `error` (default)
 
 Example:
 

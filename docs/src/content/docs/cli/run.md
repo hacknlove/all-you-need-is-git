@@ -12,5 +12,6 @@ Options:
 - `-w, --worktree <path>`: worktree directory (default: `.worktrees`)
 - `--use-remote <name>`: use remote branches instead of local
 - `--current-branch <mode>`: `skip` (default), `include`, or `only`
+- `--log-level <level>`: `debug`, `info`, `warn`, or `error` (default)
 
 The runner executes commands stored in `.aynig/command/<state>` based on the `aynig-state` trailer in the latest commit.

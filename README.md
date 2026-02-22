@@ -255,6 +255,7 @@ Commands:
     Options:
       -w, --worktree <path>   Specify custom worktree directory (default: .worktrees)
       --use-remote <name>     Use remote branches instead of local (specify remote name, e.g., origin)
+      --log-level <level>     Log verbosity: debug, info, warn, error (default: error)
 
   install <repo> [ref] [subfolder]
                        Install AYNIG workflows from another repository

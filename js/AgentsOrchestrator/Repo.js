@@ -1,5 +1,6 @@
-import { git} from '../gitHelpers/git.js';
+import { git } from '../gitHelpers/git.js';
 import { Branch } from './Branch.js';
+import { Logger } from '../utils/logger.js';
 
 /**
  * Repo class to manage Git repositories.
@@ -30,11 +31,17 @@ export class Repo {
     }
 
     async run() {
+        if (!this.config.logger) {
+            this.config.logger = new Logger(this.config.logLevel);
+        }
+
         // Resolve repo root once and share it via config
         this.config.repoRoot = await git.revparse(['--show-toplevel']);
+        this.config.logger.info('Repository root: %s', this.config.repoRoot.trim());
 
         // Only fetch if using remote branches
         if (this.config.useRemote) {
+            this.config.logger.info('Fetching remote branches from %s', this.config.useRemote);
             await git.fetch();
         }
 
@@ -44,6 +51,7 @@ export class Repo {
             : await git.branchLocal();
 
         const branchNames = this.filterBranches(branchesInfo, this.config.currentBranch || 'skip');
+        this.config.logger.info('Running %d branches (current-branch=%s)', branchNames.length, this.config.currentBranch || 'skip');
 
         this.branches = branchNames.map(name => new Branch({
             config: this.config,
@@ -54,4 +62,3 @@ export class Repo {
         await Promise.all(this.branches.map(branch => branch.run()));
     }
 }
-

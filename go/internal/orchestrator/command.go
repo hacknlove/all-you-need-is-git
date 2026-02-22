@@ -14,6 +14,7 @@ import (
 
 	"all-you-need-is-git/go/internal/config"
 	"all-you-need-is-git/go/internal/gitx"
+	"all-you-need-is-git/go/internal/logx"
 )
 
 type CommandParams struct {
@@ -33,6 +34,7 @@ type Command struct {
 	trailers        map[string][]string
 	body            string
 	commitDate      string
+	logger          logx.Logger
 }
 
 func NewCommand(params CommandParams) *Command {
@@ -48,16 +50,20 @@ func NewCommand(params CommandParams) *Command {
 		trailers:        params.Trailers,
 		body:            params.Body,
 		commitDate:      params.CommitDate,
+		logger:          logx.New(params.Config.LogLevel),
 	}
 }
 
 func (c *Command) Run() error {
 	if c.command == "" {
+		c.logger.Debugf("Skipping branch %s (no aynig-state)", c.branchName)
 		return nil
 	}
 	if c.command == "working" {
+		c.logger.Debugf("Checking lease on branch %s", c.branchName)
 		return c.checkWorking()
 	}
+	c.logger.Infof("Running command %s on branch %s", c.command, c.branchName)
 
 	worktreePath, err := c.getWorkspace()
 	if err != nil || worktreePath == "" {
@@ -65,8 +71,10 @@ func (c *Command) Run() error {
 	}
 	commandPath, err := c.getCommandPath(worktreePath)
 	if err != nil || commandPath == "" {
+		c.logger.Debugf("Command path not found for %s", c.command)
 		return err
 	}
+	c.logger.Debugf("Command path: %s", commandPath)
 
 	leaseSeconds := c.config.LeaseSeconds
 	if leaseSeconds <= 0 {
@@ -90,8 +98,10 @@ func (c *Command) Run() error {
 	if err := gitx.Commit(worktreePath, message, true); err != nil {
 		return err
 	}
+	c.logger.Debugf("Created working commit for %s", c.branchName)
 
 	if c.config.UseRemote != "" {
+		c.logger.Infof("Pushing branch %s to %s", c.branchName, c.config.UseRemote)
 		if err := gitx.Push(worktreePath, c.config.UseRemote, c.branchName); err != nil {
 			return nil
 		}
@@ -116,6 +126,7 @@ func (c *Command) Run() error {
 	if err := cmd.Start(); err != nil {
 		return err
 	}
+	c.logger.Infof("Launched %s in %s", c.command, worktreePath)
 	_ = cmd.Process.Release()
 	return nil
 }
@@ -132,6 +143,7 @@ func (c *Command) checkWorking() error {
 	if time.Now().Before(committedAt.Add(time.Duration(leaseSeconds) * time.Second)) {
 		return nil
 	}
+	c.logger.Infof("Lease expired for branch %s", c.branchName)
 	stalledRun := firstTrailer(c.trailers["aynig-run-id"], "unknown")
 	worktreePath, err := c.getWorkspace()
 	if err != nil || worktreePath == "" {
@@ -143,6 +155,7 @@ func (c *Command) checkWorking() error {
 		return err
 	}
 	if c.config.UseRemote != "" {
+		c.logger.Infof("Pushing stalled state for %s to %s", c.branchName, c.config.UseRemote)
 		if err := gitx.Push(worktreePath, c.config.UseRemote, c.branchName); err != nil {
 			return nil
 		}
@@ -152,6 +165,7 @@ func (c *Command) checkWorking() error {
 
 func (c *Command) getWorkspace() (string, error) {
 	if c.isCurrentBranch {
+		c.logger.Debugf("Using current working directory for %s", c.branchName)
 		return os.Getwd()
 	}
 
@@ -162,6 +176,7 @@ func (c *Command) getWorkspace() (string, error) {
 	ref := "refs/heads/" + c.branchName
 	for _, wt := range worktrees {
 		if wt.Branch == ref {
+			c.logger.Debugf("Using existing worktree for %s", c.branchName)
 			return wt.Path, nil
 		}
 	}
@@ -175,15 +190,16 @@ func (c *Command) getWorkspace() (string, error) {
 	worktreePath := filepath.Join(c.config.RepoRoot, baseDir, "worktree-"+safeName+"-"+hash)
 	if c.config.UseRemote != "" {
 		if err := gitx.WorktreeAdd(c.config.RepoRoot, "-b", c.branchName, worktreePath, c.config.UseRemote+"/"+c.branchName); err != nil {
-			fmt.Printf("Failed to create worktree for branch %s\n", c.branchName)
+			c.logger.Warnf("Failed to create worktree for branch %s", c.branchName)
 			return "", nil
 		}
 	} else {
 		if err := gitx.WorktreeAdd(c.config.RepoRoot, worktreePath, c.branchName); err != nil {
-			fmt.Printf("Failed to create worktree for branch %s\n", c.branchName)
+			c.logger.Warnf("Failed to create worktree for branch %s", c.branchName)
 			return "", nil
 		}
 	}
+	c.logger.Debugf("Created worktree for %s at %s", c.branchName, worktreePath)
 
 	return worktreePath, nil
 }

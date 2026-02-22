@@ -52,16 +52,30 @@ func main() {
 
 func runCmd(args []string) {
 	fs := flag.NewFlagSet("run", flag.ExitOnError)
+	fs.Usage = func() {
+		out := fs.Output()
+		fmt.Fprintln(out, "Usage of run:")
+		fmt.Fprintln(out, "  --current-branch <mode>")
+		fmt.Fprintln(out, "        How to handle the current branch: skip (default), include, only (default \"skip\")")
+		fmt.Fprintln(out, "  --log-level <level>")
+		fmt.Fprintln(out, "        Log verbosity: debug, info, warn, error (default \"error\")")
+		fmt.Fprintln(out, "  --use-remote <name>")
+		fmt.Fprintln(out, "        Use remote branches instead of local (specify remote name, e.g., origin)")
+		fmt.Fprintln(out, "  -w, --worktree <path>")
+		fmt.Fprintln(out, "        Specify custom worktree directory (default: .worktrees) (default \".worktrees\")")
+	}
 	worktree := fs.String("worktree", config.Default().WorkTree, "Specify custom worktree directory (default: .worktrees)")
 	fs.StringVar(worktree, "w", config.Default().WorkTree, "Specify custom worktree directory (default: .worktrees)")
 	useRemote := fs.String("use-remote", "", "Use remote branches instead of local (specify remote name, e.g., origin)")
 	currentBranch := fs.String("current-branch", config.Default().CurrentBranch, "How to handle the current branch: skip (default), include, only")
+	logLevel := fs.String("log-level", config.Default().LogLevel, "Log verbosity: debug, info, warn, error")
 	fs.Parse(args)
 
 	cfg := config.Default()
 	cfg.WorkTree = *worktree
 	cfg.UseRemote = *useRemote
 	cfg.CurrentBranch = *currentBranch
+	cfg.LogLevel = *logLevel
 
 	if err := commands.Run(cfg); err != nil {
 		fmt.Fprintln(os.Stderr, "Error trying to set up the Repository:", err)

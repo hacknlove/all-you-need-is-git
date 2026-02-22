@@ -6,6 +6,7 @@ import { createHash, randomUUID } from 'crypto';
 import { cwd } from 'process';
 import { spawn } from 'child_process';
 import { hostname } from 'os';
+import { Logger } from '../utils/logger.js';
 
 function branchHash(branchName) {
     return createHash('sha256').update(branchName).digest('hex').slice(0, 8);
@@ -56,6 +57,7 @@ export class Command {
         this.commitDate = commitDate;
         this.gitFactory = gitFactory || simpleGit;
         this.spawnImpl = spawnImpl || spawn;
+        this.logger = config?.logger || new Logger(config?.logLevel);
     }
 
     async findExistingWorktree() {
@@ -67,12 +69,14 @@ export class Command {
 
     async getWorkspace() {
         if (this.isCurrentBranch) {
+            this.logger.debug('Using current working directory for %s', this.branchName);
             return cwd();
         }
 
         // Check if a worktree already exists for this branch
         const existing = await this.findExistingWorktree();
         if (existing) {
+            this.logger.debug('Using existing worktree for %s', this.branchName);
             return existing;
         }
 
@@ -92,9 +96,11 @@ export class Command {
                 await git.worktree(['add', worktreePath, this.branchName]);
             }
         } catch {
-            console.warn(`Failed to create worktree for branch ${this.branchName}`);
+            this.logger.warn('Failed to create worktree for branch %s', this.branchName);
             return null;
         }
+
+        this.logger.debug('Created worktree for %s at %s', this.branchName, worktreePath);
 
         return worktreePath;
     }
@@ -138,6 +144,8 @@ export class Command {
             return;
         }
 
+        this.logger.info('Lease expired for branch %s', this.branchName);
+
         const stalledRun = trailers['aynig-run-id']?.trim() || 'unknown';
         const worktreePath = await this.getWorkspace();
         if (!worktreePath) {
@@ -156,6 +164,7 @@ aynig-stalled-run: ${stalledRun}
 
         if (this.config.useRemote) {
             try {
+                this.logger.info('Pushing stalled state for %s to %s', this.branchName, this.config.useRemote);
                 await worktreeGit.push(this.config.useRemote, this.branchName);
             } catch {
                 return;
@@ -165,12 +174,16 @@ aynig-stalled-run: ${stalledRun}
 
     async run() {
         if (!this.command) {
+            this.logger.debug('Skipping branch %s (no aynig-state)', this.branchName);
             return;
         }
 
         if (this.command === 'working') {
+            this.logger.debug('Checking lease on branch %s', this.branchName);
             return this.checkWorking();
         }
+
+        this.logger.info('Running command %s on branch %s', this.command, this.branchName);
 
         const worktreePath = await this.getWorkspace();
         if (!worktreePath) {
@@ -179,8 +192,11 @@ aynig-stalled-run: ${stalledRun}
 
         const commandPath = await this.getCommandPath(worktreePath);
         if (!commandPath) {
+            this.logger.debug('Command path not found for %s', this.command);
             return;
         }
+
+        this.logger.debug('Command path: %s', commandPath);
 
         const leaseSeconds = this.config.leaseSeconds || 300;
         const runId = randomUUID();
@@ -203,6 +219,7 @@ aynig-lease-seconds: ${leaseSeconds}
 
         if (this.config.useRemote) {
             try {
+                this.logger.info('Pushing branch %s to %s', this.branchName, this.config.useRemote);
                 await worktreeGit.push(this.config.useRemote, this.branchName);
             } catch {
                 return;
@@ -227,5 +244,6 @@ aynig-lease-seconds: ${leaseSeconds}
             stdio: 'ignore'
         });
         child.unref();
+        this.logger.info('Launched %s in %s', this.command, worktreePath);
     }
 }

@@ -1,6 +1,7 @@
 import { git } from '../gitHelpers/git.js';
 import { parseCommitMessage } from '../gitHelpers/parseCommitMessage.js';
 import { Command } from './Command.js';
+import { Logger } from '../utils/logger.js';
 /**
  * Branch class to manage individual Git branches.
  *
@@ -30,8 +31,10 @@ export class Branch {
     }
 
     async run() {
+        const logger = this.config.logger || new Logger(this.config.logLevel);
         // If using remote branches, only process branches from the specified remote
         if (this.config.useRemote && !this.branchName.startsWith(`${this.config.useRemote}/`)) {
+            logger.debug('Skipping branch %s (not on remote %s)', this.branchName, this.config.useRemote);
             return;
         }
 
@@ -40,6 +43,7 @@ export class Branch {
             body,
             commitDate
         } = await this.parseLastCommitMessage();
+        logger.debug('Inspecting branch %s', this.branchName);
 
         const command = new Command({
             config: this.config,

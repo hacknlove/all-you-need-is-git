@@ -2,5 +2,6 @@
     "useRemote": false,
     "workTree": ".worktrees",
     "currentBranch": "skip",
-    "leaseSeconds": 300
+    "leaseSeconds": 300,
+    "logLevel": "error"
 }

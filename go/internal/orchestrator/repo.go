@@ -5,14 +5,16 @@ import (
 
 	"all-you-need-is-git/go/internal/config"
 	"all-you-need-is-git/go/internal/gitx"
+	"all-you-need-is-git/go/internal/logx"
 )
 
 type Repo struct {
 	config config.Config
+	logger logx.Logger
 }
 
 func NewRepo(cfg config.Config) *Repo {
-	return &Repo{config: cfg}
+	return &Repo{config: cfg, logger: logx.New(cfg.LogLevel)}
 }
 
 func (r *Repo) Run() error {
@@ -21,8 +23,10 @@ func (r *Repo) Run() error {
 		return err
 	}
 	r.config.RepoRoot = repoRoot
+	r.logger.Infof("Repository root: %s", repoRoot)
 
 	if r.config.UseRemote != "" {
+		r.logger.Infof("Fetching remote branches from %s", r.config.UseRemote)
 		if err := gitx.Fetch(repoRoot); err != nil {
 			return err
 		}
@@ -32,6 +36,7 @@ func (r *Repo) Run() error {
 	if err != nil {
 		return err
 	}
+	r.logger.Debugf("Current branch: %s", current)
 
 	var branches []string
 	if r.config.UseRemote != "" {
@@ -42,8 +47,10 @@ func (r *Repo) Run() error {
 	if err != nil {
 		return err
 	}
+	r.logger.Debugf("Found %d branches", len(branches))
 
 	branchNames := filterBranches(branches, current, r.config.CurrentBranch)
+	r.logger.Infof("Running %d branches (current-branch=%s)", len(branchNames), r.config.CurrentBranch)
 
 	var wg sync.WaitGroup
 	errCh := make(chan error, len(branchNames))
