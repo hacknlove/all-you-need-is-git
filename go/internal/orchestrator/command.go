@@ -24,6 +24,7 @@ type CommandParams struct {
 	Trailers        map[string][]string
 	Body            string
 	CommitDate      string
+	LogLevel        string
 }
 
 type Command struct {
@@ -31,30 +32,39 @@ type Command struct {
 	branchName      string
 	isCurrentBranch bool
 	command         string
+	invalidState    string
 	trailers        map[string][]string
 	body            string
 	commitDate      string
 	logger          logx.Logger
+	logLevel        string
 }
 
 func NewCommand(params CommandParams) *Command {
-	state := ""
-	if values, ok := params.Trailers["aynig-state"]; ok && len(values) > 0 {
-		state = strings.ToLower(strings.TrimSpace(values[0]))
+	state, invalidState := resolveStateTrailer(params.Trailers)
+	level := params.LogLevel
+	if level == "" {
+		level = params.Config.LogLevel
 	}
 	return &Command{
 		config:          params.Config,
 		branchName:      params.BranchName,
 		isCurrentBranch: params.IsCurrentBranch,
 		command:         state,
+		invalidState:    invalidState,
 		trailers:        params.Trailers,
 		body:            params.Body,
 		commitDate:      params.CommitDate,
-		logger:          logx.New(params.Config.LogLevel),
+		logger:          logx.New(level),
+		logLevel:        level,
 	}
 }
 
 func (c *Command) Run() error {
+	if c.invalidState != "" {
+		c.logger.Warnf("Skipping branch %s (%s)", c.branchName, c.invalidState)
+		return nil
+	}
 	if c.command == "" {
 		c.logger.Debugf("Skipping branch %s (no aynig-state)", c.branchName)
 		return nil
@@ -110,6 +120,9 @@ func (c *Command) Run() error {
 	env := append([]string{}, os.Environ()...)
 	env = append(env, "AYNIG_BODY="+c.body)
 	env = append(env, "AYNIG_COMMIT_HASH="+currentCommitHash)
+	if c.logLevel != "" {
+		env = append(env, "AYNIG_LOG_LEVEL="+c.logLevel)
+	}
 	for key, values := range c.trailers {
 		upperKey := strings.ToUpper(strings.ReplaceAll(key, "-", "_"))
 		envValue := strings.Join(values, ",")
@@ -263,4 +276,19 @@ func firstTrailer(values []string, fallback string) string {
 		return fallback
 	}
 	return value
+}
+
+func resolveStateTrailer(trailers map[string][]string) (string, string) {
+	values, ok := trailers["aynig-state"]
+	if !ok || len(values) == 0 {
+		return "", ""
+	}
+	if len(values) > 1 {
+		return "", "multiple aynig-state trailers"
+	}
+	state := strings.ToLower(strings.TrimSpace(values[0]))
+	if state == "" {
+		return "", "empty aynig-state trailer"
+	}
+	return state, ""
 }

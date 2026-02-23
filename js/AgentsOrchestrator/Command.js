@@ -1,6 +1,6 @@
 import { git } from '../gitHelpers/git.js';
 import simpleGit from 'simple-git';
-import { resolve } from 'path';
+import { isAbsolute, relative, resolve, sep } from 'path';
 import { access, constants } from 'fs/promises';
 import { createHash, randomUUID } from 'crypto';
 import { cwd } from 'process';
@@ -45,19 +45,24 @@ export class Command {
         trailers,
         body,
         commitDate,
+        logger,
+        logLevel,
         gitFactory,
         spawnImpl
     }) {
         this.config = config;
         this.branchName = branchName;
         this.isCurrentBranch = isCurrentBranch;
-        this.command = trailers['aynig-state']?.trim().toLowerCase();
+        const { state, error } = resolveStateTrailer(trailers);
+        this.command = state;
+        this.invalidState = error;
         this.trailers = trailers;
         this.body = body;
         this.commitDate = commitDate;
         this.gitFactory = gitFactory || simpleGit;
         this.spawnImpl = spawnImpl || spawn;
-        this.logger = config?.logger || new Logger(config?.logLevel);
+        this.logLevel = logLevel || config?.logLevel;
+        this.logger = logger || config?.logger || new Logger(this.logLevel);
     }
 
     async findExistingWorktree() {
@@ -114,7 +119,8 @@ export class Command {
         }
 
         const commandPath = resolve(baseDir, commandName);
-        if (!commandPath.startsWith(`${baseDir}/`)) {
+        const rel = relative(baseDir, commandPath);
+        if (!rel || isAbsolute(rel) || rel === '..' || rel.startsWith(`..${sep}`)) {
             return false;
         }
 
@@ -173,6 +179,10 @@ aynig-stalled-run: ${stalledRun}
     }
 
     async run() {
+        if (this.invalidState) {
+            this.logger.warn('Skipping branch %s (%s)', this.branchName, this.invalidState);
+            return;
+        }
         if (!this.command) {
             this.logger.debug('Skipping branch %s (no aynig-state)', this.branchName);
             return;
@@ -231,6 +241,9 @@ aynig-lease-seconds: ${leaseSeconds}
             AYNIG_BODY: this.body,
             AYNIG_COMMIT_HASH: currentCommitHash
         };
+        if (this.logLevel) {
+            env.AYNIG_LOG_LEVEL = this.logLevel;
+        }
         for (const [key, value] of Object.entries(this.trailers)) {
             const normalizedKey = key.replace(/-/g, '_').toUpperCase();
             const envValue = Array.isArray(value) ? value.join(',') : value;
@@ -246,4 +259,31 @@ aynig-lease-seconds: ${leaseSeconds}
         child.unref();
         this.logger.info('Launched %s in %s', this.command, worktreePath);
     }
+}
+
+function resolveStateTrailer(trailers = {}) {
+    const raw = trailers['aynig-state'];
+    if (raw === undefined || raw === null) {
+        return { state: '', error: '' };
+    }
+
+    if (Array.isArray(raw)) {
+        if (raw.length === 0) {
+            return { state: '', error: '' };
+        }
+        if (raw.length > 1) {
+            return { state: '', error: 'multiple aynig-state trailers' };
+        }
+        const state = String(raw[0]).trim().toLowerCase();
+        if (!state) {
+            return { state: '', error: 'empty aynig-state trailer' };
+        }
+        return { state, error: '' };
+    }
+
+    const state = String(raw).trim().toLowerCase();
+    if (!state) {
+        return { state: '', error: 'empty aynig-state trailer' };
+    }
+    return { state, error: '' };
 }

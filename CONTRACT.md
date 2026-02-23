@@ -27,6 +27,8 @@ The mandatory trailer is:
 aynig-state: <state>
 ```
 
+`aynig-state` must appear exactly once in the trailer block.
+
 The `<state>` value is the dispatch key of the command to execute.
 
 AYNIG:
@@ -116,7 +118,7 @@ Takeover is allowed when:
 ```
 HEAD == working
 and
-now > committer_date + lease-seconds (+grace)
+now > committer_date + lease-seconds
 ```
 
 Reason:

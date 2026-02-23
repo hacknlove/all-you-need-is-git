@@ -1,6 +1,8 @@
 package orchestrator
 
 import (
+	"os"
+	"strings"
 	"sync"
 
 	"all-you-need-is-git/go/internal/config"
@@ -14,7 +16,8 @@ type Repo struct {
 }
 
 func NewRepo(cfg config.Config) *Repo {
-	return &Repo{config: cfg, logger: logx.New(cfg.LogLevel)}
+	resolved := logx.ResolveLevel(cfg.LogLevel, cfg.LogLevelSet, "", os.Getenv("AYNIG_LOG_LEVEL"), config.Default().LogLevel)
+	return &Repo{config: cfg, logger: logx.New(resolved)}
 }
 
 func (r *Repo) Run() error {
@@ -50,6 +53,25 @@ func (r *Repo) Run() error {
 	r.logger.Debugf("Found %d branches", len(branches))
 
 	branchNames := filterBranches(branches, current, r.config.CurrentBranch)
+	if r.config.UseRemote != "" {
+		upstream, err := gitx.BranchUpstream(repoRoot, current)
+		if err != nil {
+			return err
+		}
+		if upstream != "" {
+			if strings.HasPrefix(upstream, r.config.UseRemote+"/") {
+				branchNames = filterBranches(branches, upstream, r.config.CurrentBranch)
+			} else {
+				r.logger.Warnf("Current branch upstream %s does not belong to remote %s", upstream, r.config.UseRemote)
+				branchNames = filterBranches(branches, "", r.config.CurrentBranch)
+			}
+		} else {
+			if r.config.CurrentBranch == "only" {
+				r.logger.Warnf("Current branch has no upstream for --current-branch=only in remote mode")
+			}
+			branchNames = filterBranches(branches, "", r.config.CurrentBranch)
+		}
+	}
 	r.logger.Infof("Running %d branches (current-branch=%s)", len(branchNames), r.config.CurrentBranch)
 
 	var wg sync.WaitGroup

@@ -1,7 +1,7 @@
 import { git } from '../gitHelpers/git.js';
 import { parseCommitMessage } from '../gitHelpers/parseCommitMessage.js';
 import { Command } from './Command.js';
-import { Logger } from '../utils/logger.js';
+import { Logger, BufferedLogger, resolveLevel } from '../utils/logger.js';
 /**
  * Branch class to manage individual Git branches.
  *
@@ -21,20 +21,33 @@ export class Branch {
     }
 
     async parseLastCommitMessage() {
-        const log = await git.log([this.branchName, '-1']);
-        const lastCommit = log.latest;
-        const parsed = await parseCommitMessage(lastCommit);
+        const raw = await git.raw(['log', this.branchName, '-1', '--pretty=format:%s%x1f%b%x1f%cI']);
+        const parts = raw.split('\x1f');
+        const message = (parts[0] || '').replace(/\n+$/, '');
+        const body = (parts[1] || '').replace(/\n+$/, '');
+        const commitDate = (parts[2] || '').trim();
+        const parsed = await parseCommitMessage({ message, body });
         return {
             ...parsed,
-            commitDate: lastCommit?.date
+            commitDate
         };
     }
 
     async run() {
-        const logger = this.config.logger || new Logger(this.config.logLevel);
+        const buffer = new BufferedLogger();
+        buffer.debug('Inspecting branch %s', this.branchName);
+        const baseLevel = resolveLevel({
+            cliLevel: this.config.logLevel,
+            cliSet: this.config.logLevelSet,
+            trailerLevel: '',
+            envLevel: process.env.AYNIG_LOG_LEVEL,
+            defaultLevel: this.config.logLevel
+        });
+        const baseLogger = this.config.logger || new Logger(baseLevel);
         // If using remote branches, only process branches from the specified remote
         if (this.config.useRemote && !this.branchName.startsWith(`${this.config.useRemote}/`)) {
-            logger.debug('Skipping branch %s (not on remote %s)', this.branchName, this.config.useRemote);
+            buffer.debug('Skipping branch %s (not on remote %s)', this.branchName, this.config.useRemote);
+            buffer.flush(baseLogger);
             return;
         }
 
@@ -43,7 +56,18 @@ export class Branch {
             body,
             commitDate
         } = await this.parseLastCommitMessage();
-        logger.debug('Inspecting branch %s', this.branchName);
+
+        const rawTrailerLevel = trailers?.['aynig-log-level'];
+        const trailerLevel = String(Array.isArray(rawTrailerLevel) ? rawTrailerLevel[0] : rawTrailerLevel || '').trim();
+        const resolvedLevel = resolveLevel({
+            cliLevel: this.config.logLevel,
+            cliSet: this.config.logLevelSet,
+            trailerLevel,
+            envLevel: process.env.AYNIG_LOG_LEVEL,
+            defaultLevel: this.config.logLevel
+        });
+        const logger = new Logger(resolvedLevel);
+        buffer.flush(logger);
 
         const command = new Command({
             config: this.config,
@@ -51,7 +75,9 @@ export class Branch {
             isCurrentBranch: this.isCurrentBranch,
             trailers,
             body,
-            commitDate
+            commitDate,
+            logger,
+            logLevel: resolvedLevel
         });
         await command.run();
     }

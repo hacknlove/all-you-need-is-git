@@ -15,6 +15,14 @@ The mandatory trailer is:
 aynig-state: <state>
 ```
 
+`aynig-state` must appear exactly once in the trailing trailer block.
+
+Optional trailers:
+
+```
+aynig-log-level: <debug|info|warn|error>
+```
+
 Example:
 
 ```text

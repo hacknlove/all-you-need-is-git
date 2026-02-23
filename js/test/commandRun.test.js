@@ -3,7 +3,7 @@ import { Command } from '../AgentsOrchestrator/Command.js';
 
 function createCommand(overrides = {}) {
   return new Command({
-    config: { leaseSeconds: 123 },
+    config: { leaseSeconds: 123, logLevel: 'warn' },
     branchName: 'main',
     isCurrentBranch: true,
     trailers: { 'aynig-state': 'build', 'aynig-run-id': 'run-123' },
@@ -60,6 +60,7 @@ test('run passes trailers, body, and commit hash to env', async () => {
 
   expect(spawnEnv.AYNIG_BODY).toBe('do the thing');
   expect(spawnEnv.AYNIG_COMMIT_HASH).toBe('deadbeef');
+  expect(spawnEnv.AYNIG_LOG_LEVEL).toBe('warn');
   expect(spawnEnv['AYNIG_TRAILER_AYNIG_STATE']).toBe('build');
   expect(spawnEnv['AYNIG_TRAILER_AYNIG_RUN_ID']).toBe('run-123');
 });
@@ -78,6 +79,26 @@ test('run skips when command path is missing', async () => {
 
   command.getWorkspace = async () => '/tmp/worktree';
   command.getCommandPath = async () => false;
+
+  await command.run();
+
+  expect(gitStub.revparse).not.toHaveBeenCalled();
+  expect(gitStub.commit).not.toHaveBeenCalled();
+  expect(gitStub.push).not.toHaveBeenCalled();
+});
+
+test('run skips when aynig-state is duplicated', async () => {
+  const gitStub = {
+    revparse: vi.fn(async () => 'deadbeef\n'),
+    commit: vi.fn(async () => {}),
+    push: vi.fn(async () => {})
+  };
+
+  const command = createCommand({
+    trailers: { 'aynig-state': ['build', 'review'] },
+    gitFactory: () => gitStub,
+    spawnImpl: () => ({ unref: () => {} })
+  });
 
   await command.run();
 

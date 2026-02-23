@@ -41,6 +41,17 @@ func BranchListRemote(dir string) ([]string, error) {
 	return splitLines(out), nil
 }
 
+func BranchUpstream(dir string, branch string) (string, error) {
+	if strings.TrimSpace(branch) == "" {
+		return "", nil
+	}
+	out, err := Run(dir, "rev-parse", "--abbrev-ref", branch+"@{upstream}")
+	if err != nil {
+		return "", nil
+	}
+	return strings.TrimSpace(out), nil
+}
+
 func WorktreeList(dir string) ([]WorktreeEntry, error) {
 	out, err := Run(dir, "worktree", "list", "--porcelain")
 	if err != nil {

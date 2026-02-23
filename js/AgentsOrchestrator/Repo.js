@@ -1,6 +1,6 @@
 import { git } from '../gitHelpers/git.js';
 import { Branch } from './Branch.js';
-import { Logger } from '../utils/logger.js';
+import { Logger, resolveLevel } from '../utils/logger.js';
 
 /**
  * Repo class to manage Git repositories.
@@ -19,20 +19,46 @@ export class Repo {
         this.config = config;
     }
 
-    filterBranches(branchesInfo, mode) {
+    filterBranches(branches, current, mode) {
         switch (mode) {
             case 'skip':
-                return branchesInfo.all.filter(name => name !== branchesInfo.current); 
+                return current ? branches.filter(name => name !== current) : branches;
             case 'only':
-                return [branchesInfo.current];
+                return current ? [current] : [];
             default:
-                return branchesInfo.all; 
+                return branches;
+        }
+    }
+
+    async resolveCurrentRemoteBranch(localCurrent) {
+        if (!localCurrent) {
+            return '';
+        }
+        try {
+            const upstream = (await git.raw(['rev-parse', '--abbrev-ref', `${localCurrent}@{upstream}`])).trim();
+            if (!upstream) {
+                return '';
+            }
+            if (!upstream.startsWith(`${this.config.useRemote}/`)) {
+                this.config.logger.warn('Current branch upstream %s does not belong to remote %s', upstream, this.config.useRemote);
+                return '';
+            }
+            return upstream;
+        } catch {
+            return '';
         }
     }
 
     async run() {
         if (!this.config.logger) {
-            this.config.logger = new Logger(this.config.logLevel);
+            const baseLevel = resolveLevel({
+                cliLevel: this.config.logLevel,
+                cliSet: this.config.logLevelSet,
+                trailerLevel: '',
+                envLevel: process.env.AYNIG_LOG_LEVEL,
+                defaultLevel: this.config.logLevel
+            });
+            this.config.logger = new Logger(baseLevel);
         }
 
         // Resolve repo root once and share it via config
@@ -50,13 +76,24 @@ export class Repo {
             ? await git.branch(['-r'])
             : await git.branchLocal();
 
-        const branchNames = this.filterBranches(branchesInfo, this.config.currentBranch || 'skip');
+        const localInfo = await git.branchLocal();
+        const localCurrent = localInfo.current || '';
+
+        const filterCurrent = this.config.useRemote
+            ? await this.resolveCurrentRemoteBranch(localCurrent)
+            : localCurrent;
+
+        if (this.config.useRemote && this.config.currentBranch === 'only' && !filterCurrent) {
+            this.config.logger.warn('Current branch has no upstream for --current-branch=only in remote mode');
+        }
+
+        const branchNames = this.filterBranches(branchesInfo.all, filterCurrent, this.config.currentBranch || 'skip');
         this.config.logger.info('Running %d branches (current-branch=%s)', branchNames.length, this.config.currentBranch || 'skip');
 
         this.branches = branchNames.map(name => new Branch({
             config: this.config,
             branchName: name,
-            isCurrentBranch: name === branchesInfo.current,
+            isCurrentBranch: !this.config.useRemote && name === localCurrent,
         }));
 
         await Promise.all(this.branches.map(branch => branch.run()));

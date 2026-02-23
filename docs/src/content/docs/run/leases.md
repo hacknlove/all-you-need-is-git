@@ -11,7 +11,7 @@ aynig-state: working
 
 If the push fails, another runner won the lease.
 
-While running, commands must keep `aynig-state: working` and renew the lease by pushing commits. Liveness is based on the committer timestamp of `HEAD`.
+While running, commands must keep `aynig-state: working` and renew the lease by pushing commits. Liveness is based only on the committer timestamp of `HEAD`.
 
 If a lease expires, a runner may mark the branch as stalled:
 
