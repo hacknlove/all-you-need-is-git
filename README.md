@@ -262,3 +262,5 @@ Commands:
 
   help [command]       display help for command
 ```
+
+Log level precedence: `--log-level` > `aynig-log-level` trailer > `AYNIG_LOG_LEVEL` env. The resolved level is passed to commands as `AYNIG_LOG_LEVEL`.

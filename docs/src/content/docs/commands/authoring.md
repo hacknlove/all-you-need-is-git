@@ -25,3 +25,4 @@ Tips:
 - Commands run with the working directory set to the worktree
 - Keep commands idempotent when possible
 - Emit a new commit with the next `aynig-state`
+- Honor `AYNIG_LOG_LEVEL` if your command supports verbosity

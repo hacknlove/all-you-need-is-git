@@ -5,6 +5,7 @@ type Config struct {
 	WorkTree      string
 	CurrentBranch string
 	LogLevel      string
+	LogLevelSet   bool
 	LeaseSeconds  int
 	RepoRoot      string
 }
@@ -15,6 +16,7 @@ func Default() Config {
 		WorkTree:      ".worktrees",
 		CurrentBranch: "skip",
 		LogLevel:      "error",
+		LogLevelSet:   false,
 		LeaseSeconds:  300,
 	}
 }

@@ -13,7 +13,12 @@ async function action(options) {
   const config = {
     ...defaultConfig,
     ...options
+  };
+
+  if (options.logLevel === undefined) {
+    config.logLevel = defaultConfig.logLevel;
   }
+  config.logLevelSet = options.logLevel !== undefined;
 
   const repository = new Repo(config);
   try {
@@ -29,7 +34,7 @@ export function registerRunCommand(program) {
     .description('Run AYNIG for the current repository')
     .option('-w, --worktree <path>', 'Specify custom worktree directory (default: .worktrees)')
     .option('--use-remote <name>', 'Use remote branches instead of local (specify remote name, e.g., origin)')
-    .option('--log-level <level>', 'Log verbosity: debug, info, warn, error', defaultConfig.logLevel)
+    .option('--log-level <level>', 'Log verbosity: debug, info, warn, error')
     .option('--current-branch <mode>', 'How to handle the current branch: skip (default), include, only', 'skip')
     .action(action);
 }

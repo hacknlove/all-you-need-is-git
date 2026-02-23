@@ -59,6 +59,7 @@ func runCmd(args []string) {
 		fmt.Fprintln(out, "        How to handle the current branch: skip (default), include, only (default \"skip\")")
 		fmt.Fprintln(out, "  --log-level <level>")
 		fmt.Fprintln(out, "        Log verbosity: debug, info, warn, error (default \"error\")")
+		fmt.Fprintln(out, "        Precedence: --log-level > aynig-log-level trailer > AYNIG_LOG_LEVEL")
 		fmt.Fprintln(out, "  --use-remote <name>")
 		fmt.Fprintln(out, "        Use remote branches instead of local (specify remote name, e.g., origin)")
 		fmt.Fprintln(out, "  -w, --worktree <path>")
@@ -68,19 +69,36 @@ func runCmd(args []string) {
 	fs.StringVar(worktree, "w", config.Default().WorkTree, "Specify custom worktree directory (default: .worktrees)")
 	useRemote := fs.String("use-remote", "", "Use remote branches instead of local (specify remote name, e.g., origin)")
 	currentBranch := fs.String("current-branch", config.Default().CurrentBranch, "How to handle the current branch: skip (default), include, only")
-	logLevel := fs.String("log-level", config.Default().LogLevel, "Log verbosity: debug, info, warn, error")
+	logLevel := &stringFlag{value: config.Default().LogLevel}
+	fs.Var(logLevel, "log-level", "Log verbosity: debug, info, warn, error")
 	fs.Parse(args)
 
 	cfg := config.Default()
 	cfg.WorkTree = *worktree
 	cfg.UseRemote = *useRemote
 	cfg.CurrentBranch = *currentBranch
-	cfg.LogLevel = *logLevel
+	cfg.LogLevel = logLevel.value
+	cfg.LogLevelSet = logLevel.set
 
 	if err := commands.Run(cfg); err != nil {
 		fmt.Fprintln(os.Stderr, "Error trying to set up the Repository:", err)
 		os.Exit(1)
 	}
+}
+
+type stringFlag struct {
+	value string
+	set   bool
+}
+
+func (s *stringFlag) String() string {
+	return s.value
+}
+
+func (s *stringFlag) Set(value string) error {
+	s.value = value
+	s.set = true
+	return nil
 }
 
 func installCmd(args []string) {
