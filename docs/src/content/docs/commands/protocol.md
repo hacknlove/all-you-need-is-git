@@ -1,17 +1,13 @@
 ---
 title: Commit Protocol
-description: Structure commit messages for AYNIG.
+description: How AYNIG reads intent from commit messages.
 ---
 
-AYNIG reads the latest commit and interprets:
+AYNIG dispatches from the latest commit (`HEAD`) by reading trailers in the commit message.
 
-- Title: human-only (ignored by the runner)
-- Body: prompt delivered to the command
-- Trailers: structured metadata
+Minimum required trailer:
 
-The mandatory trailer is:
-
-```
+```text
 aynig-state: <state>
 ```
 
@@ -19,18 +15,20 @@ aynig-state: <state>
 
 Optional trailers:
 
-```
+```text
 aynig-remote: <remote-name>
 aynig-log-level: <debug|info|warn|error>
 ```
 
-Example:
+Recommended structure:
 
 ```text
-chore: request build
+<subject>
 
-Build the project and report warnings.
+<prompt/body>
 
-aynig-state: build
-priority: high
+aynig-state: <state>
+<key>: <value>
 ```
+
+Only the workflow command decides the next state by creating a new commit with a new `aynig-state` trailer.

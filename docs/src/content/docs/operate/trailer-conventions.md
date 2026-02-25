@@ -1,11 +1,11 @@
 ---
 title: Trailer Conventions
-description: Optional metadata conventions used by workflows.
+description: Recommended trailer keys your workflows may use.
 ---
 
-These trailers are optional conventions. The kernel does not interpret them, but your commands can.
+These are **conventions only**. The kernel does not interpret them.
 
-## Attempt and retry
+Suggested keys:
 
 ```
 aynig-attempt: 1

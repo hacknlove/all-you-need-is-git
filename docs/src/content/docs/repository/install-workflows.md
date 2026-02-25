@@ -1,28 +1,24 @@
 ---
 title: Install Workflow Packs
-description: Copy commands from another repository.
+description: Copy a workflow pack (.aynig/) from another repo.
 ---
+
+You can install pre-made workflows from other repositories:
 
 ```bash
 aynig install <repo> [ref] [subfolder]
 ```
 
-If `<repo>` is in the form `owner/name`, AYNIG expands it to `https://github.com/owner/name.git`.
+If `<repo>` is in the form `owner/name`, AYNIG expands it to:
 
-Examples:
-
-```bash
-aynig install https://github.com/org/workflows
-aynig install https://github.com/org/workflows main
-aynig install https://github.com/org/workflows main path/to/.aynig
+```text
+https://github.com/owner/name.git
 ```
 
-Tip: keep a `COMMANDS.md` file in your repo to document available commands and expected transitions.
-
-## Ops workflow pack (optional)
-
-This repository ships an optional ops workflow pack under `ops-workflow-pack/`.
+### Example: install the ops workflow pack from this repo
 
 ```bash
 aynig install hacknlove/all-you-need-is-git ops-workflow-pack
 ```
+
+This copies the source `.aynig/` directory into your current repository.

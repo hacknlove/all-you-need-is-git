@@ -1,20 +1,16 @@
 ---
 title: Repository Layout
-description: Understand the folders AYNIG manages.
+description: Recommended layout for AYNIG-enabled repos.
 ---
 
-## .aynig/
+A minimal AYNIG repository typically includes:
 
-AYNIG stores repo-level configuration and helper scripts here. By default it includes a starter `COMMANDS.md`, a `clean` script, and `CONTRACT.md`.
-
-## .aynig/command/
-
-Executable commands keyed by state name:
-
-```
-.aynig/command/build
-.aynig/command/review
-.aynig/command/test
+```text
+.aynig/
+  command/
+    <state>
+  COMMANDS.md   # optional, documents available states
+.worktrees/     # ephemeral; created/cleaned by AYNIG
 ```
 
 The `aynig-state` trailer selects which command runs.
@@ -26,3 +22,4 @@ AYNIG runs each command inside a dedicated Git worktree. Worktrees are created u
 ## .aynig/logs/
 
 Command stdout/stderr logs are written here as `<commit-hash>.log`. This directory is ignored via `.gitignore`.
+Keep `.worktrees/` ignored. Commands should not create/manage worktrees manually.
