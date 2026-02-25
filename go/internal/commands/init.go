@@ -78,23 +78,25 @@ func Init() error {
 	}
 
 	gitignorePath := ".gitignore"
-	worktreesEntry := ".worktrees/"
+	gitignoreEntries := []string{".worktrees/", ".aynig/logs/"}
 	gitignoreContent, err := os.ReadFile(gitignorePath)
 	if err != nil && !os.IsNotExist(err) {
 		return fmt.Errorf("Error updating .gitignore: %w", err)
 	}
-	if stringsContainsLine(string(gitignoreContent), worktreesEntry) {
-		fmt.Printf("⊘ %s already in .gitignore, skipping\n", worktreesEntry)
-	} else {
-		newContent := string(gitignoreContent)
+	newContent := string(gitignoreContent)
+	for _, entry := range gitignoreEntries {
+		if stringsContainsLine(newContent, entry) {
+			fmt.Printf("⊘ %s already in .gitignore, skipping\n", entry)
+			continue
+		}
 		if newContent != "" && newContent[len(newContent)-1] != '\n' {
 			newContent += "\n"
 		}
-		newContent += worktreesEntry + "\n"
-		if err := os.WriteFile(gitignorePath, []byte(newContent), 0o644); err != nil {
-			return fmt.Errorf("Error updating .gitignore: %w", err)
-		}
-		fmt.Printf("✓ Added %s to .gitignore\n", worktreesEntry)
+		newContent += entry + "\n"
+		fmt.Printf("✓ Added %s to .gitignore\n", entry)
+	}
+	if err := os.WriteFile(gitignorePath, []byte(newContent), 0o644); err != nil {
+		return fmt.Errorf("Error updating .gitignore: %w", err)
 	}
 
 	fmt.Println("\nAYNIG initialized successfully!")

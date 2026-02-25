@@ -34,6 +34,7 @@ func TestInitCreatesCommandDirAndClean(t *testing.T) {
 	commandDir := filepath.Join(tempDir, ".aynig", "command")
 	cleanCommand := filepath.Join(commandDir, "clean")
 	commandsDoc := filepath.Join(tempDir, ".aynig", "COMMANDS.md")
+	gitignore := filepath.Join(tempDir, ".gitignore")
 
 	if _, err := os.Stat(commandDir); err != nil {
 		t.Fatalf("command dir missing: %v", err)
@@ -43,5 +44,16 @@ func TestInitCreatesCommandDirAndClean(t *testing.T) {
 	}
 	if _, err := os.Stat(commandsDoc); err != nil {
 		t.Fatalf("COMMANDS.md missing: %v", err)
+	}
+
+	gitignoreContent, err := os.ReadFile(gitignore)
+	if err != nil {
+		t.Fatalf(".gitignore missing: %v", err)
+	}
+	if !stringsContainsLine(string(gitignoreContent), ".worktrees/") {
+		t.Fatalf(".worktrees/ entry missing in .gitignore")
+	}
+	if !stringsContainsLine(string(gitignoreContent), ".aynig/logs/") {
+		t.Fatalf(".aynig/logs/ entry missing in .gitignore")
 	}
 }

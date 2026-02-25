@@ -21,4 +21,8 @@ The `aynig-state` trailer selects which command runs.
 
 ## .worktrees/
 
-AYNIG runs each command inside a dedicated Git worktree. Worktrees are created and removed automatically, and this directory is ignored via `.gitignore`.
+AYNIG runs each command inside a dedicated Git worktree. Worktrees are created under this directory and reused across runs when possible. This directory is ignored via `.gitignore`.
+
+## .aynig/logs/
+
+Command stdout/stderr logs are written here as `<commit-hash>.log`. This directory is ignored via `.gitignore`.

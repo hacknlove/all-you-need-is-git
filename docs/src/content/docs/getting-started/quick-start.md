@@ -21,7 +21,7 @@ This creates:
 
 - `.aynig/` with starter files
 - `.worktrees/` for ephemeral worktrees
-- a `.worktrees/` entry in `.gitignore`
+- `.worktrees/` and `.aynig/logs/` entries in `.gitignore`
 
 ## 3. Add a command
 

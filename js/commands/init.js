@@ -96,9 +96,9 @@ async function action() {
     }
   }
 
-  // Add .worktrees/ to .gitignore
+  // Add runtime directories to .gitignore
   const gitignorePath = '.gitignore';
-  const worktreesEntry = '.worktrees/';
+  const gitignoreEntries = ['.worktrees/', '.aynig/logs/'];
 
   try {
     let gitignoreContent = '';
@@ -108,15 +108,18 @@ async function action() {
       if (error.code !== 'ENOENT') throw error;
     }
 
-    if (gitignoreContent.split('\n').some(line => line.trim() === worktreesEntry)) {
-      console.log(`⊘ ${worktreesEntry} already in .gitignore, skipping`);
-    } else {
-      const newContent = gitignoreContent
-        ? `${gitignoreContent.trimEnd()}\n${worktreesEntry}\n`
-        : `${worktreesEntry}\n`;
-      await fs.writeFile(gitignorePath, newContent);
-      console.log(`✓ Added ${worktreesEntry} to .gitignore`);
+    let newContent = gitignoreContent;
+    for (const entry of gitignoreEntries) {
+      if (newContent.split('\n').some(line => line.trim() === entry)) {
+        console.log(`⊘ ${entry} already in .gitignore, skipping`);
+        continue;
+      }
+      newContent = newContent
+        ? `${newContent.trimEnd()}\n${entry}\n`
+        : `${entry}\n`;
+      console.log(`✓ Added ${entry} to .gitignore`);
     }
+    await fs.writeFile(gitignorePath, newContent);
   } catch (error) {
     console.error(`Error updating .gitignore: ${error.message}`);
     process.exit(1);

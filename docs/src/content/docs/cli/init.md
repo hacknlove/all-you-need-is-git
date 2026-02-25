@@ -12,4 +12,4 @@ Creates:
 - `.aynig/` with starter files
 - `.aynig/CONTRACT.md`
 - `.worktrees/`
-- a `.worktrees/` entry in `.gitignore`
+- `.worktrees/` and `.aynig/logs/` entries in `.gitignore`

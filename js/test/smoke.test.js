@@ -41,8 +41,13 @@ test('init creates command directory and clean command', () => {
   const commandDir = path.join(tempDir, '.aynig', 'command');
   const cleanCommand = path.join(commandDir, 'clean');
   const commandsDoc = path.join(tempDir, '.aynig', 'COMMANDS.md');
+  const gitignorePath = path.join(tempDir, '.gitignore');
 
   expect(fs.existsSync(commandDir)).toBe(true);
   expect(fs.existsSync(cleanCommand)).toBe(true);
   expect(fs.existsSync(commandsDoc)).toBe(true);
+
+  const gitignoreContent = fs.readFileSync(gitignorePath, 'utf8');
+  expect(gitignoreContent).toMatch(/(^|\n)\.worktrees\/\n?/);
+  expect(gitignoreContent).toMatch(/(^|\n)\.aynig\/logs\/\n?/);
 });
