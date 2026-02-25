@@ -23,6 +23,22 @@ Currently included:
 
 ## How `stalled` is intended to be used
 
+### Example: mark a branch as stalled
+
+If your branch is stuck in `working` and the lease is expired, you can transition it to `stalled` (policy choice).
+
+Minimal commit message example:
+
+```text
+ops: mark stalled
+
+Lease appears expired; moving to stalled recovery.
+
+aynig-state: stalled
+```
+
+Then run `aynig run` again and let the `stalled` command decide the next state.
+
 When a runner crashes or a lease expires, a branch may be left in:
 
 ```text
