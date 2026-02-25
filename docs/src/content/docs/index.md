@@ -29,3 +29,11 @@ AYNIG lets you drive workflows from Git commits. You define commands in `.aynig/
 - New to AYNIG? Start with [Quick Start](/getting-started/quick-start/)
 - Installing the CLI? See [Install CLI](/installation/cli/)
 - Writing commands? See [Authoring Commands](/commands/authoring/)
+
+## Helpful guides
+
+- [Hello World Workflow](/guides/hello-world/)
+- [FAQ / Troubleshooting](/guides/faq/)
+- [Security & Trust Model](/guides/security/)
+- [Ops Workflow Pack](/guides/ops-workflow-pack/)
+- [Glossary](/guides/glossary/)
