@@ -1,26 +1,21 @@
 ---
 title: Environment Variables
-description: Data available to commands during execution.
+description: What AYNIG exposes to commands.
 ---
 
-AYNIG exposes commit data to commands via environment variables.
+AYNIG exposes commit metadata to commands via environment variables.
 
 Common variables:
 
-- `AYNIG_BODY` - commit body (prompt)
-- `AYNIG_COMMIT_HASH` - commit hash being processed
-- `AYNIG_LOG_LEVEL` - resolved log level for the run/branch
+- `AYNIG_BODY` — the commit message body (prompt)
+- `AYNIG_COMMIT_HASH` — the triggering commit hash
+- `AYNIG_LOG_LEVEL` — resolved log level for the run/branch
 
 Precedence: `--log-level` > `aynig-log-level` trailer > `AYNIG_LOG_LEVEL` env.
 
-Each trailer key becomes an uppercase variable prefixed with `AYNIG_TRAILER_`. Hyphens are replaced with underscores.
+Trailers are also exposed as environment variables:
 
-```
-aynig-state: build
-priority: high
-```
+- trailer key `foo: bar` → `AYNIG_TRAILER_FOO=bar`
+- trailer key `baz: qux` → `AYNIG_TRAILER_BAZ=qux`
 
-becomes:
-
-- `AYNIG_TRAILER_AYNIG_STATE=build`
-- `AYNIG_TRAILER_PRIORITY=high`
+> Implementation note: keys are uppercased and normalized for shells.

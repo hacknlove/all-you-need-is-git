@@ -1,17 +1,15 @@
 ---
-title: install
-description: Install workflows from another repository.
+title: CLI — install
+description: Install a workflow pack from another repository.
 ---
 
 ```bash
 aynig install <repo> [ref] [subfolder]
 ```
 
-Copies the `.aynig/` folder from the specified repo ref and subfolder and reports any overwritten or newly installed files.
+Copies the source repository’s `.aynig/` directory into the current repository.
 
-If `<repo>` is in the form `owner/name`, AYNIG expands it to `https://github.com/owner/name.git`.
-
-The optional ops workflow pack in this repository can be installed with a subfolder path:
+Example:
 
 ```bash
 aynig install hacknlove/all-you-need-is-git ops-workflow-pack

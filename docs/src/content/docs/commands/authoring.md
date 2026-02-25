@@ -1,28 +1,34 @@
 ---
 title: Authoring Commands
-description: Write executable scripts that AYNIG dispatches.
+description: Create executable commands in .aynig/command/<state>.
 ---
 
-Commands are executable files in `.aynig/command/<state>`.
+Commands are executable files located at:
 
-Example:
+```text
+.aynig/command/<state>
+```
+
+When `aynig-state: <state>` appears in the latest commit trailer, AYNIG executes the matching command.
+
+## Example
+
+Create a command `review`:
 
 ```bash
+cat > .aynig/command/review <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
 
 echo "Review requested: $AYNIG_BODY"
-```
+EOF
 
-Make the file executable:
-
-```bash
 chmod +x .aynig/command/review
 ```
 
-Tips:
+## Tips
 
-- Commands run with the working directory set to the worktree
-- Keep commands idempotent when possible
-- Emit a new commit with the next `aynig-state`
-- Honor `AYNIG_LOG_LEVEL` if your command supports verbosity
+- Commands run with the working directory set to the worktree.
+- Keep commands idempotent when possible.
+- Commands should emit a new commit advancing the workflow by setting a new `aynig-state`.
+- Honor `AYNIG_LOG_LEVEL` if your command supports verbosity.

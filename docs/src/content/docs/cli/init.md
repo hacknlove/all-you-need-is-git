@@ -1,6 +1,6 @@
 ---
-title: init
-description: Initialize AYNIG in the current repository.
+title: CLI — init
+description: Initialize a repository for AYNIG.
 ---
 
 ```bash

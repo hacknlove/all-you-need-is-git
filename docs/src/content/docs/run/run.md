@@ -1,18 +1,36 @@
 ---
 title: Run AYNIG
-description: Execute AYNIG against a repository.
+description: Execute one tick of the workflow for actionable branches.
 ---
 
-```bash
-aynig run
+`aynig run` scans branches (local by default) and inspects the **latest commit** of each branch.
+
+If `HEAD` contains an `aynig-state:` trailer, AYNIG will dispatch to:
+
+```text
+.aynig/command/<state>
+```
+
+## Commit format
+
+Example commit message:
+
+```text
+chore: whatever title for humans
+
+Here goes the prompt to be processed by the agent.
+
+aynig-state: some-state
+foo: bar
+baz: qux
 ```
 
 ## Options
 
-- `-w, --worktree <path>`: worktree directory (default: `.worktrees`)
-- `--aynig-remote <name>`: use remote branches instead of local
-- `--current-branch <mode>`: `skip` (default), `include`, or `only`
-- `--log-level <level>`: `debug`, `info`, `warn`, or `error` (default)
+- `-w, --worktree <path>` — worktree directory (default: `.worktrees`)
+- `--aynig-remote <name>` — use remote branches instead of local
+- `--current-branch <mode>` — `skip` (default), `include`, or `only`
+- `--log-level <level>` — `debug`, `info`, `warn`, or `error` (default)
 
 In `--aynig-remote` mode, `--current-branch` resolves against the upstream branch of your local current branch (for example `origin/main`). If no upstream exists, `only` runs zero branches.
 
@@ -20,15 +38,16 @@ If `--aynig-remote` is omitted, AYNIG also checks the latest commit trailer `ayn
 
 Log level precedence: `--log-level` > `aynig-log-level` trailer > `AYNIG_LOG_LEVEL` env.
 
-Example:
+## Environment variables
 
-```bash
-aynig run --aynig-remote origin --current-branch include
-```
+Commands receive metadata via env vars such as:
 
-## How dispatch works
+- `AYNIG_BODY`
+- `AYNIG_COMMIT_HASH`
+- `AYNIG_TRAILER_FOO`
+- `AYNIG_TRAILER_BAZ`
 
-Commands live under `.aynig/command/<state>`. The `aynig-state` trailer selects which command is executed.
+(See also: Commands → Environment Variables.)
 
 Branch logs use the resolved log level after trailers are parsed. Early branch logs are buffered and flushed once the level is known.
 
