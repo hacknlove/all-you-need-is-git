@@ -1,5 +1,8 @@
 import { test, expect, vi } from 'vitest';
 import { Command } from '../AgentsOrchestrator/Command.js';
+import fs from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
 
 function createCommand(overrides = {}) {
   return new Command({
@@ -105,4 +108,29 @@ test('run skips when aynig-state is duplicated', async () => {
   expect(gitStub.revparse).not.toHaveBeenCalled();
   expect(gitStub.commit).not.toHaveBeenCalled();
   expect(gitStub.push).not.toHaveBeenCalled();
+});
+
+test('run creates command log file named after triggering commit', async () => {
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'aynig-log-'));
+  const gitStub = {
+    revparse: async () => 'deadbeef\n',
+    commit: async () => {},
+    push: async () => {}
+  };
+
+  const command = createCommand({
+    gitFactory: () => gitStub,
+    spawnImpl: () => ({ unref: () => {} })
+  });
+
+  command.getWorkspace = async () => tempDir;
+  command.getCommandPath = async () => path.join(tempDir, '.aynig', 'command', 'build');
+
+  try {
+    await command.run();
+    const logPath = path.join(tempDir, '.aynig', 'logs', 'deadbeef.log');
+    await expect(fs.access(logPath)).resolves.toBeUndefined();
+  } finally {
+    await fs.rm(tempDir, { recursive: true, force: true });
+  }
 });

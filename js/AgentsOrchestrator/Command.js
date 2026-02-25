@@ -1,7 +1,8 @@
 import { git } from '../gitHelpers/git.js';
 import simpleGit from 'simple-git';
 import { isAbsolute, relative, resolve, sep } from 'path';
-import { access, constants } from 'fs/promises';
+import { access, constants, mkdir } from 'fs/promises';
+import { closeSync, openSync } from 'node:fs';
 import { createHash, randomUUID } from 'crypto';
 import { cwd } from 'process';
 import { spawn } from 'child_process';
@@ -250,14 +251,25 @@ aynig-lease-seconds: ${leaseSeconds}
             env[`AYNIG_TRAILER_${normalizedKey}`] = envValue;
         }
 
-        const child = this.spawnImpl(commandPath, [], {
-            cwd: worktreePath,
-            env,
-            detached: true,
-            stdio: 'ignore'
-        });
+        const logsDir = resolve(worktreePath, '.aynig', 'logs');
+        await mkdir(logsDir, { recursive: true });
+        const logPath = resolve(logsDir, `${currentCommitHash}.log`);
+        const logFd = openSync(logPath, 'w');
+
+        let child;
+        try {
+            child = this.spawnImpl(commandPath, [], {
+                cwd: worktreePath,
+                env,
+                detached: true,
+                stdio: ['ignore', logFd, logFd]
+            });
+        } finally {
+            closeSync(logFd);
+        }
         child.unref();
         this.logger.info('Launched %s in %s', this.command, worktreePath);
+        this.logger.debug('Command log: %s', logPath);
     }
 }
 

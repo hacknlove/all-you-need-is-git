@@ -29,3 +29,5 @@ aynig run --use-remote origin --current-branch include
 Commands live under `.aynig/command/<state>`. The `aynig-state` trailer selects which command is executed.
 
 Branch logs use the resolved log level after trailers are parsed. Early branch logs are buffered and flushed once the level is known.
+
+Command stdout/stderr is written to `.aynig/logs/<commit-hash>.log`, where `<commit-hash>` is the commit that triggered the command.

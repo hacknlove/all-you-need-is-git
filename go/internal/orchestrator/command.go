@@ -104,6 +104,11 @@ func (c *Command) Run() error {
 		return err
 	}
 
+	commandLog, logPath, err := prepareCommandLogFile(worktreePath, currentCommitHash)
+	if err != nil {
+		return err
+	}
+
 	message := fmt.Sprintf("chore: working\n\ncommand %s takes control of the branch\n\naynig-state: working\naynig-origin-state: %s\naynig-run-id: %s\naynig-runner-id: %s\naynig-lease-seconds: %d\n", c.command, c.command, runID, runnerID, leaseSeconds)
 	if err := gitx.Commit(worktreePath, message, true); err != nil {
 		return err
@@ -132,14 +137,17 @@ func (c *Command) Run() error {
 	cmd := exec.Command(commandPath)
 	cmd.Dir = worktreePath
 	cmd.Env = env
-	cmd.Stdout = nil
-	cmd.Stderr = nil
+	cmd.Stdout = commandLog
+	cmd.Stderr = commandLog
 	cmd.Stdin = nil
 	setDetached(cmd)
 	if err := cmd.Start(); err != nil {
+		_ = commandLog.Close()
 		return err
 	}
+	_ = commandLog.Close()
 	c.logger.Infof("Launched %s in %s", c.command, worktreePath)
+	c.logger.Debugf("Command log: %s", logPath)
 	_ = cmd.Process.Release()
 	return nil
 }
@@ -291,4 +299,17 @@ func resolveStateTrailer(trailers map[string][]string) (string, string) {
 		return "", "empty aynig-state trailer"
 	}
 	return state, ""
+}
+
+func prepareCommandLogFile(worktreePath string, commitHash string) (*os.File, string, error) {
+	logsDir := filepath.Join(worktreePath, ".aynig", "logs")
+	if err := os.MkdirAll(logsDir, 0o755); err != nil {
+		return nil, "", err
+	}
+	logPath := filepath.Join(logsDir, commitHash+".log")
+	file, err := os.OpenFile(logPath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0o644)
+	if err != nil {
+		return nil, "", err
+	}
+	return file, logPath, nil
 }

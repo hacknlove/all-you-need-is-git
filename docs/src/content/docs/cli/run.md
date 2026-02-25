@@ -19,3 +19,5 @@ In `--use-remote` mode, `--current-branch` resolves against the upstream branch 
 Log level precedence: `--log-level` > `aynig-log-level` trailer > `AYNIG_LOG_LEVEL` env.
 
 The runner executes commands stored in `.aynig/command/<state>` based on the `aynig-state` trailer in the latest commit.
+
+Command stdout/stderr is written to `.aynig/logs/<commit-hash>.log`, where `<commit-hash>` is the commit that triggered the command.
