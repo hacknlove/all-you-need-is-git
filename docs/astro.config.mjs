@@ -36,6 +36,7 @@ export default defineConfig({
           label: 'Run and Operate',
           items: [
             { label: 'Run AYNIG', link: '/run/run/' },
+            { label: 'Run Options', link: '/run/options/' },
             { label: 'Worktrees and Isolation', link: '/run/worktrees/' },
             { label: 'Leases and Liveness', link: '/run/leases/' }
           ]
@@ -78,7 +79,8 @@ export default defineConfig({
             { label: 'Hello World Workflow', link: '/guides/hello-world/' },
             { label: 'FAQ / Troubleshooting', link: '/guides/faq/' },
             { label: 'Security & Trust Model', link: '/guides/security/' },
-            { label: 'Ops Workflow Pack', link: '/guides/ops-workflow-pack/' }
+            { label: 'Ops Workflow Pack', link: '/guides/ops-workflow-pack/' },
+            { label: 'Glossary', link: '/guides/glossary/' }
           ]
         },
         {
