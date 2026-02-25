@@ -73,11 +73,24 @@ export default defineConfig({
           ]
         },
         {
+          label: 'Guides',
+          items: [
+            { label: 'Hello World Workflow', link: '/guides/hello-world/' },
+            { label: 'FAQ / Troubleshooting', link: '/guides/faq/' },
+            { label: 'Security & Trust Model', link: '/guides/security/' },
+            { label: 'Ops Workflow Pack', link: '/guides/ops-workflow-pack/' }
+          ]
+        },
+        {
           label: 'CLI Reference',
           items: [
             { label: 'init', link: '/cli/init/' },
             { label: 'install', link: '/cli/install/' },
             { label: 'run', link: '/cli/run/' },
+            { label: 'status', link: '/cli/status/' },
+            { label: 'events', link: '/cli/events/' },
+            { label: 'update', link: '/cli/update/' },
+            { label: 'version', link: '/cli/version/' },
             { label: 'set-working', link: '/cli/set-working/' },
             { label: 'set-state', link: '/cli/set-state/' }
           ]
