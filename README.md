@@ -1,5 +1,7 @@
 # AYNIG (developer README)
 
+> **WORK IN PROGRESS:** This project is under active development. APIs, commands, and documentation may change without notice.
+
 This repository contains the AYNIG implementations and its documentation site.
 
 - User docs: https://aynig.org

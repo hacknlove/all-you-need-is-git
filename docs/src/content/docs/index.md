@@ -9,6 +9,10 @@ hero:
     alt: AYNIG hero illustration
 ---
 
+:::caution[WORK IN PROGRESS]
+This project is under active development. APIs, commands, and documentation may change without notice.
+:::
+
 AYNIG lets you drive workflows from Git commits. You define commands in `.aynig/command/`, and the runner executes them based on the `aynig-state` trailer in the latest commit.
 
 ## What AYNIG is
