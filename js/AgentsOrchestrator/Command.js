@@ -8,6 +8,7 @@ import { cwd } from 'process';
 import { spawn } from 'child_process';
 import { hostname } from 'os';
 import { Logger } from '../utils/logger.js';
+import { commitState } from './stateCommit.js';
 
 function branchHash(branchName) {
     return createHash('sha256').update(branchName).digest('hex').slice(0, 8);
@@ -161,17 +162,14 @@ export class Command {
 
         const worktreeGit = this.gitFactory(worktreePath);
 
-        let stalledMessage = `chore: stalled
-
-Lease expired
-
-aynig-state: stalled
-aynig-stalled-run: ${stalledRun}
-`;
+        const stalledTrailers = [
+            { key: 'aynig-state', value: 'stalled' },
+            { key: 'aynig-stalled-run', value: stalledRun }
+        ];
         if (this.config.aynigRemote) {
-            stalledMessage += `aynig-remote: ${this.config.aynigRemote}\n`;
+            stalledTrailers.push({ key: 'aynig-remote', value: this.config.aynigRemote });
         }
-        await worktreeGit.commit(stalledMessage, { '--allow-empty': null });
+        await commitState(worktreeGit, 'chore: stalled', 'Lease expired', stalledTrailers);
 
         if (this.config.aynigRemote) {
             try {
@@ -221,20 +219,17 @@ aynig-stalled-run: ${stalledRun}
         const worktreeGit = this.gitFactory(worktreePath);
         const currentCommitHash = (await worktreeGit.revparse(['HEAD'])).trim();
 
-        let workingMessage = `chore: working
-
-command ${this.command} takes control of the branch
-
-aynig-state: working
-aynig-origin-state: ${originState}
-aynig-run-id: ${runId}
-aynig-runner-id: ${runnerId}
-aynig-lease-seconds: ${leaseSeconds}
-`;
+        const workingTrailers = [
+            { key: 'aynig-state', value: 'working' },
+            { key: 'aynig-origin-state', value: originState },
+            { key: 'aynig-run-id', value: runId },
+            { key: 'aynig-runner-id', value: runnerId },
+            { key: 'aynig-lease-seconds', value: String(leaseSeconds) }
+        ];
         if (this.config.aynigRemote) {
-            workingMessage += `aynig-remote: ${this.config.aynigRemote}\n`;
+            workingTrailers.push({ key: 'aynig-remote', value: this.config.aynigRemote });
         }
-        await worktreeGit.commit(workingMessage, { '--allow-empty': null });
+        await commitState(worktreeGit, `chore: working`, `command ${this.command} takes control of the branch`, workingTrailers);
 
         if (this.config.aynigRemote) {
             try {
