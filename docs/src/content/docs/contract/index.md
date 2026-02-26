@@ -8,6 +8,8 @@ description: The minimum guarantees of the AYNIG runner.
 This document defines the minimum responsibilities of the AYNIG runner.
 AYNIG does not implement workflows or policies; it provides a **deterministic, Git-based distributed execution mechanism** on top of which other layers can build solutions.
 
+The canonical contract lives at the repository root in `CONTRACT.md`.
+
 The source of truth is always the Git branch (local or remote in `remote` mode).
 
 ## 1. Model
