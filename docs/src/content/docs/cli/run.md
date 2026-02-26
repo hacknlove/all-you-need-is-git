@@ -10,7 +10,7 @@ aynig run [options]
 Options:
 
 - `-w, --worktree <path>` — worktree directory (default: `.worktrees`)
-- `--aynig-remote <name>` — use remote branches instead of local
+- `--aynig-remote <name>` — use remote branches instead of local (e.g. `origin`)
 - `--current-branch <mode>` — `skip` (default), `include`, or `only`
 - `--log-level <level>` — `debug`, `info`, `warn`, or `error` (default)
 
