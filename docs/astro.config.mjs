@@ -77,7 +77,9 @@ export default defineConfig({
           items: [
             { label: 'init', link: '/cli/init/' },
             { label: 'install', link: '/cli/install/' },
-            { label: 'run', link: '/cli/run/' }
+            { label: 'run', link: '/cli/run/' },
+            { label: 'set-working', link: '/cli/set-working/' },
+            { label: 'set-state', link: '/cli/set-state/' }
           ]
         },
         {

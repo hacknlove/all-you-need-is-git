@@ -22,6 +22,10 @@ func main() {
 		fmt.Println(version)
 	case "run":
 		runCmd(os.Args[2:])
+	case "set-working":
+		setWorkingCmd(os.Args[2:])
+	case "set-state":
+		setStateCmd(os.Args[2:])
 	case "status":
 		if err := commands.Status(); err != nil {
 			fmt.Fprintln(os.Stderr, err)
@@ -144,12 +148,78 @@ func eventsCmd(args []string) {
 	}
 }
 
+func setWorkingCmd(args []string) {
+	fs := flag.NewFlagSet("set-working", flag.ExitOnError)
+	subject := fs.String("subject", "", "Commit title")
+	prompt := fs.String("prompt", "", "Commit prompt/body")
+	promptFile := fs.String("prompt-file", "", "Path to file used as prompt/body")
+	promptStdin := fs.Bool("prompt-stdin", false, "Read prompt/body from stdin")
+	remote := fs.String("aynig-remote", "", "Remote name to push after commit")
+	var trailers trailerListFlag
+	fs.Var(&trailers, "trailer", "Additional trailer in key:value format (repeatable)")
+	fs.Parse(args)
+
+	if err := commands.SetWorking(commands.SetWorkingOptions{
+		Subject:     *subject,
+		Prompt:      *prompt,
+		PromptFile:  *promptFile,
+		PromptStdin: *promptStdin,
+		AynigRemote: *remote,
+		Trailers:    trailers,
+	}); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+}
+
+func setStateCmd(args []string) {
+	fs := flag.NewFlagSet("set-state", flag.ExitOnError)
+	state := fs.String("aynig-state", "", "Next state to set (required, must not be working)")
+	subject := fs.String("subject", "", "Commit title")
+	prompt := fs.String("prompt", "", "Commit prompt/body")
+	promptFile := fs.String("prompt-file", "", "Path to file used as prompt/body")
+	promptStdin := fs.Bool("prompt-stdin", false, "Read prompt/body from stdin")
+	remote := fs.String("aynig-remote", "", "Remote name to push after commit")
+	var trailers trailerListFlag
+	fs.Var(&trailers, "trailer", "Additional trailer in key:value format (repeatable)")
+	fs.Parse(args)
+
+	if err := commands.SetState(commands.SetStateOptions{
+		State:       *state,
+		Subject:     *subject,
+		Prompt:      *prompt,
+		PromptFile:  *promptFile,
+		PromptStdin: *promptStdin,
+		AynigRemote: *remote,
+		Trailers:    trailers,
+	}); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+}
+
+type trailerListFlag []string
+
+func (t *trailerListFlag) String() string {
+	if t == nil {
+		return ""
+	}
+	return fmt.Sprintf("%v", []string(*t))
+}
+
+func (t *trailerListFlag) Set(value string) error {
+	*t = append(*t, value)
+	return nil
+}
+
 func printUsage() {
 	fmt.Println("Usage: aynig <command> [options]")
 	fmt.Println("")
 	fmt.Println("Commands:")
 	fmt.Println("  run       Run AYNIG for the current repository")
 	fmt.Println("            --aynig-remote can also be persisted in commits via aynig-remote trailer")
+	fmt.Println("  set-working  Create a working lease commit")
+	fmt.Println("  set-state    Create a commit with a non-working aynig-state")
 	fmt.Println("  status    Show current AYNIG state")
 	fmt.Println("  init      Initialize AYNIG in the current repository")
 	fmt.Println("  install   Install AYNIG workflows from another repository")

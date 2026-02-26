@@ -5,11 +5,16 @@ import path from 'node:path';
 
 const commitMock = vi.fn(async () => {});
 const pushMock = vi.fn(async () => {});
+const rawMock = vi.fn(async () => {
+  const lastCall = commitMock.mock.calls[commitMock.mock.calls.length - 1];
+  return lastCall ? lastCall[0] : '';
+});
 
 vi.mock('simple-git', () => ({
   default: () => ({
     commit: commitMock,
-    push: pushMock
+    push: pushMock,
+    raw: rawMock
   })
 }));
 
@@ -18,6 +23,7 @@ const { Command } = await import('../AgentsOrchestrator/Command.js');
 beforeEach(() => {
   commitMock.mockClear();
   pushMock.mockClear();
+  rawMock.mockClear();
 });
 
 async function createExecutable(filePath) {

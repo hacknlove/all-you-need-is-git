@@ -15,6 +15,7 @@ import (
 	"all-you-need-is-git/go/internal/config"
 	"all-you-need-is-git/go/internal/gitx"
 	"all-you-need-is-git/go/internal/logx"
+	"all-you-need-is-git/go/internal/statex"
 )
 
 type CommandParams struct {
@@ -109,7 +110,7 @@ func (c *Command) Run() error {
 		return err
 	}
 
-	workingTrailers := []stateTrailer{
+	workingTrailers := []statex.Trailer{
 		{Key: "aynig-state", Value: "working"},
 		{Key: "aynig-origin-state", Value: c.command},
 		{Key: "aynig-run-id", Value: runID},
@@ -117,9 +118,9 @@ func (c *Command) Run() error {
 		{Key: "aynig-lease-seconds", Value: strconv.Itoa(leaseSeconds)},
 	}
 	if c.config.UseRemote != "" {
-		workingTrailers = append(workingTrailers, stateTrailer{Key: "aynig-remote", Value: c.config.UseRemote})
+		workingTrailers = append(workingTrailers, statex.Trailer{Key: "aynig-remote", Value: c.config.UseRemote})
 	}
-	if err := commitState(worktreePath, "chore: working", fmt.Sprintf("command %s takes control of the branch", c.command), workingTrailers); err != nil {
+	if err := statex.CommitState(worktreePath, "chore: working", fmt.Sprintf("command %s takes control of the branch", c.command), workingTrailers); err != nil {
 		return err
 	}
 	c.logger.Debugf("Created working commit for %s", c.branchName)
@@ -180,14 +181,14 @@ func (c *Command) checkWorking() error {
 		return err
 	}
 
-	stalledTrailers := []stateTrailer{
+	stalledTrailers := []statex.Trailer{
 		{Key: "aynig-state", Value: "stalled"},
 		{Key: "aynig-stalled-run", Value: stalledRun},
 	}
 	if c.config.UseRemote != "" {
-		stalledTrailers = append(stalledTrailers, stateTrailer{Key: "aynig-remote", Value: c.config.UseRemote})
+		stalledTrailers = append(stalledTrailers, statex.Trailer{Key: "aynig-remote", Value: c.config.UseRemote})
 	}
-	if err := commitState(worktreePath, "chore: stalled", "Lease expired", stalledTrailers); err != nil {
+	if err := statex.CommitState(worktreePath, "chore: stalled", "Lease expired", stalledTrailers); err != nil {
 		return err
 	}
 	if c.config.UseRemote != "" {

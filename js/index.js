@@ -8,6 +8,8 @@ import { registerUpdateCommand } from './commands/update.js';
 import { registerVersionCommand } from './commands/version.js';
 import { registerStatusCommand } from './commands/status.js';
 import { registerEventsCommand } from './commands/events.js';
+import { registerSetWorkingCommand } from './commands/set-working.js';
+import { registerSetStateCommand } from './commands/set-state.js';
 import pkg from './package.json' assert { type: 'json' };
 
 const program = new Command();
@@ -26,6 +28,8 @@ registerUpdateCommand(program);
 registerVersionCommand(program);
 registerStatusCommand(program);
 registerEventsCommand(program);
+registerSetWorkingCommand(program);
+registerSetStateCommand(program);
 
 // Parse arguments
 program.parse();

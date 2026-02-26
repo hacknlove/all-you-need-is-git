@@ -257,6 +257,12 @@ Commands:
       --aynig-remote <name>   Use remote branches instead of local (specify remote name, e.g., origin)
       --log-level <level>     Log verbosity: debug, info, warn, error (default: error)
 
+  set-working [options]
+                       Create or refresh a working lease commit
+
+  set-state --aynig-state <state> [options]
+                       Create a commit with a non-working aynig-state
+
   install <repo> [ref] [subfolder]
                        Install AYNIG workflows from another repository
 

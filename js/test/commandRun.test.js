@@ -23,7 +23,8 @@ test('run writes working commit with configured lease seconds', async () => {
     commit: async (message) => {
       calls.push(message);
     },
-    push: async () => {}
+    push: async () => {},
+    raw: async () => calls[calls.length - 1] || ''
   };
 
   const command = createCommand({
@@ -45,7 +46,8 @@ test('run passes trailers, body, and commit hash to env', async () => {
   const gitStub = {
     revparse: async () => 'deadbeef\n',
     commit: async () => {},
-    push: async () => {}
+    push: async () => {},
+    raw: async () => 'chore: working\n\nbody\n\naynig-state: working\n'
   };
 
   const command = createCommand({
@@ -115,7 +117,8 @@ test('run creates command log file named after triggering commit', async () => {
   const gitStub = {
     revparse: async () => 'deadbeef\n',
     commit: async () => {},
-    push: async () => {}
+    push: async () => {},
+    raw: async () => 'chore: working\n\nbody\n\naynig-state: working\n'
   };
 
   const command = createCommand({

@@ -21,7 +21,8 @@ test('checkWorking skips when lease not expired', async () => {
   const commitCalls = [];
   const gitStub = {
     commit: async (message) => commitCalls.push(message),
-    push: async () => {}
+    push: async () => {},
+    raw: async () => commitCalls[commitCalls.length - 1] || ''
   };
 
   const command = createCommand({
@@ -44,7 +45,8 @@ test('checkWorking emits stalled commit when lease expired', async () => {
   const commitCalls = [];
   const gitStub = {
     commit: async (message) => commitCalls.push(message),
-    push: async () => {}
+    push: async () => {},
+    raw: async () => commitCalls[commitCalls.length - 1] || ''
   };
 
   const command = createCommand({
@@ -69,7 +71,8 @@ test('checkWorking emits stalled commit when lease expired', async () => {
 test('checkWorking skips when commit date is invalid', async () => {
   const gitStub = {
     commit: vi.fn(async () => {}),
-    push: vi.fn(async () => {})
+    push: vi.fn(async () => {}),
+    raw: vi.fn(async () => '')
   };
 
   const command = createCommand({

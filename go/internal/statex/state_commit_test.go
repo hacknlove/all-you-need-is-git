@@ -1,19 +1,15 @@
-package orchestrator
+package statex
 
 import (
 	"strings"
 	"testing"
 )
 
-func TestBuildStateCommitMessage(t *testing.T) {
-	message := buildStateCommitMessage(
-		"chore: working",
-		"keep lease alive",
-		[]stateTrailer{
-			{Key: "aynig-state", Value: "working"},
-			{Key: "aynig-run-id", Value: "abc"},
-		},
-	)
+func TestBuildCommitMessage(t *testing.T) {
+	message := BuildCommitMessage("chore: working", "keep lease alive", []Trailer{
+		{Key: "aynig-state", Value: "working"},
+		{Key: "aynig-run-id", Value: "abc"},
+	})
 
 	expected := []string{
 		"chore: working",
