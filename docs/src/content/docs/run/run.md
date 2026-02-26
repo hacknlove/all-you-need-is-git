@@ -5,7 +5,7 @@ description: Execute one tick of the workflow for actionable branches.
 
 `aynig run` scans branches (local by default) and inspects the **latest commit** of each branch.
 
-> Note: by default, the runner **skips the current branch**. If you're testing on the branch you're currently on, pass `-current-branch only`.
+> Note: by default, the runner **skips the current branch**. If you're testing on the branch you're currently on, pass `--current-branch only`.
 
 If `HEAD` contains an `aynig-state:` trailer, AYNIG will dispatch to:
 

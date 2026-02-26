@@ -24,6 +24,8 @@ aynig run --current-branch only
 
 Use `--aynig-remote <name>` to scan a remote instead of local branches.
 
+If `--aynig-remote` is omitted, AYNIG also checks the latest commit trailer `aynig-remote: <name>` and uses that remote when present.
+
 Example:
 
 ```bash
