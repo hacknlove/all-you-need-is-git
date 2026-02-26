@@ -64,7 +64,7 @@ You don't need webhooks, APIs, and keys, and certainly you don't need to be tied
 
 ## How does it work?
 
-AYNIG scans local branches (or remote branches if `--use-remote` is specified) and inspects the **latest commit**.
+AYNIG scans local branches (or remote branches if `--aynig-remote` is specified, or if `aynig-remote` trailer is present) and inspects the **latest commit**.
 
 If it finds a commit with an `aynig-state:` trailer, like this:
 
@@ -254,7 +254,7 @@ Commands:
   run [options]        Run AYNIG for the current repository
     Options:
       -w, --worktree <path>   Specify custom worktree directory (default: .worktrees)
-      --use-remote <name>     Use remote branches instead of local (specify remote name, e.g., origin)
+      --aynig-remote <name>   Use remote branches instead of local (specify remote name, e.g., origin)
       --log-level <level>     Log verbosity: debug, info, warn, error (default: error)
 
   install <repo> [ref] [subfolder]

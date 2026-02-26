@@ -1,13 +1,14 @@
 import { git } from '../gitHelpers/git.js';
 import { Branch } from './Branch.js';
 import { Logger, resolveLevel } from '../utils/logger.js';
+import { parseCommitMessage } from '../gitHelpers/parseCommitMessage.js';
 
 /**
  * Repo class to manage Git repositories.
  *
  * It:
  * 1. Initializes with a configuration object.
- * 2. Fetches branches (local by default, or remote if useRemote is set).
+ * 2. Fetches branches (local by default, or remote if aynigRemote is set).
  * 3. Creates Branch instances for each branch.
  * 4. Runs each Branch instance.
  * 5. waits for all Branch instances to complete.
@@ -39,11 +40,36 @@ export class Repo {
             if (!upstream) {
                 return '';
             }
-            if (!upstream.startsWith(`${this.config.useRemote}/`)) {
-                this.config.logger.warn('Current branch upstream %s does not belong to remote %s', upstream, this.config.useRemote);
+            if (!upstream.startsWith(`${this.config.aynigRemote}/`)) {
+                this.config.logger.warn('Current branch upstream %s does not belong to remote %s', upstream, this.config.aynigRemote);
                 return '';
             }
             return upstream;
+        } catch {
+            return '';
+        }
+    }
+
+    remoteFromTrailers(trailers = {}) {
+        const raw = trailers['aynig-remote'];
+        if (Array.isArray(raw)) {
+            return String(raw[0] || '').trim();
+        }
+        return String(raw || '').trim();
+    }
+
+    async resolveAynigRemoteFromHead() {
+        if (this.config.aynigRemote) {
+            return this.config.aynigRemote;
+        }
+
+        try {
+            const raw = await git.raw(['log', '-1', '--pretty=format:%s%x1f%b']);
+            const parts = raw.split('\x1f');
+            const message = (parts[0] || '').replace(/\n+$/, '');
+            const body = (parts[1] || '').replace(/\n+$/, '');
+            const parsed = await parseCommitMessage({ message, body });
+            return this.remoteFromTrailers(parsed.trailers);
         } catch {
             return '';
         }
@@ -65,25 +91,25 @@ export class Repo {
         this.config.repoRoot = await git.revparse(['--show-toplevel']);
         this.config.logger.info('Repository root: %s', this.config.repoRoot.trim());
 
-        // Only fetch if using remote branches
-        if (this.config.useRemote) {
-            this.config.logger.info('Fetching remote branches from %s', this.config.useRemote);
+        this.config.aynigRemote = await this.resolveAynigRemoteFromHead();
+        if (this.config.aynigRemote) {
+            this.config.logger.info('Fetching remote branches from %s', this.config.aynigRemote);
             await git.fetch();
         }
 
-        // Get remote branches if useRemote is set, otherwise get local branches
-        const branchesInfo = this.config.useRemote
+        // Get remote branches if aynigRemote is set, otherwise get local branches
+        const branchesInfo = this.config.aynigRemote
             ? await git.branch(['-r'])
             : await git.branchLocal();
 
         const localInfo = await git.branchLocal();
         const localCurrent = localInfo.current || '';
 
-        const filterCurrent = this.config.useRemote
+        const filterCurrent = this.config.aynigRemote
             ? await this.resolveCurrentRemoteBranch(localCurrent)
             : localCurrent;
 
-        if (this.config.useRemote && this.config.currentBranch === 'only' && !filterCurrent) {
+        if (this.config.aynigRemote && this.config.currentBranch === 'only' && !filterCurrent) {
             this.config.logger.warn('Current branch has no upstream for --current-branch=only in remote mode');
         }
 
@@ -93,7 +119,7 @@ export class Repo {
         this.branches = branchNames.map(name => new Branch({
             config: this.config,
             branchName: name,
-            isCurrentBranch: !this.config.useRemote && name === localCurrent,
+            isCurrentBranch: !this.config.aynigRemote && name === localCurrent,
         }));
 
         await Promise.all(this.branches.map(branch => branch.run()));

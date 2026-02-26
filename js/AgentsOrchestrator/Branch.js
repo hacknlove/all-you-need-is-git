@@ -45,8 +45,8 @@ export class Branch {
         });
         const baseLogger = this.config.logger || new Logger(baseLevel);
         // If using remote branches, only process branches from the specified remote
-        if (this.config.useRemote && !this.branchName.startsWith(`${this.config.useRemote}/`)) {
-            buffer.debug('Skipping branch %s (not on remote %s)', this.branchName, this.config.useRemote);
+        if (this.config.aynigRemote && !this.branchName.startsWith(`${this.config.aynigRemote}/`)) {
+            buffer.debug('Skipping branch %s (not on remote %s)', this.branchName, this.config.aynigRemote);
             buffer.flush(baseLogger);
             return;
         }

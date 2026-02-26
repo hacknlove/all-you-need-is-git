@@ -28,6 +28,16 @@ func (r *Repo) Run() error {
 	r.config.RepoRoot = repoRoot
 	r.logger.Infof("Repository root: %s", repoRoot)
 
+	if r.config.UseRemote == "" {
+		commit, readErr := gitx.ReadCommit("HEAD")
+		if readErr == nil {
+			if remote := firstLowerTrailerValue(commit.Trailers, "aynig-remote"); remote != "" {
+				r.config.UseRemote = remote
+				r.logger.Infof("Using remote from trailer aynig-remote=%s", remote)
+			}
+		}
+	}
+
 	if r.config.UseRemote != "" {
 		r.logger.Infof("Fetching remote branches from %s", r.config.UseRemote)
 		if err := gitx.Fetch(repoRoot); err != nil {
@@ -115,4 +125,21 @@ func filterBranches(all []string, current string, mode string) []string {
 	default:
 		return all
 	}
+}
+
+func firstLowerTrailerValue(trailers map[string][]string, key string) string {
+	want := strings.ToLower(strings.TrimSpace(key))
+	if want == "" {
+		return ""
+	}
+	for k, values := range trailers {
+		if strings.ToLower(strings.TrimSpace(k)) != want {
+			continue
+		}
+		if len(values) == 0 {
+			return ""
+		}
+		return strings.TrimSpace(values[0])
+	}
+	return ""
 }

@@ -1,5 +1,5 @@
 {
-    "useRemote": false,
+    "aynigRemote": "",
     "workTree": ".worktrees",
     "currentBranch": "skip",
     "leaseSeconds": 300,

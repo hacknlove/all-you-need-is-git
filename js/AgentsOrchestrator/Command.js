@@ -96,8 +96,8 @@ export class Command {
         );
 
         try {
-            if (this.config.useRemote) {
-                await git.worktree(['add', '-b', this.branchName, worktreePath, `${this.config.useRemote}/${this.branchName}`]);
+            if (this.config.aynigRemote) {
+                await git.worktree(['add', '-b', this.branchName, worktreePath, `${this.config.aynigRemote}/${this.branchName}`]);
             } else {
                 await git.worktree(['add', worktreePath, this.branchName]);
             }
@@ -161,18 +161,22 @@ export class Command {
 
         const worktreeGit = this.gitFactory(worktreePath);
 
-        await worktreeGit.commit(`chore: stalled
+        let stalledMessage = `chore: stalled
 
 Lease expired
 
 aynig-state: stalled
 aynig-stalled-run: ${stalledRun}
-`, { '--allow-empty': null });
+`;
+        if (this.config.aynigRemote) {
+            stalledMessage += `aynig-remote: ${this.config.aynigRemote}\n`;
+        }
+        await worktreeGit.commit(stalledMessage, { '--allow-empty': null });
 
-        if (this.config.useRemote) {
+        if (this.config.aynigRemote) {
             try {
-                this.logger.info('Pushing stalled state for %s to %s', this.branchName, this.config.useRemote);
-                await worktreeGit.push(this.config.useRemote, this.branchName);
+                this.logger.info('Pushing stalled state for %s to %s', this.branchName, this.config.aynigRemote);
+                await worktreeGit.push(this.config.aynigRemote, this.branchName);
             } catch {
                 return;
             }
@@ -217,7 +221,7 @@ aynig-stalled-run: ${stalledRun}
         const worktreeGit = this.gitFactory(worktreePath);
         const currentCommitHash = (await worktreeGit.revparse(['HEAD'])).trim();
 
-        await worktreeGit.commit(`chore: working
+        let workingMessage = `chore: working
 
 command ${this.command} takes control of the branch
 
@@ -226,12 +230,16 @@ aynig-origin-state: ${originState}
 aynig-run-id: ${runId}
 aynig-runner-id: ${runnerId}
 aynig-lease-seconds: ${leaseSeconds}
-`, { '--allow-empty': null });
+`;
+        if (this.config.aynigRemote) {
+            workingMessage += `aynig-remote: ${this.config.aynigRemote}\n`;
+        }
+        await worktreeGit.commit(workingMessage, { '--allow-empty': null });
 
-        if (this.config.useRemote) {
+        if (this.config.aynigRemote) {
             try {
-                this.logger.info('Pushing branch %s to %s', this.branchName, this.config.useRemote);
-                await worktreeGit.push(this.config.useRemote, this.branchName);
+                this.logger.info('Pushing branch %s to %s', this.branchName, this.config.aynigRemote);
+                await worktreeGit.push(this.config.aynigRemote, this.branchName);
             } catch {
                 return;
             }

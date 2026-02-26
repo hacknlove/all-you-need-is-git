@@ -20,6 +20,7 @@ aynig-state: <state>
 Optional trailers:
 
 ```
+aynig-remote: <remote-name>
 aynig-log-level: <debug|info|warn|error>
 ```
 

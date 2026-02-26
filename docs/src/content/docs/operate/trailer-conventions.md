@@ -33,6 +33,8 @@ Use consistent, lowercase keys. Keep values short and script-friendly.
 
 ```
 aynig-origin-state: build
+aynig-remote: origin
 ```
 
 When a runner writes `aynig-state: working`, it must also include the original state so retries and tools can recover intent.
+`aynig-remote` pins the remote name for follow-up state commits when remote mode is used.

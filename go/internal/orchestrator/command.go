@@ -110,6 +110,9 @@ func (c *Command) Run() error {
 	}
 
 	message := fmt.Sprintf("chore: working\n\ncommand %s takes control of the branch\n\naynig-state: working\naynig-origin-state: %s\naynig-run-id: %s\naynig-runner-id: %s\naynig-lease-seconds: %d\n", c.command, c.command, runID, runnerID, leaseSeconds)
+	if c.config.UseRemote != "" {
+		message += fmt.Sprintf("aynig-remote: %s\n", c.config.UseRemote)
+	}
 	if err := gitx.Commit(worktreePath, message, true); err != nil {
 		return err
 	}
@@ -172,6 +175,9 @@ func (c *Command) checkWorking() error {
 	}
 
 	message := fmt.Sprintf("chore: stalled\n\nLease expired\n\naynig-state: stalled\naynig-stalled-run: %s\n", stalledRun)
+	if c.config.UseRemote != "" {
+		message += fmt.Sprintf("aynig-remote: %s\n", c.config.UseRemote)
+	}
 	if err := gitx.Commit(worktreePath, message, true); err != nil {
 		return err
 	}

@@ -16,7 +16,7 @@ test('filterBranches respects skip mode in remote sets', () => {
 
 test('resolveCurrentRemoteBranch ignores upstream from other remotes', async () => {
   const warn = vi.fn();
-  const repo = new Repo({ useRemote: 'origin', logger: { warn } });
+  const repo = new Repo({ aynigRemote: 'origin', logger: { warn } });
   const rawSpy = vi.spyOn(git, 'raw').mockResolvedValue('upstream/main\n');
 
   try {
@@ -26,4 +26,11 @@ test('resolveCurrentRemoteBranch ignores upstream from other remotes', async () 
   } finally {
     rawSpy.mockRestore();
   }
+});
+
+test('remoteFromTrailers reads aynig-remote trailer', () => {
+  const repo = new Repo({});
+  expect(repo.remoteFromTrailers({ 'aynig-remote': 'origin' })).toBe('origin');
+  expect(repo.remoteFromTrailers({ 'aynig-remote': [' upstream '] })).toBe('upstream');
+  expect(repo.remoteFromTrailers({})).toBe('');
 });
