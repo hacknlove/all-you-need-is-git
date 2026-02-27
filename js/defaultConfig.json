@@ -2,6 +2,7 @@
     "aynigRemote": "",
     "workTree": ".worktrees",
     "currentBranch": "skip",
+    "role": "",
     "leaseSeconds": 300,
     "logLevel": "error"
 }

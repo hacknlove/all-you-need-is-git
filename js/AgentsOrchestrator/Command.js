@@ -113,25 +113,23 @@ export class Command {
     }
 
     async getCommandPath(worktreePath) {
-        const baseDir = resolve(worktreePath, '.aynig', 'command');
         const commandName = this.command;
 
         if (!commandName) {
             return false;
         }
 
-        const commandPath = resolve(baseDir, commandName);
-        const rel = relative(baseDir, commandPath);
-        if (!rel || isAbsolute(rel) || rel === '..' || rel.startsWith(`..${sep}`)) {
-            return false;
+        const roleName = String(this.config?.role || '').trim() || String(process.env.AYNIG_ROLE || '').trim();
+        if (roleName) {
+            const roleDir = resolve(worktreePath, '.aynig', 'roles', roleName, 'command');
+            const rolePath = await resolveCommandPath(roleDir, commandName);
+            if (rolePath) {
+                return rolePath;
+            }
         }
 
-        try {
-            await access(commandPath, constants.X_OK);
-            return commandPath;
-        } catch {
-            return false;
-        }
+        const baseDir = resolve(worktreePath, '.aynig', 'command');
+        return resolveCommandPath(baseDir, commandName);
     }
 
     async checkWorking() {
@@ -273,6 +271,21 @@ export class Command {
         child.unref();
         this.logger.info('Launched %s in %s', this.command, worktreePath);
         this.logger.debug('Command log: %s', logPath);
+    }
+}
+
+async function resolveCommandPath(baseDir, commandName) {
+    const commandPath = resolve(baseDir, commandName);
+    const rel = relative(baseDir, commandPath);
+    if (!rel || isAbsolute(rel) || rel === '..' || rel.startsWith(`..${sep}`)) {
+        return false;
+    }
+
+    try {
+        await access(commandPath, constants.X_OK);
+        return commandPath;
+    } catch {
+        return false;
     }
 }
 

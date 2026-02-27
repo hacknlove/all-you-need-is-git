@@ -10,6 +10,7 @@ Common variables:
 - `AYNIG_BODY` — the commit message body (prompt)
 - `AYNIG_COMMIT_HASH` — the triggering commit hash
 - `AYNIG_LOG_LEVEL` — resolved log level for the run/branch
+- `AYNIG_ROLE` — selects `.aynig/roles/<role>/command` when set
 
 Precedence: `--log-level` > `aynig-log-level` trailer > `AYNIG_LOG_LEVEL` env.
 

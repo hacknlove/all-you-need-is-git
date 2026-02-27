@@ -83,13 +83,29 @@ func Status() error {
 		shouldResolveCommand = false
 	}
 
+	roleName := strings.TrimSpace(os.Getenv("AYNIG_ROLE"))
+
 	if shouldResolveCommand && commandState != "" && commandState != "working" {
-		commandPath = filepath.Join(repoRoot, ".aynig", "command", commandState)
-		if info, statErr := os.Stat(commandPath); statErr == nil {
-			if info.Mode().IsRegular() && info.Mode()&0o111 != 0 {
-				commandStatus = "exists"
-			} else {
-				commandStatus = "missing"
+		if roleName != "" {
+			rolePath := filepath.Join(repoRoot, ".aynig", "roles", filepath.FromSlash(roleName), "command", commandState)
+			if info, statErr := os.Stat(rolePath); statErr == nil {
+				if info.Mode().IsRegular() && info.Mode()&0o111 != 0 {
+					commandStatus = "exists"
+					commandPath = rolePath
+				} else {
+					commandStatus = "missing"
+					commandPath = rolePath
+				}
+			}
+		}
+		if commandPath == "" {
+			commandPath = filepath.Join(repoRoot, ".aynig", "command", commandState)
+			if info, statErr := os.Stat(commandPath); statErr == nil {
+				if info.Mode().IsRegular() && info.Mode()&0o111 != 0 {
+					commandStatus = "exists"
+				} else {
+					commandStatus = "missing"
+				}
 			}
 		}
 	} else if !shouldResolveCommand {

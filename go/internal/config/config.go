@@ -4,6 +4,7 @@ type Config struct {
 	UseRemote     string
 	WorkTree      string
 	CurrentBranch string
+	Role          string
 	LogLevel      string
 	LogLevelSet   bool
 	LeaseSeconds  int
@@ -15,6 +16,7 @@ func Default() Config {
 		UseRemote:     "",
 		WorkTree:      ".worktrees",
 		CurrentBranch: "skip",
+		Role:          "",
 		LogLevel:      "error",
 		LogLevelSet:   false,
 		LeaseSeconds:  300,

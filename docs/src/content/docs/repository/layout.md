@@ -9,11 +9,15 @@ A minimal AYNIG repository typically includes:
 .aynig/
   command/
     <state>
+  roles/
+    <role>/
+      command/
+        <state>
   COMMANDS.md   # optional, documents available states
 .worktrees/     # ephemeral; created/cleaned by AYNIG
 ```
 
-The `aynig-state` trailer selects which command runs.
+The `aynig-state` trailer selects which command runs. When `AYNIG_ROLE` (or `--role`) is set, AYNIG checks `.aynig/roles/<role>/command/<state>` first.
 
 ## .worktrees/
 

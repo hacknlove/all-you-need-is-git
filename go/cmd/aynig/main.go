@@ -59,6 +59,8 @@ func runCmd(args []string) {
 	fs.Usage = func() {
 		out := fs.Output()
 		fmt.Fprintln(out, "Usage of run:")
+		fmt.Fprintln(out, "  --role <name>")
+		fmt.Fprintln(out, "        Use role-specific commands from .aynig/roles/<name>/command when available")
 		fmt.Fprintln(out, "  --current-branch <mode>")
 		fmt.Fprintln(out, "        How to handle the current branch: skip (default), include, only (default \"skip\")")
 		fmt.Fprintln(out, "  --log-level <level>")
@@ -73,6 +75,7 @@ func runCmd(args []string) {
 	fs.StringVar(worktree, "w", config.Default().WorkTree, "Specify custom worktree directory (default: .worktrees)")
 	useRemote := fs.String("aynig-remote", "", "Use remote branches instead of local (specify remote name, e.g., origin)")
 	currentBranch := fs.String("current-branch", config.Default().CurrentBranch, "How to handle the current branch: skip (default), include, only")
+	role := fs.String("role", "", "Use role-specific commands from .aynig/roles/<name>/command when available")
 	logLevel := &stringFlag{value: config.Default().LogLevel}
 	fs.Var(logLevel, "log-level", "Log verbosity: debug, info, warn, error")
 	fs.Parse(args)
@@ -81,6 +84,7 @@ func runCmd(args []string) {
 	cfg.WorkTree = *worktree
 	cfg.UseRemote = *useRemote
 	cfg.CurrentBranch = *currentBranch
+	cfg.Role = *role
 	cfg.LogLevel = logLevel.value
 	cfg.LogLevelSet = logLevel.set
 

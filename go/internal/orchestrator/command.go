@@ -245,12 +245,39 @@ func (c *Command) getCommandPath(worktreePath string) (string, error) {
 	if c.command == "" {
 		return "", nil
 	}
+	commandPath, err := c.findCommandPath(worktreePath, c.command)
+	if err != nil || commandPath == "" {
+		return "", err
+	}
+	return commandPath, nil
+}
+
+func (c *Command) findCommandPath(worktreePath string, commandName string) (string, error) {
+	roleName := strings.TrimSpace(c.config.Role)
+	roleEnv := strings.TrimSpace(os.Getenv("AYNIG_ROLE"))
+	if roleName == "" {
+		roleName = roleEnv
+	}
+	if roleName != "" {
+		roleDir := filepath.Join(worktreePath, ".aynig", "roles", filepath.FromSlash(roleName), "command")
+		rolePath, err := resolveCommandPath(roleDir, commandName)
+		if err != nil {
+			return "", err
+		}
+		if rolePath != "" {
+			return rolePath, nil
+		}
+	}
 	baseDir := filepath.Join(worktreePath, ".aynig", "command")
+	return resolveCommandPath(baseDir, commandName)
+}
+
+func resolveCommandPath(baseDir string, commandName string) (string, error) {
 	baseDirAbs, err := filepath.Abs(baseDir)
 	if err != nil {
 		return "", err
 	}
-	commandPath := filepath.Join(baseDirAbs, filepath.FromSlash(c.command))
+	commandPath := filepath.Join(baseDirAbs, filepath.FromSlash(commandName))
 	if !strings.HasPrefix(commandPath, baseDirAbs+string(os.PathSeparator)) {
 		return "", nil
 	}

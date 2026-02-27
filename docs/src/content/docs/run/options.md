@@ -33,3 +33,12 @@ aynig run --aynig-remote origin
 ```
 
 This is useful when runners operate as distributed workers and the remote branch is the source of truth.
+
+## Role-specific commands
+
+Use `--role <name>` (or set `AYNIG_ROLE`) to run commands from a role-specific directory.
+
+Resolution order:
+
+1. `.aynig/roles/<role>/command/<state>`
+2. `.aynig/command/<state>`
