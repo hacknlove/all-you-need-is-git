@@ -1,5 +1,0 @@
-#!/bin/bash
-
-cd $_WORK_TREE
-
-claude -p \"Review this: $_QUERY use the skill \" --session-id $_SESSION_UUID
