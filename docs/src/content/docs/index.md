@@ -3,7 +3,7 @@ title: Overview
 description: Use AYNIG to run workflows from Git commits.
 hero:
   title: AYNIG
-  tagline: Agentic Yet Native in Git
+  tagline: All you need is Git
   image:
     file: ./hero.jpg
     alt: AYNIG hero illustration
