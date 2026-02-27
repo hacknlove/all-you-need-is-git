@@ -13,8 +13,8 @@ Una vez el número de versión está claro:
 
 
 1. crear el tag de la versión con git tag
+   - si se sobreescribe un tag existente, eliminar primero los assets del release en GitHub
 2. hacer un sanity check con: goreleaser release --snapshot --clean
 3. hacer la release: GITHUB_TOKEN=$(gh auth token) goreleaser release --clean
 4. actualizar el pointer en docs/public/releases/latest.txt
 5. Commit and push the artifacts and `latest.txt`.
-
