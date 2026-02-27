@@ -54,7 +54,10 @@ async function action(repo, ref, subfolder) {
 
     // Copy entire .aynig directory recursively
     console.log('Copying workflows...');
-    await fse.copy(sourcePath, destPath, { overwrite: true });
+    await fse.copy(sourcePath, destPath, {
+      overwrite: true,
+      filter: src => path.basename(src) !== 'README.md'
+    });
 
     // Use git to detect what changed after the copy
     const statusAfter = await git.status([pathspec(destPath)]);

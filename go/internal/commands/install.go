@@ -167,6 +167,12 @@ func copyDir(src string, dest string) error {
 		if err != nil {
 			return err
 		}
+		if info.Name() == "README.md" {
+			if info.IsDir() {
+				return filepath.SkipDir
+			}
+			return nil
+		}
 		rel, err := filepath.Rel(src, path)
 		if err != nil {
 			return err
