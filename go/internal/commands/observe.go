@@ -34,15 +34,15 @@ func trailerValue(trailers map[string][]string, key string) string {
 	if trailers == nil {
 		return ""
 	}
-	want := strings.ToLower(key)
+	want := strings.ToLower(strings.TrimSpace(key))
 	for k, values := range trailers {
-		if strings.ToLower(k) != want {
+		if strings.ToLower(strings.TrimSpace(k)) != want {
 			continue
 		}
 		if len(values) == 0 {
 			return ""
 		}
-		return values[len(values)-1]
+		return strings.TrimSpace(values[len(values)-1])
 	}
 	return ""
 }

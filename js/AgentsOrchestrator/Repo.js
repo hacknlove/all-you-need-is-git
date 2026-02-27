@@ -51,11 +51,17 @@ export class Repo {
     }
 
     remoteFromTrailers(trailers = {}) {
-        const raw = trailers['aynig-remote'];
-        if (Array.isArray(raw)) {
-            return String(raw[0] || '').trim();
+        const target = 'aynig-remote';
+        for (const [key, value] of Object.entries(trailers || {})) {
+            if (key.toLowerCase() !== target) {
+                continue;
+            }
+            if (Array.isArray(value)) {
+                return String(value[value.length - 1] || '').trim();
+            }
+            return String(value || '').trim();
         }
-        return String(raw || '').trim();
+        return '';
     }
 
     async resolveAynigRemoteFromHead() {

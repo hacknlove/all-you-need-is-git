@@ -54,15 +54,15 @@ export function parseTrailerArg(raw) {
 }
 
 export function trailerValue(trailers, key) {
-  const target = String(key).toLowerCase();
+  const target = String(key).trim().toLowerCase();
   for (const [k, value] of Object.entries(trailers || {})) {
-    if (k.toLowerCase() !== target) {
+    if (String(k).trim().toLowerCase() !== target) {
       continue;
     }
     if (Array.isArray(value)) {
-      return String(value[value.length - 1] || '');
+      return String(value[value.length - 1] || '').trim();
     }
-    return String(value || '');
+    return String(value || '').trim();
   }
   return '';
 }

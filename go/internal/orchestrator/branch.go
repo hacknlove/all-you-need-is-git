@@ -57,13 +57,22 @@ func (b *Branch) Run() error {
 }
 
 func trailerValue(trailers map[string][]string, key string) string {
-	values, ok := trailers[key]
-	if !ok || len(values) == 0 {
+	if trailers == nil {
 		return ""
 	}
-	value := strings.TrimSpace(values[0])
-	if value == "" {
-		return ""
+	want := strings.ToLower(strings.TrimSpace(key))
+	for k, values := range trailers {
+		if strings.ToLower(strings.TrimSpace(k)) != want {
+			continue
+		}
+		if len(values) == 0 {
+			return ""
+		}
+		value := strings.TrimSpace(values[len(values)-1])
+		if value == "" {
+			return ""
+		}
+		return value
 	}
-	return value
+	return ""
 }

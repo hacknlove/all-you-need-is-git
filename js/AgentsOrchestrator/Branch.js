@@ -57,8 +57,7 @@ export class Branch {
             commitDate
         } = await this.parseLastCommitMessage();
 
-        const rawTrailerLevel = trailers?.['aynig-log-level'];
-        const trailerLevel = String(Array.isArray(rawTrailerLevel) ? rawTrailerLevel[0] : rawTrailerLevel || '').trim();
+        const trailerLevel = String(this.trailerValue(trailers, 'aynig-log-level')).trim();
         const resolvedLevel = resolveLevel({
             cliLevel: this.config.logLevel,
             cliSet: this.config.logLevelSet,
@@ -80,5 +79,19 @@ export class Branch {
             logLevel: resolvedLevel
         });
         await command.run();
+    }
+
+    trailerValue(trailers, key) {
+        const target = String(key).toLowerCase();
+        for (const [k, value] of Object.entries(trailers || {})) {
+            if (k.toLowerCase() !== target) {
+                continue;
+            }
+            if (Array.isArray(value)) {
+                return String(value[value.length - 1] || '');
+            }
+            return String(value || '');
+        }
+        return '';
     }
 }

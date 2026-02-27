@@ -13,19 +13,18 @@ function splitCommitMessage(fullMessage) {
   return { firstLine, body };
 }
 
-function normalizeTrailerValue(value) {
-  if (Array.isArray(value)) {
-    return value[value.length - 1];
+function trailerValue(trailers, key) {
+  const target = String(key).trim().toLowerCase();
+  for (const [k, value] of Object.entries(trailers || {})) {
+    if (String(k).trim().toLowerCase() !== target) {
+      continue;
+    }
+    if (Array.isArray(value)) {
+      return String(value[value.length - 1] || '').trim();
+    }
+    return String(value || '').trim();
   }
-  return value;
-}
-
-function toLowerCaseKeys(trailers) {
-  const out = {};
-  for (const [key, value] of Object.entries(trailers || {})) {
-    out[key.toLowerCase()] = value;
-  }
-  return out;
+  return '';
 }
 
 function leaseStatusForState(state, leaseSecondsRaw, committerDate) {
@@ -54,12 +53,11 @@ async function action(options) {
 
     const { firstLine, body } = splitCommitMessage(fullMessage);
     const { trailers } = await parseCommitMessage({ message: firstLine, body });
-    const trailersLower = toLowerCaseKeys(trailers);
 
-    const state = normalizeTrailerValue(trailersLower['aynig-state']);
-    const runId = normalizeTrailerValue(trailersLower['aynig-run-id']);
-    const leaseSecondsRaw = normalizeTrailerValue(trailersLower['aynig-lease-seconds']);
-    const originState = normalizeTrailerValue(trailersLower['aynig-origin-state']);
+    const state = trailerValue(trailers, 'aynig-state');
+    const runId = trailerValue(trailers, 'aynig-run-id');
+    const leaseSecondsRaw = trailerValue(trailers, 'aynig-lease-seconds');
+    const originState = trailerValue(trailers, 'aynig-origin-state');
     const leaseStatus = leaseStatusForState(state, leaseSecondsRaw, committerDate);
 
     let commandStatus = 'missing';
@@ -73,7 +71,20 @@ async function action(options) {
       shouldResolveCommand = false;
     }
 
-    if (shouldResolveCommand && commandState && commandState !== 'working') {
+  if (shouldResolveCommand && commandState && commandState !== 'working') {
+    const roleName = String(process.env.AYNIG_ROLE || '').trim();
+    if (roleName) {
+      const rolePath = path.join(repoRoot, '.aynig', 'roles', roleName, 'command', commandState);
+      try {
+        await fs.access(rolePath, constants.X_OK);
+        commandStatus = 'exists';
+        commandPath = rolePath;
+      } catch {
+        commandStatus = 'missing';
+        commandPath = rolePath;
+      }
+    }
+    if (!commandPath) {
       commandPath = path.join(repoRoot, '.aynig', 'command', commandState);
       try {
         await fs.access(commandPath, constants.X_OK);
@@ -81,9 +92,10 @@ async function action(options) {
       } catch {
         commandStatus = 'missing';
       }
-    } else if (!shouldResolveCommand) {
-      commandStatus = 'lease';
     }
+  } else if (!shouldResolveCommand) {
+    commandStatus = 'lease';
+  }
 
     console.log(`branch: ${branch}`);
     console.log(`head: ${headCommit}`);

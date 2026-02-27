@@ -10,7 +10,9 @@ import { registerStatusCommand } from './commands/status.js';
 import { registerEventsCommand } from './commands/events.js';
 import { registerSetWorkingCommand } from './commands/set-working.js';
 import { registerSetStateCommand } from './commands/set-state.js';
-import pkg from './package.json' assert { type: 'json' };
+import { readFileSync } from 'node:fs';
+
+const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8'));
 
 const program = new Command();
 

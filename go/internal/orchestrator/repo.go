@@ -139,7 +139,7 @@ func firstLowerTrailerValue(trailers map[string][]string, key string) string {
 		if len(values) == 0 {
 			return ""
 		}
-		return strings.TrimSpace(values[0])
+		return strings.TrimSpace(values[len(values)-1])
 	}
 	return ""
 }

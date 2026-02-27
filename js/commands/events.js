@@ -10,19 +10,18 @@ function splitCommitMessage(fullMessage) {
   return { firstLine, body };
 }
 
-function normalizeTrailerValue(value) {
-  if (Array.isArray(value)) {
-    return value[value.length - 1];
+function trailerValue(trailers, key) {
+  const target = String(key).trim().toLowerCase();
+  for (const [k, value] of Object.entries(trailers || {})) {
+    if (String(k).trim().toLowerCase() !== target) {
+      continue;
+    }
+    if (Array.isArray(value)) {
+      return String(value[value.length - 1] || '').trim();
+    }
+    return String(value || '').trim();
   }
-  return value;
-}
-
-function toLowerCaseKeys(trailers) {
-  const out = {};
-  for (const [key, value] of Object.entries(trailers || {})) {
-    out[key.toLowerCase()] = value;
-  }
-  return out;
+  return '';
 }
 
 async function action(options) {
@@ -50,10 +49,9 @@ async function action(options) {
       const message = parts.slice(2).join('\x1f');
       const { firstLine, body } = splitCommitMessage(message);
       const { trailers } = await parseCommitMessage({ message: firstLine, body });
-      const trailersLower = toLowerCaseKeys(trailers);
-      const state = normalizeTrailerValue(trailersLower['aynig-state']);
-      const runId = normalizeTrailerValue(trailersLower['aynig-run-id']);
-      const originState = normalizeTrailerValue(trailersLower['aynig-origin-state']);
+      const state = trailerValue(trailers, 'aynig-state');
+      const runId = trailerValue(trailers, 'aynig-run-id');
+      const originState = trailerValue(trailers, 'aynig-origin-state');
 
       events.push({
         commit,
