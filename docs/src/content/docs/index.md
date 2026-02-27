@@ -9,7 +9,12 @@ hero:
     alt: AYNIG hero illustration
 ---
 
-AYNIG lets you drive workflows from Git commits. You define commands in `.aynig/command/`, and the runner executes them based on the `aynig-state` trailer in the latest commit.
+AYNIG uses Git as the source of truth for a workflow runner.
+Commands live in `.aynig/command/`, and the runner selects and executes them based on the `aynig-state` trailer in the latest commit.
+
+If you prefer small, composable tools and want to shape your own process instead of adopting a monolithic platform, AYNIG follows that philosophy.
+
+It’s aimed at teams and individuals who favor a Unix-style model: simple primitives, composition, a few sensible conventions, and full control over their workflow.
 
 ## What AYNIG is
 
