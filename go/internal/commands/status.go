@@ -30,7 +30,11 @@ func leaseStatusForState(state string, leaseSecondsRaw string, committerDate str
 	return "active"
 }
 
-func Status() error {
+type StatusOptions struct {
+	Role string
+}
+
+func Status(options StatusOptions) error {
 	repoRoot, err := gitx.Run("", "rev-parse", "--show-toplevel")
 	if err != nil {
 		return fmt.Errorf("Error: Not a Git repository. Please run `git init` first.")
@@ -83,7 +87,10 @@ func Status() error {
 		shouldResolveCommand = false
 	}
 
-	roleName := strings.TrimSpace(os.Getenv("AYNIG_ROLE"))
+	roleName := strings.TrimSpace(options.Role)
+	if roleName == "" {
+		roleName = strings.TrimSpace(os.Getenv("AYNIG_ROLE"))
+	}
 
 	if shouldResolveCommand && commandState != "" && commandState != "working" {
 		if roleName != "" {

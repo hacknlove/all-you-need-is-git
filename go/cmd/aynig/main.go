@@ -27,10 +27,7 @@ func main() {
 	case "set-state":
 		setStateCmd(os.Args[2:])
 	case "status":
-		if err := commands.Status(); err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			os.Exit(1)
-		}
+		statusCmd(os.Args[2:])
 	case "init":
 		if err := commands.Init(); err != nil {
 			fmt.Fprintln(os.Stderr, err)
@@ -230,4 +227,15 @@ func printUsage() {
 	fmt.Println("  events    Show recent AYNIG events")
 	fmt.Println("  update    Download and install the latest AYNIG release")
 	fmt.Println("  version   Print the current AYNIG version")
+}
+
+func statusCmd(args []string) {
+	fs := flag.NewFlagSet("status", flag.ExitOnError)
+	role := fs.String("role", "", "Use role-specific commands from .aynig/roles/<name>/command when available")
+	fs.Parse(args)
+
+	if err := commands.Status(commands.StatusOptions{Role: *role}); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
 }

@@ -71,31 +71,31 @@ async function action(options) {
       shouldResolveCommand = false;
     }
 
-  if (shouldResolveCommand && commandState && commandState !== 'working') {
-    const roleName = String(process.env.AYNIG_ROLE || '').trim();
-    if (roleName) {
-      const rolePath = path.join(repoRoot, '.aynig', 'roles', roleName, 'command', commandState);
-      try {
-        await fs.access(rolePath, constants.X_OK);
-        commandStatus = 'exists';
-        commandPath = rolePath;
-      } catch {
-        commandStatus = 'missing';
-        commandPath = rolePath;
+    if (shouldResolveCommand && commandState && commandState !== 'working') {
+      const roleName = String(options.role || '').trim() || String(process.env.AYNIG_ROLE || '').trim();
+      if (roleName) {
+        const rolePath = path.join(repoRoot, '.aynig', 'roles', roleName, 'command', commandState);
+        try {
+          await fs.access(rolePath, constants.X_OK);
+          commandStatus = 'exists';
+          commandPath = rolePath;
+        } catch {
+          commandStatus = 'missing';
+          commandPath = rolePath;
+        }
       }
-    }
-    if (!commandPath) {
-      commandPath = path.join(repoRoot, '.aynig', 'command', commandState);
-      try {
-        await fs.access(commandPath, constants.X_OK);
-        commandStatus = 'exists';
-      } catch {
-        commandStatus = 'missing';
+      if (!commandPath) {
+        commandPath = path.join(repoRoot, '.aynig', 'command', commandState);
+        try {
+          await fs.access(commandPath, constants.X_OK);
+          commandStatus = 'exists';
+        } catch {
+          commandStatus = 'missing';
+        }
       }
+    } else if (!shouldResolveCommand) {
+      commandStatus = 'lease';
     }
-  } else if (!shouldResolveCommand) {
-    commandStatus = 'lease';
-  }
 
     console.log(`branch: ${branch}`);
     console.log(`head: ${headCommit}`);
@@ -119,5 +119,6 @@ export function registerStatusCommand(program) {
   program
     .command('status')
     .description('Show the current AYNIG state for this branch')
+    .option('--role <name>', 'Use role-specific commands from .aynig/roles/<name>/command when available')
     .action(action);
 }
