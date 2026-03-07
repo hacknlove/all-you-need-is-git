@@ -12,6 +12,7 @@ This repository contains the AYNIG implementations and its documentation site.
 - `go/` — Go implementation
 - `js/` — Node.js implementation (CLI entrypoint)
 - `docs/` — Documentation site (Astro + Starlight)
+- `slides/` — Slidev presentation workspace (index + scoped decks, Cloudflare Pages-ready build output)
 - `ops-workflow-pack/` — optional workflow pack
 
 ## Development
@@ -50,6 +51,21 @@ Build docs:
 
 ```bash
 cd docs
+npm run build
+```
+
+### Slides
+
+```bash
+cd slides
+npm ci
+npm run dev
+```
+
+Build slides (index + scoped decks for deployment):
+
+```bash
+cd slides
 npm run build
 ```
 
