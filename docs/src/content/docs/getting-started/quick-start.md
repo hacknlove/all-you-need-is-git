@@ -27,17 +27,23 @@ This creates:
 
 ## 3) Add a command
 
-Create an executable command at `.aynig/command/build`:
+Create an executable command at `.aynig/command/human-turn` with something like this:
 
 ```bash
-mkdir -p .aynig/command
-cat > .aynig/command/build <<'EOF'
-#!/usr/bin/env bash
-set -euo pipefail
+#!/bin/bash
 
-echo "Build requested: $AYNIG_BODY"
-EOF
-chmod +x .aynig/command/build
+case "$(uname)" in
+  Darwin)
+    osascript -e "display notification \"$AYNIG_BODY\" with title \"AYNIG\""
+    afplay /System/Library/Sounds/Glass.aiff >/dev/null 2>&1 &
+    ;;
+  Linux)
+    notify-send "AYNIG" "$AYNIG_BODY"
+    paplay /usr/share/sounds/freedesktop/stereo/complete.oga >/dev/null 2>&1 &
+    ;;
+esac
+
+aynig set-working "human-turn" --lease-seconds 3600
 ```
 
 ## 4) Create a commit with a state
@@ -45,11 +51,11 @@ chmod +x .aynig/command/build
 Create a commit whose **message** includes an `aynig-state:` trailer:
 
 ```text
-chore: request a build
+chore: Implementation done
 
-Build the project.
+Please review and merge.
 
-aynig-state: build
+aynig-state: human-turn
 ```
 
 ## 5) Run AYNIG
@@ -58,4 +64,8 @@ aynig-state: build
 aynig run
 ```
 
-AYNIG will read `HEAD`, resolve the command for `aynig-state: build`, execute it, and then the command should produce a new commit advancing the state.
+AYNIG will read `HEAD`, resolve the command for `aynig-state: human-turn`, execute it, and then the command should produce a new commit advancing the state.
+
+## What a command can do
+
+Commands can do anything you can do in a script, including prompting agents.

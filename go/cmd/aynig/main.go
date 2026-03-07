@@ -155,18 +155,20 @@ func setWorkingCmd(args []string) {
 	prompt := fs.String("prompt", "", "Commit prompt/body")
 	promptFile := fs.String("prompt-file", "", "Path to file used as prompt/body")
 	promptStdin := fs.Bool("prompt-stdin", false, "Read prompt/body from stdin")
+	leaseSeconds := fs.Int("lease-seconds", 0, "Lease duration in seconds (overrides aynig-lease-seconds trailer)")
 	remote := fs.String("aynig-remote", "", "Remote name to push after commit")
 	var trailers trailerListFlag
 	fs.Var(&trailers, "trailer", "Additional trailer in key:value format (repeatable)")
 	fs.Parse(args)
 
 	if err := commands.SetWorking(commands.SetWorkingOptions{
-		Subject:     *subject,
-		Prompt:      *prompt,
-		PromptFile:  *promptFile,
-		PromptStdin: *promptStdin,
-		AynigRemote: *remote,
-		Trailers:    trailers,
+		Subject:      *subject,
+		Prompt:       *prompt,
+		PromptFile:   *promptFile,
+		PromptStdin:  *promptStdin,
+		LeaseSeconds: *leaseSeconds,
+		AynigRemote:  *remote,
+		Trailers:     trailers,
 	}); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)

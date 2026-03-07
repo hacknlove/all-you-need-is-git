@@ -31,11 +31,11 @@ they can potentially cause a runner to execute `.aynig/command/<some-state>`.
 
 ## Auditing
 
-Because each tick is a commit, you can audit:
+Because each step is a commit, you can audit:
 
 - which state was executed
 - which prompt/body was provided
 - what trailers were set
 - what code changes were made
 
-This is one of the core benefits of a Git-native control plane.
+This is one of the core benefits of a Git-native workflow.

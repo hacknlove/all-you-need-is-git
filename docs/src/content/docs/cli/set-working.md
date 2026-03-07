@@ -22,4 +22,5 @@ Examples:
 aynig set-working
 aynig set-working --subject "chore: heartbeat" --prompt "Lease refresh"
 aynig set-working --prompt-file ./prompt.txt --trailer "aynig-note: retry"
+aynig set-working --lease-seconds 600
 ```

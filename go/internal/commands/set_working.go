@@ -10,12 +10,13 @@ import (
 )
 
 type SetWorkingOptions struct {
-	Subject     string
-	Prompt      string
-	PromptFile  string
-	PromptStdin bool
-	AynigRemote string
-	Trailers    []string
+	Subject      string
+	Prompt       string
+	PromptFile   string
+	PromptStdin  bool
+	AynigRemote  string
+	LeaseSeconds int
+	Trailers     []string
 }
 
 func SetWorking(opts SetWorkingOptions) error {
@@ -66,6 +67,9 @@ func SetWorking(opts SetWorkingOptions) error {
 	}
 
 	leaseSeconds := parseLeaseSeconds(headTrailers)
+	if opts.LeaseSeconds > 0 {
+		leaseSeconds = opts.LeaseSeconds
+	}
 
 	trailers := []statex.Trailer{
 		{Key: "aynig-state", Value: "working"},

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-label="Git logo rhombus">
+  <rect x="0" y="0" width="256" height="256" fill="#FFFFFF"/>
+  <rect x="48" y="48" width="160" height="160" rx="24" ry="24" transform="rotate(45 128 128)" fill="#F05033"/>
+  <g fill="none" stroke="#FFFFFF" stroke-width="14" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="58.72" y1="188" x2="128" y2="68"/>
+    <line x1="197.28" y1="188" x2="128" y2="68"/>
+    <line x1="93.36" y1="128" x2="162.64" y2="128"/>
+  </g>
+  <circle cx="93.36" cy="128" r="14" fill="#FFFFFF"/>
+  <circle cx="162.64" cy="128" r="14" fill="#FFFFFF"/>
+  <circle cx="128" cy="68" r="14" fill="#FFFFFF"/>
+</svg>

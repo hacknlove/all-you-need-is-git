@@ -1,6 +1,6 @@
 ---
 title: Retries
-description: Retry conventions that keep the kernel minimal.
+description: Retry conventions that keep AYNIG minimal.
 ---
 
 AYNIG does not implement retries. Retrying is a **workflow policy**.
@@ -13,4 +13,4 @@ A simple convention:
 - If a command fails, create a new commit with the same `aynig-state` and increment the attempt.
 - Stop retrying when attempt reaches max.
 
-These are conventions only; the kernel does not interpret them.
+These are conventions only; AYNIG does not interpret them.

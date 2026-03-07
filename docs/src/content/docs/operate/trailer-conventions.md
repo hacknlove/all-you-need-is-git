@@ -3,7 +3,7 @@ title: Trailer Conventions
 description: Recommended trailer keys your workflows may use.
 ---
 
-These are **conventions only**. The kernel does not interpret them.
+These are **conventions only**. AYNIG does not interpret them.
 
 Suggested keys:
 

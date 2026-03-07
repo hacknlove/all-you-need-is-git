@@ -1,12 +1,12 @@
 ---
-title: Kernel Contract
+title: Runner Contract
 description: The minimum guarantees of the AYNIG runner.
 ---
 
-# AYNIG Kernel Contract (v0)
+# AYNIG Runner Contract (v0)
 
 This document defines the minimum responsibilities of the AYNIG runner.
-AYNIG does not implement workflows or policies; it provides a **deterministic, Git-based distributed execution mechanism** on top of which other layers can build solutions.
+AYNIG does not implement workflows or policies; it provides a **deterministic, Git-based execution mechanism** that other tools can build on.
 
 The canonical contract lives at the repository root in `CONTRACT.md`.
 
@@ -28,24 +28,24 @@ The mandatory trailer is:
 aynig-state: <state>
 ```
 
-The `<state>` value is the dispatch key of the command to execute.
+The `<state>` value is the key used to select the command to execute.
 
 AYNIG:
 
 1. reads `HEAD`
 2. extracts trailers
-3. resolves the command
-4. executes
-5. validates the result by looking only at the new `HEAD`
+3. selects the command
+4. executes it
+5. checks the result by looking only at the new `HEAD`
 
 AYNIG never interprets business semantics.
 
-## 2. Dispatch
+## 2. Command selection
 
 `aynig-state: <state>` → executable command.
 
-AYNIG does not define what a state means; it only uses it as a selector.
-Semantics belong to upper layers (frameworks, policies, profiles).
+AYNIG does not define what a state means; it only uses it to select a command.
+Meaning belongs to your workflow.
 
 ## 3. Execution
 
@@ -66,9 +66,9 @@ AYNIG:
 
 **Only the command advances the state machine.**
 
-## 4. Distributed mutual exclusion (working lease)
+## 4. Working lease (one runner at a time)
 
-AYNIG implements a distributed lock using Git.
+AYNIG prevents two runners from working on the same branch at the same time by using Git commits.
 
 Before executing, the runner creates a commit:
 
@@ -80,7 +80,7 @@ and pushes it to the branch.
 
 If the push fails (the branch advanced), another runner won the execution → abort.
 
-This behaves as a **remote compare-and-swap** without external coordination.
+This behaves like a **remote compare-and-swap** without external coordination.
 
 ### Reserved `working` trailers
 
@@ -122,12 +122,12 @@ History is never scanned.
 
 ## 6. Valid completion
 
-A tick is valid when, after execution:
+A step is valid when, after execution:
 
 - `HEAD` contains `aynig-state: <state>`
 - `state != working`
 
-That commit is the **tick output**.
+That commit is the **step output**.
 
 AYNIG does not search previous commits nor attempt to reconstruct history.
 It only observes the latest state.
@@ -166,9 +166,9 @@ AYNIG does not:
 - resolve semantic conflicts
 - guarantee task success
 
-Those belong to frameworks built on top.
+Those belong to tools and workflows built on top.
 
-Reason: keep the kernel small, deterministic, and universal.
+Reason: keep AYNIG small, deterministic, and universal.
 
 ## 9. System guarantees
 
@@ -184,10 +184,10 @@ AYNIG guarantees:
 
 AYNIG turns Git into:
 
-- an event bus
+- a place to store workflow events
 - a distributed lock
 - a state machine
 
-The runner acts as an execution kernel: execute → validate → observe.
+The runner acts as a simple loop: execute → check → observe.
 
 All intelligence lives above it.

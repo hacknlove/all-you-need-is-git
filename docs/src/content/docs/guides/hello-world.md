@@ -56,5 +56,5 @@ aynig run
 
 ## Notes
 
-- The kernel does not decide the next state — the command does.
+- AYNIG does not decide the next state — the command does.
 - Use `COMMANDS.md` in your repo to document which states exist.

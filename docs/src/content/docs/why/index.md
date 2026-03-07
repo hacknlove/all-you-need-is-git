@@ -1,8 +1,8 @@
 ---
 title: Why AYNIG
-description: Why use Git as the control plane for agentic workflows.
+description: Why use Git commits to run workflows.
 ---
 
-AYNIG is for teams that want **auditable, Git-native orchestration** without an external control plane.
+AYNIG is for teams that want **auditable, Git-native workflows** without extra infrastructure.
 
-It treats commits as state events and keeps workflow semantics in your repository.
+It treats commits as workflow events and keeps the workflow logic in your repository.

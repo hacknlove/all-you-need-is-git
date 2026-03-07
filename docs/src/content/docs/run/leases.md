@@ -3,7 +3,7 @@ title: Leases and Liveness
 description: How AYNIG prevents two runners from executing the same branch.
 ---
 
-AYNIG implements a distributed mutual exclusion mechanism (“lease”) using Git commits.
+AYNIG prevents two runners from executing the same branch by using a Git-based lease.
 
 Before executing, the runner creates a `working` commit to claim the branch.
 
@@ -27,4 +27,4 @@ If a lease expires, a runner may mark the branch as stalled:
 aynig-state: stalled
 ```
 
-For the full specification, see [Kernel Contract](/contract/).
+For the full specification, see [Runner Contract](/contract/).

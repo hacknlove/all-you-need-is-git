@@ -3,7 +3,7 @@ title: Commit Protocol
 description: How AYNIG reads intent from commit messages.
 ---
 
-AYNIG dispatches from the latest commit (`HEAD`) by reading trailers in the commit message.
+AYNIG chooses the command from the latest commit (`HEAD`) by reading trailers in the commit message.
 
 Minimum required trailer:
 

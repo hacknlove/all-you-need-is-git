@@ -1,9 +1,9 @@
 ---
 title: Benefits
-description: What you get by using Git as the control plane.
+description: What you get by using Git commits to run workflows.
 ---
 
 - No SaaS / no hidden state
-- Fully auditable execution (each tick is a commit)
+- Fully auditable execution (each step is a commit)
 - Works with existing Git practices (branches, review, history)
-- Agent-agnostic and composable
+- Tool-agnostic and composable

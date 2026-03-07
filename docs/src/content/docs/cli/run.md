@@ -33,6 +33,6 @@ aynig run --role some-role
 
 Log level precedence: `--log-level` > `aynig-log-level` trailer > `AYNIG_LOG_LEVEL` env.
 
-The runner reads `HEAD`, dispatches to `.aynig/command/<state>`, and validates the new `HEAD`.
+The runner reads `HEAD`, runs `.aynig/command/<state>`, and checks the new `HEAD`.
 
 Command stdout/stderr is written to `.aynig/logs/<commit-hash>.log`, where `<commit-hash>` is the commit that triggered the command.

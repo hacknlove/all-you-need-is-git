@@ -34,7 +34,9 @@ export async function action(options) {
   const runId = trailerValue(headTrailers, 'aynig-run-id').trim() || `run-${randomUUID().replace(/-/g, '')}`;
   const leaseRaw = trailerValue(headTrailers, 'aynig-lease-seconds').trim();
   const leaseSeconds = Number.parseInt(leaseRaw, 10);
-  const lease = Number.isFinite(leaseSeconds) && leaseSeconds > 0 ? leaseSeconds : defaultConfig.leaseSeconds;
+  const defaultLease = Number.isFinite(leaseSeconds) && leaseSeconds > 0 ? leaseSeconds : defaultConfig.leaseSeconds;
+  const cliLease = Number.parseInt(options.leaseSeconds, 10);
+  const lease = Number.isFinite(cliLease) && cliLease > 0 ? cliLease : defaultLease;
 
   const trailers = [
     { key: 'aynig-state', value: 'working' },
@@ -83,6 +85,7 @@ export function registerSetWorkingCommand(program) {
     .option('--prompt <text>', 'Commit prompt/body')
     .option('--prompt-file <path>', 'Path to file used as prompt/body')
     .option('--prompt-stdin', 'Read prompt/body from stdin')
+    .option('--lease-seconds <seconds>', 'Lease duration in seconds (overrides aynig-lease-seconds trailer)')
     .option('--aynig-remote <name>', 'Remote name to push after commit')
     .option('--trailer <key:value>', 'Additional trailer (repeatable)', (value, acc) => {
       acc.push(value);

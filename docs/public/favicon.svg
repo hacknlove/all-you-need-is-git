@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" width="1000" height="1000"><style>
+    #light-icon {
+      display: inline;
+    }
+    #dark-icon {
+      display: none;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      #light-icon {
+        display: none;
+      }
+      #dark-icon {
+        display: inline;
+      }
+    }
+  </style><g id="light-icon"><svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" width="1000" height="1000"><g><g transform="matrix(3.90625,0,0,3.90625,0,0)"><svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="256" height="256" viewBox="0 0 256 256" role="img" aria-label="Git logo rhombus" id="svg76" sodipodi:docname="git-logo-rhombus-negative.svg" inkscape:version="1.2.2 (b0a8486541, 2022-12-01)" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd" xmlns:svg="http://www.w3.org/2000/svg"><defs id="defs80"></defs><sodipodi:namedview id="namedview78" pagecolor="#ffffff" bordercolor="#666666" borderopacity="1.0" inkscape:showpageshadow="2" inkscape:pageopacity="0.0" inkscape:pagecheckerboard="0" inkscape:deskcolor="#d1d1d1" showgrid="false" inkscape:zoom="3.6875" inkscape:cx="85.694915" inkscape:cy="129.76271" inkscape:window-width="2560" inkscape:window-height="1538" inkscape:window-x="0" inkscape:window-y="32" inkscape:window-maximized="1" inkscape:current-layer="svg76"></sodipodi:namedview><path id="rect60" style="fill:#f05033" d="M 55.013322 55.013322 C 50.675346 59.351298 48.000259 65.352499 48.000259 72.000457 L 48.000259 183.99954 C 48.000259 197.29548 58.704541 207.99974 72.000457 207.99974 L 111.13164 207.99974 L 99.871789 165.98075 A 14 14 0 0 1 93.605884 162.39412 A 14 14 0 0 1 93.605884 142.59513 L 81.902715 98.920234 A 14 14 0 0 1 75.674098 95.473088 A 14 14 0 0 1 75.674098 75.674098 A 14 14 0 0 1 95.473088 75.674098 A 14 14 0 0 1 98.920234 81.902715 L 142.59513 93.605884 A 14 14 0 0 1 162.39412 93.605884 A 14 14 0 0 1 165.84126 99.834501 L 207.99974 111.13164 L 207.99974 72.000457 C 207.99974 58.704541 197.29548 48.000259 183.99954 48.000259 L 72.000457 48.000259 C 65.352499 48.000259 59.351298 50.675346 55.013322 55.013322 z M 95.473088 95.473088 L 107.1293 138.9712 L 138.9712 107.1293 L 95.473088 95.473088 z M 116.90588 148.99361 A 14 14 0 0 1 113.40487 162.39412 L 125.62456 207.99974 L 183.99954 207.99974 C 197.29548 207.99974 207.99974 197.29548 207.99974 183.99954 L 207.99974 125.62456 L 162.39412 113.40487 A 14 14 0 0 1 148.99361 116.90588 L 116.90588 148.99361 z " transform="rotate(45 128 128)"></path><g fill="none" stroke="#FFFFFF" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" id="g68"></g></svg></g></g></svg></g><g id="dark-icon"><svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" width="1000" height="1000"><g><g transform="matrix(3.90625,0,0,3.90625,0,0)"><svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-label="Git logo rhombus"><rect x="0" y="0" width="256" height="256" fill="#FFFFFF"></rect><rect x="48" y="48" width="160" height="160" rx="24" ry="24" transform="rotate(45 128 128)" fill="#F05033"></rect><g fill="none" stroke="#FFFFFF" stroke-width="14" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="58.72" y1="188" x2="128" y2="68"></line>
+    <line x1="197.28" y1="188" x2="128" y2="68"></line>
+    <line x1="93.36" y1="128" x2="162.64" y2="128"></line>
+  </g><circle cx="93.36" cy="128" r="14" fill="#FFFFFF"></circle><circle cx="162.64" cy="128" r="14" fill="#FFFFFF"></circle><circle cx="128" cy="68" r="14" fill="#FFFFFF"></circle></svg></g></g></svg></g></svg>
