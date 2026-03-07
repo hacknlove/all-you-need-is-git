@@ -1,0 +1,4 @@
+/.well-known/* /.well-known/:splat 200
+/example-deck-1/* /example-deck-1/index.html 200
+/example-deck-2/* /example-deck-2/index.html 200
+/* /index.html 200

@@ -1,0 +1,23 @@
+{
+  "name": "slides",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "npm run build:index && npm run build:decks",
+    "build:index": "slidev build slides.md",
+    "build:decks": "npm run build:deck:1 && npm run build:deck:2",
+    "build:deck:1": "node -e \"require('fs').rmSync('dist/example-deck-1', { recursive: true, force: true })\" && slidev build slides/example-deck-1.md --out ../dist/example-deck-1 --base /example-deck-1/",
+    "build:deck:2": "node -e \"require('fs').rmSync('dist/example-deck-2', { recursive: true, force: true })\" && slidev build slides/example-deck-2.md --out ../dist/example-deck-2 --base /example-deck-2/",
+    "build:all": "npm run build",
+    "dev": "slidev --open",
+    "dev:deck:1": "slidev slides/example-deck-1.md --open",
+    "dev:deck:2": "slidev slides/example-deck-2.md --open",
+    "export": "slidev export"
+  },
+  "dependencies": {
+    "@slidev/cli": "^51.8.2",
+    "@slidev/theme-default": "latest",
+    "@slidev/theme-seriph": "latest",
+    "vue": "^3.5.16"
+  }
+}

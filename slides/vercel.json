@@ -1,0 +1,9 @@
+{
+  "rewrites": [
+    { "source": "/example-deck-1/(.*)", "destination": "/example-deck-1/index.html" },
+    { "source": "/example-deck-2/(.*)", "destination": "/example-deck-2/index.html" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist"
+}

@@ -1,0 +1,26 @@
+[build]
+publish = "dist"
+command = "npm run build"
+
+[build.environment]
+NODE_VERSION = "20"
+
+[[redirects]]
+from = "/.well-known/*"
+to = "/.well-known/:splat"
+status = 200
+
+[[redirects]]
+from = "/example-deck-1/*"
+to = "/example-deck-1/index.html"
+status = 200
+
+[[redirects]]
+from = "/example-deck-2/*"
+to = "/example-deck-2/index.html"
+status = 200
+
+[[redirects]]
+from = "/*"
+to = "/index.html"
+status = 200
