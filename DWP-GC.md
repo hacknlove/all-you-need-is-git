@@ -59,6 +59,28 @@ Recommended behavior (non-normative):
 - If `dwp-state` is missing, treat the commit as non-actionable.
 - If the handler is missing, surface an error but do not mutate history.
 
+## 7) Source locator
+
+DWP standardizes an optional trailer:
+
+- `dwp-source: <locator>`
+
+For DWP/GC, this MAY identify the Git remote used as the source of truth.
+
+Examples:
+
+```text
+dwp-source: git:origin
+```
+
+or a URL:
+
+```text
+dwp-source: git:https://github.com/org/repo.git
+```
+
+Other bindings MAY reuse `dwp-source` (e.g. HTTP endpoints).
+
 ---
 
 ## Appendix: Reference implementation hints

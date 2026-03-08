@@ -73,9 +73,12 @@ When `dwp-state: working` is used, the following trailers are reserved:
 - `dwp-runner-id: <host-id>`
 - `dwp-lease-seconds: <ttl>`
 
+Optional trailers (standardized):
+
+- `dwp-source: <locator>`
+
 Optional trailers (implementation-specific / MAY be standardized later):
 
-- `dwp-remote: <remote-name>`
 - `dwp-log-level: <debug|info|warn|error>`
 
 ---
