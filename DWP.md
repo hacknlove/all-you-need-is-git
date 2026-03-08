@@ -37,12 +37,30 @@ Back-compat:
 
 ## 4) Reserved states (standard)
 
-These states are reserved by DWP and have standard semantics:
+DWP reserves a small set of state names.
 
-- `dwp-state: working`
+- Some are **core** and have protocol-level semantics.
+- Others are **reserved for future standard semantics** (like reserved words in a programming language).
+
+Workflows **MUST NOT** redefine reserved states with conflicting meaning.
+
+### 4.1 Core reserved states (normative semantics)
+
+- `working`
   - indicates a runner has claimed an execution lease for a branch/job
-- `dwp-state: stalled`
+- `stalled`
   - indicates recovery is required (previous lease expired or runner crashed)
+
+### 4.2 Reserved states (no normative semantics yet)
+
+These are reserved to enable future interoperability (dashboards, tooling) without breaking workflows.
+
+- `done` — terminal success candidate
+- `failed` — terminal failure candidate
+- `canceled` — terminal cancellation candidate
+- `blocked` — waiting on external input/decision (human/system)
+- `waiting` — temporary wait (rate limit, window, dependency)
+- `noop` — no work / no-op
 
 ---
 
