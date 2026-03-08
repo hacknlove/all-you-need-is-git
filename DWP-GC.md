@@ -65,6 +65,10 @@ DWP standardizes an optional trailer:
 
 - `dwp-source: <locator>`
 
+DWP also standardizes:
+
+- `dwp-log-level: <debug|info|warn|error>` (hint-only; MAY be ignored)
+
 For DWP/GC, this MAY identify the Git remote used as the source of truth.
 
 Examples:

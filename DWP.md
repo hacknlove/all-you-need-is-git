@@ -76,10 +76,10 @@ When `dwp-state: working` is used, the following trailers are reserved:
 Optional trailers (standardized):
 
 - `dwp-source: <locator>`
-
-Optional trailers (implementation-specific / MAY be standardized later):
-
 - `dwp-log-level: <debug|info|warn|error>`
+
+`dwp-log-level` is a **hint** for runner verbosity. It MUST NOT change workflow semantics.
+Runners MAY ignore it.
 
 ---
 
