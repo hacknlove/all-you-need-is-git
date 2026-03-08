@@ -31,7 +31,7 @@ A workflow is advanced via **state events**. Only the latest event is required f
 - The state key MUST appear exactly once in the trailing metadata block.
 
 Back-compat:
-- Current AYNIG uses `aynig-state:`; we will likely support it as an alias in the AYNIG implementation.
+- **None planned.** AYNIG will migrate to `dwp-state:` as the canonical key.
 
 ---
 
@@ -119,16 +119,14 @@ DWP standardizes a distributed mutual exclusion mechanism via `working` state:
 
 ### Implementation plan (AYNIG)
 
-- Add support in AYNIG implementation:
-  - accept `dwp-state` in addition to `aynig-state`
-  - emit `dwp-*` trailers for working lease (or dual-emit during transition)
-- Update docs pages that currently mention `aynig-state` to mention DWP + binding.
+- Update AYNIG implementation to use DWP keys:
+  - parse `dwp-state` (canonical)
+  - emit `dwp-*` trailers for the working lease
+- Update docs pages that currently mention `aynig-state` to mention DWP + DWP/GC.
 
 ### Compatibility
 
-- Define a transition strategy:
-  - aliasing rules
-  - deprecation timeline (if any)
+- **No backwards compatibility planned** (pre-1.0; no external users yet).
 
 ---
 
