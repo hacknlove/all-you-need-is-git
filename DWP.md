@@ -106,7 +106,7 @@ DWP standardizes a distributed mutual exclusion mechanism via `working` state:
 
 ### Spec structure
 
-- Decide if DWP spec is one doc or split:
+- Split spec into:
   - `DWP.md` (core)
   - `DWP-GC.md` (Git commit binding)
 
@@ -134,9 +134,12 @@ DWP standardizes a distributed mutual exclusion mechanism via `working` state:
 
 ## 9) Open questions
 
-- Should DWP define additional reserved states beyond `working` and `stalled`?
-- Should DWP standardize a generic failure state (e.g. `failed`) or keep it as workflow policy?
-- For DWP/GC, how exactly do we define the "trailing metadata block" in Git commit messages?
-  - rely on Git trailers parsing rules
-  - or define stricter constraints
+- Should DWP standardize terminal semantics for `done`/`failed`/`canceled`, or keep them reserved-only?
+- Should DWP reserve/standardize additional lease-related trailers beyond the current set?
+- Are we happy with strict case-sensitivity for trailer keys long-term?
+
+Resolved (for DWP/GC):
+- Trailer parsing: **Git trailers as the standard**.
+- Duplicate keys: **last wins**.
+- Case handling: **case-sensitive**.
 
