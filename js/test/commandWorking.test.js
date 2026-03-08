@@ -7,9 +7,9 @@ function createCommand(overrides = {}) {
     branchName: 'main',
     isCurrentBranch: true,
     trailers: {
-      'aynig-state': 'working',
-      'aynig-run-id': 'run-789',
-      'aynig-lease-seconds': '10'
+      'dwp-state': 'working',
+      'dwp-run-id': 'run-789',
+      'dwp-lease-seconds': '10'
     },
     body: '',
     commitDate: '2025-01-01T00:00:00.000Z',
@@ -64,8 +64,8 @@ test('checkWorking emits stalled commit when lease expired', async () => {
   }
 
   expect(commitCalls.length).toBe(1);
-  expect(commitCalls[0]).toMatch(/aynig-state: stalled/);
-  expect(commitCalls[0]).toMatch(/aynig-stalled-run: run-789/);
+  expect(commitCalls[0]).toMatch(/dwp-state: stalled/);
+  expect(commitCalls[0]).toMatch(/dwp-stalled-run: run-789/);
 });
 
 test('checkWorking skips when commit date is invalid', async () => {

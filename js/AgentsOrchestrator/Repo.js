@@ -51,15 +51,21 @@ export class Repo {
     }
 
     remoteFromTrailers(trailers = {}) {
-        const target = 'aynig-remote';
+        // DWP: dwp-source is standardized. For Git bindings we support: dwp-source: git:<remote>
+        const target = 'dwp-source';
         for (const [key, value] of Object.entries(trailers || {})) {
             if (key.toLowerCase() !== target) {
                 continue;
             }
-            if (Array.isArray(value)) {
-                return String(value[value.length - 1] || '').trim();
+            const raw = Array.isArray(value) ? String(value[value.length - 1] || '') : String(value || '');
+            const v = raw.trim();
+            if (!v) {
+                return '';
             }
-            return String(value || '').trim();
+            if (v.startsWith('git:')) {
+                return v.slice('git:'.length).trim();
+            }
+            return '';
         }
         return '';
     }

@@ -119,23 +119,23 @@ export class Command {
             return false;
         }
 
-        const roleName = String(this.config?.role || '').trim() || String(process.env.AYNIG_ROLE || '').trim();
+        const roleName = String(this.config?.role || '').trim() || String(process.env.DWP_ROLE || '').trim();
         if (roleName) {
-            const roleDir = resolve(worktreePath, '.aynig', 'roles', roleName, 'command');
+            const roleDir = resolve(worktreePath, '.dwp', 'roles', roleName, 'command');
             const rolePath = await resolveCommandPath(roleDir, commandName);
             if (rolePath) {
                 return rolePath;
             }
         }
 
-        const baseDir = resolve(worktreePath, '.aynig', 'command');
+        const baseDir = resolve(worktreePath, '.dwp', 'command');
         return resolveCommandPath(baseDir, commandName);
     }
 
     async checkWorking() {
         const trailers = this.trailers || {};
 
-        const leaseSeconds = Number(trailers['aynig-lease-seconds']);
+        const leaseSeconds = Number(trailers['dwp-lease-seconds']);
         if (!Number.isFinite(leaseSeconds) || leaseSeconds <= 0) {
             return;
         }
@@ -152,7 +152,7 @@ export class Command {
 
         this.logger.info('Lease expired for branch %s', this.branchName);
 
-        const stalledRun = trailers['aynig-run-id']?.trim() || 'unknown';
+        const stalledRun = trailers['dwp-run-id']?.trim() || 'unknown';
         const worktreePath = await this.getWorkspace();
         if (!worktreePath) {
             return;
@@ -161,11 +161,11 @@ export class Command {
         const worktreeGit = this.gitFactory(worktreePath);
 
         const stalledTrailers = [
-            { key: 'aynig-state', value: 'stalled' },
-            { key: 'aynig-stalled-run', value: stalledRun }
+            { key: 'dwp-state', value: 'stalled' },
+            { key: 'dwp-stalled-run', value: stalledRun }
         ];
         if (this.config.aynigRemote) {
-            stalledTrailers.push({ key: 'aynig-remote', value: this.config.aynigRemote });
+            stalledTrailers.push({ key: 'dwp-source', value: `git:${this.config.aynigRemote}` });
         }
         await commitState(worktreeGit, 'chore: stalled', 'Lease expired', stalledTrailers);
 
@@ -185,7 +185,7 @@ export class Command {
             return;
         }
         if (!this.command) {
-            this.logger.debug('Skipping branch %s (no aynig-state)', this.branchName);
+            this.logger.debug('Skipping branch %s (no dwp-state)', this.branchName);
             return;
         }
 
@@ -218,14 +218,14 @@ export class Command {
         const currentCommitHash = (await worktreeGit.revparse(['HEAD'])).trim();
 
         const workingTrailers = [
-            { key: 'aynig-state', value: 'working' },
-            { key: 'aynig-origin-state', value: originState },
-            { key: 'aynig-run-id', value: runId },
-            { key: 'aynig-runner-id', value: runnerId },
-            { key: 'aynig-lease-seconds', value: String(leaseSeconds) }
+            { key: 'dwp-state', value: 'working' },
+            { key: 'dwp-origin-state', value: originState },
+            { key: 'dwp-run-id', value: runId },
+            { key: 'dwp-runner-id', value: runnerId },
+            { key: 'dwp-lease-seconds', value: String(leaseSeconds) }
         ];
         if (this.config.aynigRemote) {
-            workingTrailers.push({ key: 'aynig-remote', value: this.config.aynigRemote });
+            workingTrailers.push({ key: 'dwp-source', value: `git:${this.config.aynigRemote}` });
         }
         await commitState(worktreeGit, `chore: working`, `command ${this.command} takes control of the branch`, workingTrailers);
 
@@ -252,7 +252,7 @@ export class Command {
             env[`AYNIG_TRAILER_${normalizedKey}`] = envValue;
         }
 
-        const logsDir = resolve(worktreePath, '.aynig', 'logs');
+        const logsDir = resolve(worktreePath, '.dwp', 'logs');
         await mkdir(logsDir, { recursive: true });
         const logPath = resolve(logsDir, `${currentCommitHash}.log`);
         const logFd = openSync(logPath, 'w');
@@ -290,28 +290,16 @@ async function resolveCommandPath(baseDir, commandName) {
 }
 
 function resolveStateTrailer(trailers = {}) {
-    const raw = trailers['aynig-state'];
+    const raw = trailers['dwp-state'];
     if (raw === undefined || raw === null) {
         return { state: '', error: '' };
     }
 
-    if (Array.isArray(raw)) {
-        if (raw.length === 0) {
-            return { state: '', error: '' };
-        }
-        if (raw.length > 1) {
-            return { state: '', error: 'multiple aynig-state trailers' };
-        }
-        const state = String(raw[0]).trim().toLowerCase();
-        if (!state) {
-            return { state: '', error: 'empty aynig-state trailer' };
-        }
-        return { state, error: '' };
-    }
-
-    const state = String(raw).trim().toLowerCase();
+    // DWP/GC: last-wins if duplicated.
+    const pick = Array.isArray(raw) ? raw[raw.length - 1] : raw;
+    const state = String(pick).trim().toLowerCase();
     if (!state) {
-        return { state: '', error: 'empty aynig-state trailer' };
+        return { state: '', error: 'empty dwp-state trailer' };
     }
     return { state, error: '' };
 }

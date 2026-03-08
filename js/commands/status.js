@@ -74,7 +74,7 @@ async function action(options) {
     if (shouldResolveCommand && commandState && commandState !== 'working') {
       const roleName = String(options.role || '').trim() || String(process.env.AYNIG_ROLE || '').trim();
       if (roleName) {
-        const rolePath = path.join(repoRoot, '.aynig', 'roles', roleName, 'command', commandState);
+        const rolePath = path.join(repoRoot, '.dwp', 'roles', roleName, 'command', commandState);
         try {
           await fs.access(rolePath, constants.X_OK);
           commandStatus = 'exists';
@@ -85,7 +85,7 @@ async function action(options) {
         }
       }
       if (!commandPath) {
-        commandPath = path.join(repoRoot, '.aynig', 'command', commandState);
+        commandPath = path.join(repoRoot, '.dwp', 'command', commandState);
         try {
           await fs.access(commandPath, constants.X_OK);
           commandStatus = 'exists';
@@ -119,6 +119,6 @@ export function registerStatusCommand(program) {
   program
     .command('status')
     .description('Show the current AYNIG state for this branch')
-    .option('--role <name>', 'Use role-specific commands from .aynig/roles/<name>/command when available')
+    .option('--role <name>', 'Use role-specific commands from .dwp/roles/<name>/command when available')
     .action(action);
 }

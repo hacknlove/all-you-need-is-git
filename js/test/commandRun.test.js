@@ -9,7 +9,7 @@ function createCommand(overrides = {}) {
     config: { leaseSeconds: 123, logLevel: 'warn' },
     branchName: 'main',
     isCurrentBranch: true,
-    trailers: { 'aynig-state': 'build', 'aynig-run-id': 'run-123' },
+    trailers: { 'dwp-state': 'build', 'dwp-run-id': 'run-123' },
     body: 'do the thing',
     commitDate: '2025-01-01T00:00:00.000Z',
     ...overrides
@@ -33,12 +33,12 @@ test('run writes working commit with configured lease seconds', async () => {
   });
 
   command.getWorkspace = async () => '/tmp/worktree';
-  command.getCommandPath = async () => '/tmp/worktree/.aynig/command/build';
+  command.getCommandPath = async () => '/tmp/worktree/.dwp/command/build';
 
   await command.run();
 
   expect(calls.length).toBe(1);
-  expect(calls[0]).toMatch(/aynig-lease-seconds: 123/);
+  expect(calls[0]).toMatch(/dwp-lease-seconds: 123/);
 });
 
 test('run passes trailers, body, and commit hash to env', async () => {
@@ -47,7 +47,7 @@ test('run passes trailers, body, and commit hash to env', async () => {
     revparse: async () => 'deadbeef\n',
     commit: async () => {},
     push: async () => {},
-    raw: async () => 'chore: working\n\nbody\n\naynig-state: working\n'
+    raw: async () => 'chore: working\n\nbody\n\ndwp-state: working\n'
   };
 
   const command = createCommand({
@@ -59,15 +59,15 @@ test('run passes trailers, body, and commit hash to env', async () => {
   });
 
   command.getWorkspace = async () => '/tmp/worktree';
-  command.getCommandPath = async () => '/tmp/worktree/.aynig/command/build';
+  command.getCommandPath = async () => '/tmp/worktree/.dwp/command/build';
 
   await command.run();
 
   expect(spawnEnv.AYNIG_BODY).toBe('do the thing');
   expect(spawnEnv.AYNIG_COMMIT_HASH).toBe('deadbeef');
   expect(spawnEnv.AYNIG_LOG_LEVEL).toBe('warn');
-  expect(spawnEnv['AYNIG_TRAILER_AYNIG_STATE']).toBe('build');
-  expect(spawnEnv['AYNIG_TRAILER_AYNIG_RUN_ID']).toBe('run-123');
+  expect(spawnEnv['AYNIG_TRAILER_DWP_STATE']).toBe('build');
+  expect(spawnEnv['AYNIG_TRAILER_DWP_RUN_ID']).toBe('run-123');
 });
 
 test('run skips when command path is missing', async () => {
@@ -92,7 +92,7 @@ test('run skips when command path is missing', async () => {
   expect(gitStub.push).not.toHaveBeenCalled();
 });
 
-test('run skips when aynig-state is duplicated', async () => {
+test('run skips when dwp-state is duplicated', async () => {
   const gitStub = {
     revparse: vi.fn(async () => 'deadbeef\n'),
     commit: vi.fn(async () => {}),
@@ -100,7 +100,7 @@ test('run skips when aynig-state is duplicated', async () => {
   };
 
   const command = createCommand({
-    trailers: { 'aynig-state': ['build', 'review'] },
+    trailers: { 'dwp-state': ['build', 'review'] },
     gitFactory: () => gitStub,
     spawnImpl: () => ({ unref: () => {} })
   });
@@ -113,12 +113,12 @@ test('run skips when aynig-state is duplicated', async () => {
 });
 
 test('run creates command log file named after triggering commit', async () => {
-  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'aynig-log-'));
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'dwp-log-'));
   const gitStub = {
     revparse: async () => 'deadbeef\n',
     commit: async () => {},
     push: async () => {},
-    raw: async () => 'chore: working\n\nbody\n\naynig-state: working\n'
+    raw: async () => 'chore: working\n\nbody\n\ndwp-state: working\n'
   };
 
   const command = createCommand({
@@ -127,11 +127,11 @@ test('run creates command log file named after triggering commit', async () => {
   });
 
   command.getWorkspace = async () => tempDir;
-  command.getCommandPath = async () => path.join(tempDir, '.aynig', 'command', 'build');
+  command.getCommandPath = async () => path.join(tempDir, '.dwp', 'command', 'build');
 
   try {
     await command.run();
-    const logPath = path.join(tempDir, '.aynig', 'logs', 'deadbeef.log');
+    const logPath = path.join(tempDir, '.dwp', 'logs', 'deadbeef.log');
     await expect(fs.access(logPath)).resolves.toBeUndefined();
   } finally {
     await fs.rm(tempDir, { recursive: true, force: true });

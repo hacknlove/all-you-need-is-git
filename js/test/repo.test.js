@@ -28,9 +28,10 @@ test('resolveCurrentRemoteBranch ignores upstream from other remotes', async () 
   }
 });
 
-test('remoteFromTrailers reads aynig-remote trailer', () => {
+test('remoteFromTrailers reads dwp-source git:<remote>', () => {
   const repo = new Repo({});
-  expect(repo.remoteFromTrailers({ 'aynig-remote': 'origin' })).toBe('origin');
-  expect(repo.remoteFromTrailers({ 'aynig-remote': [' upstream '] })).toBe('upstream');
+  expect(repo.remoteFromTrailers({ 'dwp-source': 'git:origin' })).toBe('origin');
+  expect(repo.remoteFromTrailers({ 'dwp-source': [' git:upstream '] })).toBe('upstream');
+  expect(repo.remoteFromTrailers({ 'dwp-source': 'http:https://example.com' })).toBe('');
   expect(repo.remoteFromTrailers({})).toBe('');
 });

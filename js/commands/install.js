@@ -30,29 +30,29 @@ async function action(repo, ref, subfolder) {
     await git.clone(normalizedRepo, tmpDir, cloneOptions);
 
     // Determine source path
-    const sourcePath = path.join(tmpDir, subfolder || '.aynig');
+    const sourcePath = path.join(tmpDir, subfolder || '.dwp');
 
-    // Check if source .aynig exists
+    // Check if source .dwp exists
     try {
       await fs.access(sourcePath);
     } catch {
       const refInfo = ref ? ` at ${ref}` : '';
       const subfolderInfo = subfolder ? ` in ${subfolder}` : '';
-      console.error(`Error: No .aynig directory found in ${normalizedRepo}${refInfo}${subfolderInfo}`);
+      console.error(`Error: No .dwp directory found in ${normalizedRepo}${refInfo}${subfolderInfo}`);
       await fs.rm(tmpDir, { recursive: true, force: true });
       process.exit(1);
     }
 
-    // Check for uncommitted changes in .aynig
-    const destPath = '.aynig';
+    // Check for uncommitted changes in .dwp
+    const destPath = '.dwp';
     const statusBefore = await git.status([pathspec(destPath)]);
     if (!statusBefore.isClean()) {
-      console.error(`\nError: .aynig has uncommitted changes. Please commit or stash them first.`);
+      console.error(`\nError: .dwp has uncommitted changes. Please commit or stash them first.`);
       await fs.rm(tmpDir, { recursive: true, force: true });
       process.exit(1);
     }
 
-    // Copy entire .aynig directory recursively
+    // Copy entire .dwp directory recursively
     console.log('Copying workflows...');
     await fse.copy(sourcePath, destPath, {
       overwrite: true,
@@ -64,12 +64,12 @@ async function action(repo, ref, subfolder) {
 
     // Overwritten files (excluding COMMANDS.md)
     const overwritten = statusAfter.modified
-      .filter(f => f !== '.aynig/COMMANDS.md')
+      .filter(f => f !== '.dwp/COMMANDS.md')
       .map(f => path.basename(f));
 
     // New files (excluding COMMANDS.md)
     const newFiles = statusAfter.not_added
-      .filter(f => f !== '.aynig/COMMANDS.md')
+      .filter(f => f !== '.dwp/COMMANDS.md')
       .map(f => path.basename(f));
 
     // Report what was installed
@@ -82,11 +82,11 @@ async function action(repo, ref, subfolder) {
     }
 
     // Handle COMMANDS.md if it was modified
-    const commandsMdModified = statusAfter.modified.includes('.aynig/COMMANDS.md');
+    const commandsMdModified = statusAfter.modified.includes('.dwp/COMMANDS.md');
 
     if (commandsMdModified && overwritten.length > 0) {
       // Get the diff for COMMANDS.md
-      const diff = await git.diff(['.aynig/COMMANDS.md']);
+      const diff = await git.diff(['.dwp/COMMANDS.md']);
 
       const hasOpencode = await checkCommand('opencode');
       const hasClaude = await checkCommand('claude');
@@ -116,7 +116,7 @@ ${diff}`;
         console.log(`\n⚠  Warning: COMMANDS.md was modified. Please manually review the changes.`);
         console.log(`\nGit diff preview:\n${diff.split('\n').slice(0, 20).join('\n')}`);
         if (diff.split('\n').length > 20) {
-          console.log('... (run `git diff .aynig/COMMANDS.md` to see full diff)');
+          console.log('... (run `git diff .dwp/COMMANDS.md` to see full diff)');
         }
       }
     } else if (commandsMdModified) {
@@ -172,6 +172,6 @@ async function checkCommand(command) {
 export function registerInstallCommand(program) {
   program
     .command('install <repo> [ref] [subfolder]')
-    .description('Install AYNIG workflows from another repository')
+    .description('Install DWP workflows from another repository')
     .action(action);
 }

@@ -10,12 +10,12 @@ import {
 } from './stateCommon.js';
 
 export async function action(options) {
-  const state = String(options.aynigState || '').trim().toLowerCase();
+  const state = String(options.dwpState || '').trim().toLowerCase();
   if (!state) {
-    throw new Error('Missing required flag: --aynig-state');
+    throw new Error('Missing required flag: --dwp-state');
   }
   if (state === 'working') {
-    throw new Error('Invalid aynig-state: working (use aynig set-working)');
+    throw new Error('Invalid dwp-state: working (use aynig set-working)');
   }
 
   const parsed = await readHeadCommitMessage();
@@ -27,15 +27,15 @@ export async function action(options) {
   const prompt = await readPrompt(options, '');
   const subject = (options.subject || '').trim() || `chore: set ${state}`;
 
-  const trailers = [{ key: 'aynig-state', value: state }];
+  const trailers = [{ key: 'dwp-state', value: state }];
   if (remote) {
-    trailers.push({ key: 'aynig-remote', value: remote });
+    trailers.push({ key: 'dwp-source', value: `git:${remote}` });
   }
 
   for (const raw of options.trailer || []) {
     const parsedTrailer = parseTrailerArg(raw);
-    if (parsedTrailer.key.trim().toLowerCase() === 'aynig-state') {
-      throw new Error('Invalid trailer: aynig-state is managed by --aynig-state');
+    if (parsedTrailer.key.trim().toLowerCase() === 'dwp-state') {
+      throw new Error('Invalid trailer: dwp-state is managed by --dwp-state');
     }
     trailers.push(parsedTrailer);
   }
@@ -47,13 +47,13 @@ export async function action(options) {
 export function registerSetStateCommand(program) {
   program
     .command('set-state')
-    .description('Create a commit with a new non-working aynig-state')
-    .requiredOption('--aynig-state <state>', 'Next state (must not be working)')
+    .description('Create a commit with a new non-working dwp-state')
+    .requiredOption('--dwp-state <state>', 'Next state (must not be working)')
     .option('--subject <text>', 'Commit title')
     .option('--prompt <text>', 'Commit prompt/body')
     .option('--prompt-file <path>', 'Path to file used as prompt/body')
     .option('--prompt-stdin', 'Read prompt/body from stdin')
-    .option('--aynig-remote <name>', 'Remote name to push after commit')
+    .option('--aynig-remote <name>', 'Remote name to push after commit (legacy flag; maps to dwp-source git:<name>)')
     .option('--trailer <key:value>', 'Additional trailer (repeatable)', (value, acc) => {
       acc.push(value);
       return acc;
