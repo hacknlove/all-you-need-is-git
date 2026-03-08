@@ -1,5 +1,7 @@
 # DWP — Distributed Workflow Protocol (draft)
 
+Location: this protocol lives under `dwp/` in the monorepo.
+
 This document captures the **protocol layer** extracted from the current AYNIG implementation.
 
 Goal: separate **protocol (DWP)** from **implementation (AYNIG runner/CLI)** so other products can adopt the same coordination mechanism.
