@@ -8,16 +8,16 @@ AYNIG chooses the command from the latest commit (`HEAD`) by reading trailers in
 Minimum required trailer:
 
 ```text
-aynig-state: <state>
+dwp-state: <state>
 ```
 
-`aynig-state` must appear exactly once in the trailing trailer block.
+`dwp-state` must appear in the trailing trailer block. If multiple appear, last wins.
 
 Optional trailers:
 
 ```text
-aynig-remote: <remote-name>
-aynig-log-level: <debug|info|warn|error>
+dwp-source: git:<remote-name>
+dwp-log-level: <debug|info|warn|error>
 ```
 
 Recommended structure:
@@ -27,8 +27,8 @@ Recommended structure:
 
 <prompt/body>
 
-aynig-state: <state>
+dwp-state: <state>
 <key>: <value>
 ```
 
-Only the workflow command decides the next state by creating a new commit with a new `aynig-state` trailer.
+Only the workflow command decides the next state by creating a new commit with a new `dwp-state` trailer.

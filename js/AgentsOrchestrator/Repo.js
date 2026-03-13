@@ -8,7 +8,7 @@ import { parseCommitMessage } from '../gitHelpers/parseCommitMessage.js';
  *
  * It:
  * 1. Initializes with a configuration object.
- * 2. Fetches branches (local by default, or remote if aynigRemote is set).
+ * 2. Fetches branches (local by default, or remote if dwpRemote is set).
  * 3. Creates Branch instances for each branch.
  * 4. Runs each Branch instance.
  * 5. waits for all Branch instances to complete.
@@ -40,8 +40,8 @@ export class Repo {
             if (!upstream) {
                 return '';
             }
-            if (!upstream.startsWith(`${this.config.aynigRemote}/`)) {
-                this.config.logger.warn('Current branch upstream %s does not belong to remote %s', upstream, this.config.aynigRemote);
+            if (!upstream.startsWith(`${this.config.dwpRemote}/`)) {
+                this.config.logger.warn('Current branch upstream %s does not belong to remote %s', upstream, this.config.dwpRemote);
                 return '';
             }
             return upstream;
@@ -70,9 +70,9 @@ export class Repo {
         return '';
     }
 
-    async resolveAynigRemoteFromHead() {
-        if (this.config.aynigRemote) {
-            return this.config.aynigRemote;
+    async resolveDwpRemoteFromHead() {
+        if (this.config.dwpRemote) {
+            return this.config.dwpRemote;
         }
 
         try {
@@ -103,25 +103,25 @@ export class Repo {
         this.config.repoRoot = await git.revparse(['--show-toplevel']);
         this.config.logger.info('Repository root: %s', this.config.repoRoot.trim());
 
-        this.config.aynigRemote = await this.resolveAynigRemoteFromHead();
-        if (this.config.aynigRemote) {
-            this.config.logger.info('Fetching remote branches from %s', this.config.aynigRemote);
+        this.config.dwpRemote = await this.resolveDwpRemoteFromHead();
+        if (this.config.dwpRemote) {
+            this.config.logger.info('Fetching remote branches from %s', this.config.dwpRemote);
             await git.fetch();
         }
 
-        // Get remote branches if aynigRemote is set, otherwise get local branches
-        const branchesInfo = this.config.aynigRemote
+        // Get remote branches if dwpRemote is set, otherwise get local branches
+        const branchesInfo = this.config.dwpRemote
             ? await git.branch(['-r'])
             : await git.branchLocal();
 
         const localInfo = await git.branchLocal();
         const localCurrent = localInfo.current || '';
 
-        const filterCurrent = this.config.aynigRemote
+        const filterCurrent = this.config.dwpRemote
             ? await this.resolveCurrentRemoteBranch(localCurrent)
             : localCurrent;
 
-        if (this.config.aynigRemote && this.config.currentBranch === 'only' && !filterCurrent) {
+        if (this.config.dwpRemote && this.config.currentBranch === 'only' && !filterCurrent) {
             this.config.logger.warn('Current branch has no upstream for --current-branch=only in remote mode');
         }
 
@@ -131,7 +131,7 @@ export class Repo {
         this.branches = branchNames.map(name => new Branch({
             config: this.config,
             branchName: name,
-            isCurrentBranch: !this.config.aynigRemote && name === localCurrent,
+            isCurrentBranch: !this.config.dwpRemote && name === localCurrent,
         }));
 
         await Promise.all(this.branches.map(branch => branch.run()));

@@ -14,7 +14,7 @@ type SetWorkingOptions struct {
 	Prompt       string
 	PromptFile   string
 	PromptStdin  bool
-	AynigRemote  string
+	DwpRemote    string
 	LeaseSeconds int
 	Trailers     []string
 }
@@ -30,7 +30,7 @@ func SetWorking(opts SetWorkingOptions) error {
 		return err
 	}
 
-	remote := resolveAynigRemote(opts.AynigRemote, headTrailers)
+	remote := resolveDwpRemote(opts.DwpRemote, headTrailers)
 	if err := validateRemoteExists(remote); err != nil {
 		return err
 	}
@@ -45,15 +45,15 @@ func SetWorking(opts SetWorkingOptions) error {
 		subject = "chore: working"
 	}
 
-	originState := strings.TrimSpace(trailerValue(headTrailers, "aynig-origin-state"))
+	originState := strings.TrimSpace(trailerValue(headTrailers, "dwp-origin-state"))
 	if originState == "" {
-		originState = strings.TrimSpace(trailerValue(headTrailers, "aynig-state"))
+		originState = strings.TrimSpace(trailerValue(headTrailers, "dwp-state"))
 	}
 	if originState == "" {
-		return fmt.Errorf("Missing required trailer: aynig-state")
+		return fmt.Errorf("Missing required trailer: dwp-state")
 	}
 
-	runID := strings.TrimSpace(trailerValue(headTrailers, "aynig-run-id"))
+	runID := strings.TrimSpace(trailerValue(headTrailers, "dwp-run-id"))
 	if runID == "" {
 		runID, err = randomRunID()
 		if err != nil {
@@ -72,25 +72,25 @@ func SetWorking(opts SetWorkingOptions) error {
 	}
 
 	trailers := []statex.Trailer{
-		{Key: "aynig-state", Value: "working"},
-		{Key: "aynig-origin-state", Value: originState},
-		{Key: "aynig-run-id", Value: runID},
-		{Key: "aynig-runner-id", Value: runnerID},
-		{Key: "aynig-lease-seconds", Value: strconv.Itoa(leaseSeconds)},
+		{Key: "dwp-state", Value: "working"},
+		{Key: "dwp-origin-state", Value: originState},
+		{Key: "dwp-run-id", Value: runID},
+		{Key: "dwp-runner-id", Value: runnerID},
+		{Key: "dwp-lease-seconds", Value: strconv.Itoa(leaseSeconds)},
 	}
 	if remote != "" {
-		trailers = append(trailers, statex.Trailer{Key: "aynig-remote", Value: remote})
+		trailers = append(trailers, statex.Trailer{Key: "dwp-source", Value: "git:" + remote})
 	}
 
 	reserved := map[string]struct{}{
-		"aynig-state":         {},
-		"aynig-origin-state":  {},
-		"aynig-run-id":        {},
-		"aynig-runner-id":     {},
-		"aynig-lease-seconds": {},
-		"aynig-remote":        {},
+		"dwp-state":         {},
+		"dwp-origin-state":  {},
+		"dwp-run-id":        {},
+		"dwp-runner-id":     {},
+		"dwp-lease-seconds": {},
+		"dwp-source":        {},
 	}
-	trailers = appendAynigCopiedTrailers(trailers, headTrailers, reserved)
+	trailers = appendDwpCopiedTrailers(trailers, headTrailers, reserved)
 
 	for _, raw := range opts.Trailers {
 		parsed, parseErr := parseTrailerArg(raw)

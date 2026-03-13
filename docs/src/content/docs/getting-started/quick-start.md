@@ -21,13 +21,13 @@ aynig init
 
 This creates:
 
-- `.aynig/` with starter files
+- `.dwp/` with starter files
 - `.worktrees/` for ephemeral execution worktrees
-- `.worktrees/` and `.aynig/logs/` entries in `.gitignore`
+- `.worktrees/` and `.dwp/logs/` entries in `.gitignore`
 
 ## 3) Add a command
 
-Create an executable command at `.aynig/command/human-turn` with something like this:
+Create an executable command at `.dwp/command/human-turn` with something like this:
 
 ```bash
 #!/bin/bash
@@ -48,14 +48,14 @@ aynig set-working "human-turn" --lease-seconds 3600
 
 ## 4) Create a commit with a state
 
-Create a commit whose **message** includes an `aynig-state:` trailer:
+Create a commit whose **message** includes a `dwp-state:` trailer:
 
 ```text
 chore: Implementation done
 
 Please review and merge.
 
-aynig-state: human-turn
+dwp-state: human-turn
 ```
 
 ## 5) Run AYNIG
@@ -64,7 +64,7 @@ aynig-state: human-turn
 aynig run
 ```
 
-AYNIG will read `HEAD`, resolve the command for `aynig-state: human-turn`, execute it, and then the command should produce a new commit advancing the state.
+AYNIG will read `HEAD`, resolve the command for `dwp-state: human-turn`, execute it, and then the command should produce a new commit advancing the state.
 
 ## What a command can do
 

@@ -39,7 +39,7 @@ func (b *Branch) Run() error {
 		buffer.Flush(baseLogger)
 		return err
 	}
-	trailerLevel := trailerValue(commit.Trailers, "aynig-log-level")
+	trailerLevel := trailerValue(commit.Trailers, "dwp-log-level")
 	resolvedLevel := logx.ResolveLevel(b.config.LogLevel, b.config.LogLevelSet, trailerLevel, os.Getenv("AYNIG_LOG_LEVEL"), config.Default().LogLevel)
 	branchLogger := logx.New(resolvedLevel)
 	buffer.Flush(branchLogger)

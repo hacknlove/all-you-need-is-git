@@ -16,7 +16,7 @@ test('filterBranches respects skip mode in remote sets', () => {
 
 test('resolveCurrentRemoteBranch ignores upstream from other remotes', async () => {
   const warn = vi.fn();
-  const repo = new Repo({ aynigRemote: 'origin', logger: { warn } });
+  const repo = new Repo({ dwpRemote: 'origin', logger: { warn } });
   const rawSpy = vi.spyOn(git, 'raw').mockResolvedValue('upstream/main\n');
 
   try {

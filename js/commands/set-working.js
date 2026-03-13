@@ -8,7 +8,7 @@ import {
   pushCurrentBranch,
   readHeadCommitMessage,
   readPrompt,
-  resolveAynigRemote,
+  resolveDwpRemote,
   trailerValue,
   validateRemoteExists
 } from './stateCommon.js';
@@ -17,7 +17,7 @@ export async function action(options) {
   const parsed = await readHeadCommitMessage();
   const headTrailers = parsed.trailers || {};
 
-  const remote = resolveAynigRemote(options.aynigRemote, headTrailers);
+  const remote = resolveDwpRemote(options.dwpRemote, headTrailers);
   await validateRemoteExists(remote);
 
   const prompt = await readPrompt(options, 'Lease heartbeat');
@@ -86,7 +86,7 @@ export function registerSetWorkingCommand(program) {
     .option('--prompt-file <path>', 'Path to file used as prompt/body')
     .option('--prompt-stdin', 'Read prompt/body from stdin')
     .option('--lease-seconds <seconds>', 'Lease duration in seconds (overrides dwp-lease-seconds trailer)')
-    .option('--aynig-remote <name>', 'Remote name to push after commit')
+    .option('--dwp-remote <name>', 'Remote name to push after commit')
     .option('--trailer <key:value>', 'Additional trailer (repeatable)', (value, acc) => {
       acc.push(value);
       return acc;

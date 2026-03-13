@@ -11,7 +11,7 @@ This repository includes an optional workflow pack in `ops-workflow-pack/`.
 aynig install hacknlove/all-you-need-is-git ops-workflow-pack
 ```
 
-This copies a `.aynig/` directory into your current repository.
+This copies a `.dwp/` directory into your current repository.
 
 ## Included states
 
@@ -34,7 +34,7 @@ ops: mark stalled
 
 Lease appears expired; moving to stalled recovery.
 
-aynig-state: stalled
+dwp-state: stalled
 ```
 
 Then run `aynig run` again and let the `stalled` command decide the next state.
@@ -42,7 +42,7 @@ Then run `aynig run` again and let the `stalled` command decide the next state.
 When a runner crashes or a lease expires, a branch may be left in:
 
 ```text
-aynig-state: working
+dwp-state: working
 ```
 
 (or a recovery marker such as `stalled`, depending on your policy).

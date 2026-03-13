@@ -8,6 +8,7 @@ function createCommand(overrides = {}) {
     isCurrentBranch: true,
     trailers: {
       'dwp-state': 'working',
+      'dwp-origin-state': 'build',
       'dwp-run-id': 'run-789',
       'dwp-lease-seconds': '10'
     },
@@ -66,6 +67,7 @@ test('checkWorking emits stalled commit when lease expired', async () => {
   expect(commitCalls.length).toBe(1);
   expect(commitCalls[0]).toMatch(/dwp-state: stalled/);
   expect(commitCalls[0]).toMatch(/dwp-stalled-run: run-789/);
+  expect(commitCalls[0]).toMatch(/dwp-origin-state: build/);
 });
 
 test('checkWorking skips when commit date is invalid', async () => {

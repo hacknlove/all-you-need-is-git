@@ -7,7 +7,7 @@ description: Common problems and quick fixes.
 
 Common causes:
 
-- There is no `aynig-state:` trailer in `HEAD`.
+- There is no `dwp-state:` trailer in `HEAD`.
 - The runner is scanning branches that have no actionable state.
 - Your command for the state does not exist.
 
@@ -19,7 +19,7 @@ aynig status
 
 Confirm:
 
-- `aynig-state` is present
+- `dwp-state` is present
 - `command: exists`
 
 ## "command missing"
@@ -27,13 +27,13 @@ Confirm:
 Your state `foo` must have an executable file:
 
 ```text
-.aynig/command/foo
+.dwp/command/foo
 ```
 
 Make it executable:
 
 ```bash
-chmod +x .aynig/command/foo
+chmod +x .dwp/command/foo
 ```
 
 ## "permission denied" running a command
@@ -60,7 +60,7 @@ Then run again.
 
 ## "working" commits appear in history
 
-This is the lease mechanism. The runner uses `aynig-state: working` to claim a branch.
+This is the lease mechanism. The runner uses `dwp-state: working` to claim a branch.
 
 See: Run and Operate → Leases and Liveness.
 
@@ -68,7 +68,7 @@ See: Run and Operate → Leases and Liveness.
 
 A runner may have crashed. If the lease is expired, another runner can take over.
 
-- Inspect the latest commit trailers (`aynig-run-id`, `aynig-lease-seconds`).
+- Inspect the latest commit trailers (`dwp-run-id`, `dwp-lease-seconds`).
 - Decide whether to continue or mark it stalled.
 
 See: Guides → Ops Workflow Pack (stalled recovery).

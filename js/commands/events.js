@@ -49,9 +49,9 @@ async function action(options) {
       const message = parts.slice(2).join('\x1f');
       const { firstLine, body } = splitCommitMessage(message);
       const { trailers } = await parseCommitMessage({ message: firstLine, body });
-      const state = trailerValue(trailers, 'aynig-state');
-      const runId = trailerValue(trailers, 'aynig-run-id');
-      const originState = trailerValue(trailers, 'aynig-origin-state');
+      const state = trailerValue(trailers, 'dwp-state');
+      const runId = trailerValue(trailers, 'dwp-run-id');
+      const originState = trailerValue(trailers, 'dwp-origin-state');
 
       events.push({
         commit,
@@ -90,7 +90,7 @@ async function action(options) {
 export function registerEventsCommand(program) {
   program
     .command('events')
-    .description('Show recent AYNIG events from commit trailers')
+    .description('Show recent DWP events from commit trailers')
     .option('--history', 'Allow scanning recent history')
     .option('-n, --limit <number>', 'Number of commits to inspect (requires --history)', '10')
     .option('--json', 'Output JSON')

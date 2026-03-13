@@ -1,6 +1,6 @@
 ---
 title: Install Workflow Packs
-description: Copy a workflow pack (.aynig/) from another repo.
+description: Copy a workflow pack (.dwp/) from another repo.
 ---
 
 You can install pre-made workflows from other repositories:
@@ -21,4 +21,4 @@ https://github.com/owner/name.git
 aynig install hacknlove/all-you-need-is-git ops-workflow-pack
 ```
 
-This copies the source `.aynig/` directory into your current repository.
+This copies the source `.dwp/` directory into your current repository.

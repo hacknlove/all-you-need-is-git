@@ -67,7 +67,7 @@ func (c *Command) Run() error {
 		return nil
 	}
 	if c.command == "" {
-		c.logger.Debugf("Skipping branch %s (no aynig-state)", c.branchName)
+		c.logger.Debugf("Skipping branch %s (no dwp-state)", c.branchName)
 		return nil
 	}
 	if c.command == "working" {
@@ -111,14 +111,14 @@ func (c *Command) Run() error {
 	}
 
 	workingTrailers := []statex.Trailer{
-		{Key: "aynig-state", Value: "working"},
-		{Key: "aynig-origin-state", Value: c.command},
-		{Key: "aynig-run-id", Value: runID},
-		{Key: "aynig-runner-id", Value: runnerID},
-		{Key: "aynig-lease-seconds", Value: strconv.Itoa(leaseSeconds)},
+		{Key: "dwp-state", Value: "working"},
+		{Key: "dwp-origin-state", Value: c.command},
+		{Key: "dwp-run-id", Value: runID},
+		{Key: "dwp-runner-id", Value: runnerID},
+		{Key: "dwp-lease-seconds", Value: strconv.Itoa(leaseSeconds)},
 	}
 	if c.config.UseRemote != "" {
-		workingTrailers = append(workingTrailers, statex.Trailer{Key: "aynig-remote", Value: c.config.UseRemote})
+		workingTrailers = append(workingTrailers, statex.Trailer{Key: "dwp-source", Value: "git:" + c.config.UseRemote})
 	}
 	if err := statex.CommitState(worktreePath, "chore: working", fmt.Sprintf("command %s takes control of the branch", c.command), workingTrailers); err != nil {
 		return err
@@ -163,7 +163,7 @@ func (c *Command) Run() error {
 }
 
 func (c *Command) checkWorking() error {
-	leaseSeconds := parseIntTrailer(c.trailers["aynig-lease-seconds"])
+	leaseSeconds := parseIntTrailer(c.trailers["dwp-lease-seconds"])
 	if leaseSeconds <= 0 {
 		return nil
 	}
@@ -175,18 +175,22 @@ func (c *Command) checkWorking() error {
 		return nil
 	}
 	c.logger.Infof("Lease expired for branch %s", c.branchName)
-	stalledRun := firstTrailer(c.trailers["aynig-run-id"], "unknown")
+	stalledRun := firstTrailer(c.trailers["dwp-run-id"], "unknown")
+	originState := firstTrailer(c.trailers["dwp-origin-state"], "")
 	worktreePath, err := c.getWorkspace()
 	if err != nil || worktreePath == "" {
 		return err
 	}
 
 	stalledTrailers := []statex.Trailer{
-		{Key: "aynig-state", Value: "stalled"},
-		{Key: "aynig-stalled-run", Value: stalledRun},
+		{Key: "dwp-state", Value: "stalled"},
+		{Key: "dwp-stalled-run", Value: stalledRun},
+	}
+	if originState != "" {
+		stalledTrailers = append(stalledTrailers, statex.Trailer{Key: "dwp-origin-state", Value: originState})
 	}
 	if c.config.UseRemote != "" {
-		stalledTrailers = append(stalledTrailers, statex.Trailer{Key: "aynig-remote", Value: c.config.UseRemote})
+		stalledTrailers = append(stalledTrailers, statex.Trailer{Key: "dwp-source", Value: "git:" + c.config.UseRemote})
 	}
 	if err := statex.CommitState(worktreePath, "chore: stalled", "Lease expired", stalledTrailers); err != nil {
 		return err
@@ -259,7 +263,7 @@ func (c *Command) findCommandPath(worktreePath string, commandName string) (stri
 		roleName = roleEnv
 	}
 	if roleName != "" {
-		roleDir := filepath.Join(worktreePath, ".aynig", "roles", filepath.FromSlash(roleName), "command")
+		roleDir := filepath.Join(worktreePath, ".dwp", "roles", filepath.FromSlash(roleName), "command")
 		rolePath, err := resolveCommandPath(roleDir, commandName)
 		if err != nil {
 			return "", err
@@ -268,7 +272,7 @@ func (c *Command) findCommandPath(worktreePath string, commandName string) (stri
 			return rolePath, nil
 		}
 	}
-	baseDir := filepath.Join(worktreePath, ".aynig", "command")
+	baseDir := filepath.Join(worktreePath, ".dwp", "command")
 	return resolveCommandPath(baseDir, commandName)
 }
 
@@ -330,22 +334,19 @@ func firstTrailer(values []string, fallback string) string {
 }
 
 func resolveStateTrailer(trailers map[string][]string) (string, string) {
-	values, ok := trailers["aynig-state"]
+	values, ok := trailers["dwp-state"]
 	if !ok || len(values) == 0 {
 		return "", ""
 	}
-	if len(values) > 1 {
-		return "", "multiple aynig-state trailers"
-	}
-	state := strings.ToLower(strings.TrimSpace(values[0]))
+	state := strings.ToLower(strings.TrimSpace(values[len(values)-1]))
 	if state == "" {
-		return "", "empty aynig-state trailer"
+		return "", "empty dwp-state trailer"
 	}
 	return state, ""
 }
 
 func prepareCommandLogFile(worktreePath string, commitHash string) (*os.File, string, error) {
-	logsDir := filepath.Join(worktreePath, ".aynig", "logs")
+	logsDir := filepath.Join(worktreePath, ".dwp", "logs")
 	if err := os.MkdirAll(logsDir, 0o755); err != nil {
 		return nil, "", err
 	}

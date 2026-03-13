@@ -10,16 +10,16 @@ aynig run [options]
 Options:
 
 - `-w, --worktree <path>` — worktree directory (default: `.worktrees`)
-- `--aynig-remote <name>` — use remote branches instead of local (e.g. `origin`)
-- `--role <name>` — prefer role-specific commands from `.aynig/roles/<name>/command`
+- `--dwp-remote <name>` — use remote branches instead of local (e.g. `origin`)
+- `--role <name>` — prefer role-specific commands from `.dwp/roles/<name>/command`
 - `--current-branch <mode>` — `skip` (default), `include`, or `only`
 - `--log-level <level>` — `debug`, `info`, `warn`, or `error` (default)
 
-In `--aynig-remote` mode, `--current-branch` resolves against the upstream branch of your local current branch (for example `origin/main`). If no upstream exists, `only` runs zero branches.
+In `--dwp-remote` mode, `--current-branch` resolves against the upstream branch of your local current branch (for example `origin/main`). If no upstream exists, `only` runs zero branches.
 
-If `--aynig-remote` is omitted, AYNIG also checks the latest commit trailer `aynig-remote: <name>` and uses that remote when present.
+If `--dwp-remote` is omitted, AYNIG checks the latest commit trailer `dwp-source: git:<name>` and uses that remote when present.
 
-When `--role` is provided (or `AYNIG_ROLE` is set), AYNIG looks for `.aynig/roles/<role>/command/<state>` first and falls back to `.aynig/command/<state>`.
+When `--role` is provided (or `AYNIG_ROLE` is set), AYNIG looks for `.dwp/roles/<role>/command/<state>` first and falls back to `.dwp/command/<state>`.
 
 Example:
 
@@ -31,8 +31,8 @@ AYNIG_ROLE=some-role aynig run
 aynig run --role some-role
 ```
 
-Log level precedence: `--log-level` > `aynig-log-level` trailer > `AYNIG_LOG_LEVEL` env.
+Log level precedence: `--log-level` > `dwp-log-level` trailer > `AYNIG_LOG_LEVEL` env.
 
-The runner reads `HEAD`, runs `.aynig/command/<state>`, and checks the new `HEAD`.
+The runner reads `HEAD`, runs `.dwp/command/<state>`, and checks the new `HEAD`.
 
-Command stdout/stderr is written to `.aynig/logs/<commit-hash>.log`, where `<commit-hash>` is the commit that triggered the command.
+Command stdout/stderr is written to `.dwp/logs/<commit-hash>.log`, where `<commit-hash>` is the commit that triggered the command.

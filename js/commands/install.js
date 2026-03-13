@@ -37,8 +37,11 @@ async function action(repo, ref, subfolder) {
       await fs.access(sourcePath);
     } catch {
       const refInfo = ref ? ` at ${ref}` : '';
-      const subfolderInfo = subfolder ? ` in ${subfolder}` : '';
-      console.error(`Error: No .dwp directory found in ${normalizedRepo}${refInfo}${subfolderInfo}`);
+      if (subfolder) {
+        console.error(`Error: Subfolder not found in ${normalizedRepo}${refInfo}: ${subfolder}`);
+      } else {
+        console.error(`Error: No .dwp directory found in ${normalizedRepo}${refInfo}`);
+      }
       await fs.rm(tmpDir, { recursive: true, force: true });
       process.exit(1);
     }
