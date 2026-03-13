@@ -21,9 +21,9 @@ This project is under active development. APIs, commands, and documentation may 
 
 ## What's the point of AYNIG?
 
-AYNIG is an implementation of a coordination protocol and workflow system for software development teams with one or more humans and one or more agents, so everyone knows whose turn it is and what to do next.
+AYNIG is an implementation of the DWP/GC protocol binding for software development teams with one or more humans and one or more agents, so everyone knows whose turn it is and what to do next.
 
-If you want the underlying protocol draft, see the `dwp/` folder in the repository.
+If you want the underlying protocol draft, see `dwp/README.md` and `dwp/DWP-GC.md` in the repository.
 
 ### workflow example:
 

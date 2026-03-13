@@ -87,8 +87,18 @@ Other bindings MAY reuse `dwp-source` (e.g. HTTP endpoints).
 
 ---
 
+## 8) Implementation boundaries
+
+DWP/GC specifies only the Git commit binding rules. It does not define:
+
+- repository layout (e.g. `.dwp/`)
+- command resolution paths
+- CLI flags or env vars
+- logging or runner behavior beyond dispatch
+
+---
+
 ## Appendix: Reference implementation hints
 
 - Consider implementing parsing by shelling out to `git interpret-trailers` when available,
   or using a library that matches Git trailer rules.
-

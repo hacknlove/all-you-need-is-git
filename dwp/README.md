@@ -39,7 +39,7 @@ Consumer guidance (DWP/GC binding):
 - If multiple `dwp-state` trailers are present, **last one wins** (see `DWP-GC.md`).
 
 Back-compat:
-- **None planned.** AYNIG will migrate to `dwp-state:` as the canonical key.
+- **None planned.** DWP uses `dwp-state:` as the canonical key.
 
 ---
 
@@ -113,7 +113,41 @@ DWP standardizes a distributed mutual exclusion mechanism via `working` state:
 
 ---
 
-## 8) Actions pending
+## 8) Layer boundaries
+
+This repository is intentionally split into three layers:
+
+- **DWP (core protocol)**
+  - Defines: state semantics, reserved states/keys, lease rules, and normative trailer rules.
+  - Does not define: transports, repo layout, CLI commands, or runtime ergonomics.
+- **DWP/GC (Git commit binding)**
+  - Defines: how DWP is carried via commit messages and Git trailers, and how to parse/resolve `dwp-state`.
+  - Does not define: command paths, role resolution, CLI flags, or logging.
+- **AYNIG (implementation)**
+  - Defines: `.dwp/` layout, CLI behavior, env vars, logging, worktrees, and UX defaults.
+  - Does not define: protocol semantics beyond DWP and DWP/GC.
+
+---
+
+## 9) Normative rules (concise)
+
+- Trailer keys are **case-sensitive**.
+- `dwp-state` MUST appear in the trailing metadata block (DWP/GC).
+- If multiple `dwp-state` trailers are present, **last one wins** (DWP/GC).
+- Producers SHOULD emit exactly one `dwp-state` trailer (DWP).
+
+---
+
+## 10) Migration and naming (no back-compat)
+
+- DWP keys are canonical: `dwp-*` only.
+- The binding is named **DWP/GC** for Git commit transport.
+- AYNIG **implements DWP/GC** and uses `.dwp/` as the repo root.
+- No legacy names are supported.
+
+---
+
+## 11) Actions pending
 
 ### Spec structure
 
@@ -141,7 +175,7 @@ DWP standardizes a distributed mutual exclusion mechanism via `working` state:
 
 ---
 
-## 9) Open questions
+## 12) Open questions
 
 - Should DWP standardize terminal semantics for `done`/`failed`/`canceled`, or keep them reserved-only?
 - Should DWP reserve/standardize additional lease-related trailers beyond the current set?
@@ -151,4 +185,3 @@ Resolved (for DWP/GC):
 - Trailer parsing: **Git trailers as the standard**.
 - Duplicate keys: **last wins**.
 - Case handling: **case-sensitive**.
-
