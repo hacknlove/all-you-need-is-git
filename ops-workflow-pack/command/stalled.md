@@ -6,11 +6,13 @@ Your goal is to decide the next state.
 
 Instructions:
 1) Read `.dwp/COMMANDS.md` to learn:
-   - what `$AYNIG_ORIGIN_STATE` means and its expected behavior
-   - other available states and their instructions
-2) Find the initial commit of this job: the closest commit with `dwp-state: $AYNIG_ORIGIN_STATE`.
-3) Review all `working` commits since that start: commit messages and changes.
-4) Assess the current state of the job:
+   - available states and their instructions
+2) Find the `working` commit for this run:
+   - use `dwp-stalled-run` to locate the last `dwp-state: working` commit for the run
+   - read its `dwp-origin-state` trailer to recover the original intent
+3) Find the initial commit of this job: the closest commit with `dwp-state: <origin-state>`.
+4) Review all `working` commits since that start: commit messages and changes.
+5) Assess the current state of the job:
    - Is it finished?
    - Can it continue?
    - Must it be restarted?

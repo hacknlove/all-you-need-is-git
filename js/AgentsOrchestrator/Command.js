@@ -153,6 +153,7 @@ export class Command {
         this.logger.info('Lease expired for branch %s', this.branchName);
 
         const stalledRun = trailers['dwp-run-id']?.trim() || 'unknown';
+        const originState = trailers['dwp-origin-state']?.trim();
         const worktreePath = await this.getWorkspace();
         if (!worktreePath) {
             return;
@@ -164,6 +165,9 @@ export class Command {
             { key: 'dwp-state', value: 'stalled' },
             { key: 'dwp-stalled-run', value: stalledRun }
         ];
+        if (originState) {
+            stalledTrailers.push({ key: 'dwp-origin-state', value: originState });
+        }
         if (this.config.dwpRemote) {
             stalledTrailers.push({ key: 'dwp-source', value: `git:${this.config.dwpRemote}` });
         }

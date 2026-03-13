@@ -8,8 +8,8 @@ AYNIG does not implement retries. Retrying is a **workflow policy**.
 A simple convention:
 
 - Use trailers like:
-  - `aynig-attempt: 1`
-  - `aynig-max-attempts: 3`
+  - `dwp-attempt: 1`
+  - `dwp-max-attempts: 3`
 - If a command fails, create a new commit with the same `dwp-state` and increment the attempt.
 - Stop retrying when attempt reaches max.
 

@@ -44,6 +44,9 @@ func Install(repo string, ref string, subfolder string) error {
 		if subfolder != "" {
 			subfolderInfo = " in " + subfolder
 		}
+		if subfolder != "" {
+			return fmt.Errorf("Error: Subfolder not found in %s%s: %s", repo, refInfo, subfolder)
+		}
 		return fmt.Errorf("Error: No .dwp directory found in %s%s%s", repo, refInfo, subfolderInfo)
 	}
 

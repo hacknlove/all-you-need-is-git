@@ -148,6 +148,7 @@ it may recover the branch by creating:
 ```text
 dwp-state: stalled
 dwp-stalled-run: <run-id>
+dwp-origin-state: <state>
 ```
 
 and continue evaluation.

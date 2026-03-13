@@ -83,6 +83,7 @@ test('checkWorking creates a stalled commit when lease expires', async () => {
     isCurrentBranch: true,
     trailers: {
       'dwp-state': 'working',
+      'dwp-origin-state': 'review',
       'dwp-lease-seconds': '1',
       'dwp-run-id': 'run-123'
     },
@@ -96,6 +97,7 @@ test('checkWorking creates a stalled commit when lease expires', async () => {
   const [message] = commitMock.mock.calls[0];
   expect(message).toMatch(/dwp-state: stalled/);
   expect(message).toMatch(/dwp-stalled-run: run-123/);
+  expect(message).toMatch(/dwp-origin-state: review/);
   expect(pushMock).not.toHaveBeenCalled();
 });
 

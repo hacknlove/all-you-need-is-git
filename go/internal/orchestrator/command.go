@@ -176,6 +176,7 @@ func (c *Command) checkWorking() error {
 	}
 	c.logger.Infof("Lease expired for branch %s", c.branchName)
 	stalledRun := firstTrailer(c.trailers["dwp-run-id"], "unknown")
+	originState := firstTrailer(c.trailers["dwp-origin-state"], "")
 	worktreePath, err := c.getWorkspace()
 	if err != nil || worktreePath == "" {
 		return err
@@ -184,6 +185,9 @@ func (c *Command) checkWorking() error {
 	stalledTrailers := []statex.Trailer{
 		{Key: "dwp-state", Value: "stalled"},
 		{Key: "dwp-stalled-run", Value: stalledRun},
+	}
+	if originState != "" {
+		stalledTrailers = append(stalledTrailers, statex.Trailer{Key: "dwp-origin-state", Value: originState})
 	}
 	if c.config.UseRemote != "" {
 		stalledTrailers = append(stalledTrailers, statex.Trailer{Key: "dwp-source", Value: "git:" + c.config.UseRemote})
