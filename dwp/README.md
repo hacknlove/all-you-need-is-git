@@ -30,7 +30,13 @@ A workflow is advanced via **state events**. Only the latest event is required f
 ## 3) Message / metadata key
 
 - Canonical state trailer key: `dwp-state: <state>`
-- The state key MUST appear exactly once in the trailing metadata block.
+
+Producer guidance:
+- Producers SHOULD emit exactly one `dwp-state` trailer in the trailing metadata block.
+
+Consumer guidance (DWP/GC binding):
+- Consumers MUST tolerate multiple `dwp-state` trailers.
+- If multiple `dwp-state` trailers are present, **last one wins** (see `DWP-GC.md`).
 
 Back-compat:
 - **None planned.** AYNIG will migrate to `dwp-state:` as the canonical key.

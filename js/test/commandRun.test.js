@@ -92,24 +92,35 @@ test('run skips when command path is missing', async () => {
   expect(gitStub.push).not.toHaveBeenCalled();
 });
 
-test('run skips when dwp-state is duplicated', async () => {
+test('run uses last dwp-state value when duplicated (DWP/GC: last-wins)', async () => {
+  let ranCommandPath;
+
+  // Command.run will create a working commit via commitState(), which expects `raw()`.
+  const calls = [];
   const gitStub = {
     revparse: vi.fn(async () => 'deadbeef\n'),
-    commit: vi.fn(async () => {}),
-    push: vi.fn(async () => {})
+    commit: vi.fn(async (message) => {
+      calls.push(message);
+    }),
+    push: vi.fn(async () => {}),
+    raw: vi.fn(async () => calls[calls.length - 1] || '')
   };
 
   const command = createCommand({
     trailers: { 'dwp-state': ['build', 'review'] },
     gitFactory: () => gitStub,
-    spawnImpl: () => ({ unref: () => {} })
+    spawnImpl: (cmdPath) => {
+      ranCommandPath = cmdPath;
+      return { unref: () => {} };
+    }
   });
+
+  command.getWorkspace = async () => '/tmp/worktree';
+  command.getCommandPath = async () => '/tmp/worktree/.dwp/command/review';
 
   await command.run();
 
-  expect(gitStub.revparse).not.toHaveBeenCalled();
-  expect(gitStub.commit).not.toHaveBeenCalled();
-  expect(gitStub.push).not.toHaveBeenCalled();
+  expect(ranCommandPath).toBe('/tmp/worktree/.dwp/command/review');
 });
 
 test('run creates command log file named after triggering commit', async () => {
