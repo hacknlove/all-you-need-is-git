@@ -49,7 +49,7 @@ func VerifyHeadStateTrailer(dir string) error {
 
 	stateValues := valuesForKey(parsed, "dwp-state")
 	if len(stateValues) == 0 {
-		return errors.New("Invalid trailer block: trailers must be contiguous at end of message")
+		return errors.New("Invalid trailer block: missing dwp-state trailer")
 	}
 	last := stateValues[len(stateValues)-1]
 	if strings.TrimSpace(last) == "" {
