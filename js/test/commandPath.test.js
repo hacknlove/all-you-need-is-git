@@ -37,15 +37,15 @@ function createCommand(state) {
     config: {},
     branchName: 'main',
     isCurrentBranch: true,
-    trailers: { 'aynig-state': state },
+    trailers: { 'dwp-state': state },
     body: ''
   });
 }
 
-test('getCommandPath resolves nested commands under .aynig/command', async () => {
-  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'aynig-'));
+test('getCommandPath resolves nested commands under .dwp/command', async () => {
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'dwp-'));
   try {
-    const commandPath = path.join(tempDir, '.aynig', 'command', 'foo', 'bar', 'baz');
+    const commandPath = path.join(tempDir, '.dwp', 'command', 'foo', 'bar', 'baz');
     await createExecutable(commandPath);
 
     const command = createCommand('foo/bar/baz');
@@ -56,8 +56,8 @@ test('getCommandPath resolves nested commands under .aynig/command', async () =>
   }
 });
 
-test('getCommandPath rejects traversal outside .aynig/command', async () => {
-  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'aynig-'));
+test('getCommandPath rejects traversal outside .dwp/command', async () => {
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'dwp-'));
   try {
     const cases = [
       '../evil',
@@ -82,9 +82,9 @@ test('checkWorking creates a stalled commit when lease expires', async () => {
     branchName: 'main',
     isCurrentBranch: true,
     trailers: {
-      'aynig-state': 'working',
-      'aynig-lease-seconds': '1',
-      'aynig-run-id': 'run-123'
+      'dwp-state': 'working',
+      'dwp-lease-seconds': '1',
+      'dwp-run-id': 'run-123'
     },
     body: '',
     commitDate: new Date(Date.now() - 2000).toISOString()
@@ -94,8 +94,8 @@ test('checkWorking creates a stalled commit when lease expires', async () => {
 
   expect(commitMock).toHaveBeenCalledTimes(1);
   const [message] = commitMock.mock.calls[0];
-  expect(message).toMatch(/aynig-state: stalled/);
-  expect(message).toMatch(/aynig-stalled-run: run-123/);
+  expect(message).toMatch(/dwp-state: stalled/);
+  expect(message).toMatch(/dwp-stalled-run: run-123/);
   expect(pushMock).not.toHaveBeenCalled();
 });
 
@@ -105,9 +105,9 @@ test('checkWorking does nothing when lease is still valid', async () => {
     branchName: 'main',
     isCurrentBranch: true,
     trailers: {
-      'aynig-state': 'working',
-      'aynig-lease-seconds': '300',
-      'aynig-run-id': 'run-123'
+      'dwp-state': 'working',
+      'dwp-lease-seconds': '300',
+      'dwp-run-id': 'run-123'
     },
     body: '',
     commitDate: new Date().toISOString()
@@ -125,9 +125,9 @@ test('checkWorking ignores invalid lease values', async () => {
     branchName: 'main',
     isCurrentBranch: true,
     trailers: {
-      'aynig-state': 'working',
-      'aynig-lease-seconds': 'not-a-number',
-      'aynig-run-id': 'run-123'
+      'dwp-state': 'working',
+      'dwp-lease-seconds': 'not-a-number',
+      'dwp-run-id': 'run-123'
     },
     body: '',
     commitDate: new Date(Date.now() - 5000).toISOString()

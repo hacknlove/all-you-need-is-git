@@ -21,23 +21,23 @@ async function action() {
     process.exit(1);
   }
 
-  // Create .aynig/ directory
-  const aynigDir = '.aynig';
-  let aynigCreated = false;
+  // Create .dwp/ directory
+  const dwpDir = '.dwp';
+  let dwpCreated = false;
   try {
-    await fs.mkdir(aynigDir, { recursive: false });
-    console.log(`✓ Created ${aynigDir}/`);
-    aynigCreated = true;
+    await fs.mkdir(dwpDir, { recursive: false });
+    console.log(`✓ Created ${dwpDir}/`);
+    dwpCreated = true;
   } catch (error) {
     if (error.code === 'EEXIST') {
-      console.log(`⊘ ${aynigDir}/ already exists, skipping`);
+      console.log(`⊘ ${dwpDir}/ already exists, skipping`);
     } else {
       throw error;
     }
   }
 
   // Ensure command directory exists
-  const commandDir = path.join(aynigDir, 'command');
+  const commandDir = path.join(dwpDir, 'command');
   try {
     await fs.mkdir(commandDir, { recursive: false });
     console.log(`✓ Created ${commandDir}/`);
@@ -50,24 +50,24 @@ async function action() {
   }
 
   // Only create files if directory was just created
-  if (aynigCreated) {
+  if (dwpCreated) {
     // Copy COMMANDS.md
     await fs.copyFile(
       path.join(ASSETS_DIR, 'COMMANDS.md'),
-      path.join(aynigDir, 'COMMANDS.md')
+      path.join(dwpDir, 'COMMANDS.md')
     );
     console.log(`✓ Created COMMANDS.md`);
   }
 
   // Ensure CONTRACT.md exists
-  const contractPath = path.join(aynigDir, 'CONTRACT.md');
+  const contractPath = path.join(dwpDir, 'CONTRACT.md');
   try {
     await fs.access(contractPath);
     console.log('⊘ CONTRACT.md already exists, skipping');
   } catch {
     await fs.copyFile(
       path.join(ASSETS_DIR, 'CONTRACT.md'),
-      path.join(aynigDir, 'CONTRACT.md')
+      path.join(dwpDir, 'CONTRACT.md')
     );
     console.log('✓ Created CONTRACT.md');
   }
@@ -98,7 +98,7 @@ async function action() {
 
   // Add runtime directories to .gitignore
   const gitignorePath = '.gitignore';
-  const gitignoreEntries = ['.worktrees/', '.aynig/logs/'];
+  const gitignoreEntries = ['.worktrees/', '.dwp/logs/'];
 
   try {
     let gitignoreContent = '';
@@ -125,12 +125,12 @@ async function action() {
     process.exit(1);
   }
 
-  console.log('\nAYNIG initialized successfully!');
+  console.log('\nDWP/AYNIG initialized successfully!');
 }
 
 export function registerInitCommand(program) {
   program
     .command('init')
-    .description('Initialize AYNIG in the current repository')
+    .description('Initialize DWP/AYNIG in the current repository')
     .action(action);
 }

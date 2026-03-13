@@ -20,16 +20,15 @@ export async function commitState(worktreeGit, subject, prompt, trailers) {
   const headBody = await worktreeGit.raw(['show', '-s', '--format=%B', 'HEAD']);
   const trailersRaw = await interpretTrailers(headBody);
   const parsed = parseGitTrailersStrict(trailersRaw);
-  const stateRaw = parsed['aynig-state'];
+  const stateRaw = parsed['dwp-state'];
   const states = Array.isArray(stateRaw) ? stateRaw : stateRaw ? [stateRaw] : [];
   if (states.length === 0) {
     throw new Error('Invalid trailer block: trailers must be contiguous at end of message');
   }
-  if (states.length > 1) {
-    throw new Error('Invalid trailer block: multiple aynig-state trailers');
-  }
-  if (!String(states[0]).trim()) {
-    throw new Error('Invalid trailer block: empty aynig-state trailer');
+  // DWP/GC: last-wins if duplicated.
+  const last = states[states.length - 1];
+  if (!String(last).trim()) {
+    throw new Error('Invalid trailer block: empty dwp-state trailer');
   }
 }
 

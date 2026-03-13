@@ -54,10 +54,10 @@ async function action(options) {
     const { firstLine, body } = splitCommitMessage(fullMessage);
     const { trailers } = await parseCommitMessage({ message: firstLine, body });
 
-    const state = trailerValue(trailers, 'aynig-state');
-    const runId = trailerValue(trailers, 'aynig-run-id');
-    const leaseSecondsRaw = trailerValue(trailers, 'aynig-lease-seconds');
-    const originState = trailerValue(trailers, 'aynig-origin-state');
+    const state = trailerValue(trailers, 'dwp-state');
+    const runId = trailerValue(trailers, 'dwp-run-id');
+    const leaseSecondsRaw = trailerValue(trailers, 'dwp-lease-seconds');
+    const originState = trailerValue(trailers, 'dwp-origin-state');
     const leaseStatus = leaseStatusForState(state, leaseSecondsRaw, committerDate);
 
     let commandStatus = 'missing';
@@ -72,9 +72,12 @@ async function action(options) {
     }
 
     if (shouldResolveCommand && commandState && commandState !== 'working') {
-      const roleName = String(options.role || '').trim() || String(process.env.AYNIG_ROLE || '').trim();
+      const roleName =
+        String(options.role || '').trim() ||
+        String(process.env.DWP_ROLE || '').trim() ||
+        String(process.env.AYNIG_ROLE || '').trim();
       if (roleName) {
-        const rolePath = path.join(repoRoot, '.aynig', 'roles', roleName, 'command', commandState);
+        const rolePath = path.join(repoRoot, '.dwp', 'roles', roleName, 'command', commandState);
         try {
           await fs.access(rolePath, constants.X_OK);
           commandStatus = 'exists';
@@ -85,7 +88,7 @@ async function action(options) {
         }
       }
       if (!commandPath) {
-        commandPath = path.join(repoRoot, '.aynig', 'command', commandState);
+        commandPath = path.join(repoRoot, '.dwp', 'command', commandState);
         try {
           await fs.access(commandPath, constants.X_OK);
           commandStatus = 'exists';
@@ -99,11 +102,11 @@ async function action(options) {
 
     console.log(`branch: ${branch}`);
     console.log(`head: ${headCommit}`);
-    console.log(`aynig-state: ${state || 'n/a'}`);
+    console.log(`dwp-state: ${state || 'n/a'}`);
     if (state === 'working' && originState) {
-      console.log(`aynig-origin-state: ${originState}`);
+      console.log(`dwp-origin-state: ${originState}`);
     }
-    console.log(`aynig-run-id: ${runId || 'n/a'}`);
+    console.log(`dwp-run-id: ${runId || 'n/a'}`);
     console.log(`lease: ${leaseStatus}`);
     console.log(`command: ${commandStatus}`);
     if (commandPath) {
@@ -118,7 +121,7 @@ async function action(options) {
 export function registerStatusCommand(program) {
   program
     .command('status')
-    .description('Show the current AYNIG state for this branch')
-    .option('--role <name>', 'Use role-specific commands from .aynig/roles/<name>/command when available')
+    .description('Show the current DWP state for this branch')
+    .option('--role <name>', 'Use role-specific commands from .dwp/roles/<name>/command when available')
     .action(action);
 }

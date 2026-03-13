@@ -23,7 +23,7 @@ test('CLI help renders successfully', () => {
 });
 
 test('init creates command directory and clean command', () => {
-  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'aynig-init-'));
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'dwp-init-'));
   const initRepo = spawnSync('git', ['init'], {
     cwd: tempDir,
     encoding: 'utf8'
@@ -38,9 +38,9 @@ test('init creates command directory and clean command', () => {
   expect(result.status).toBe(0);
   expect(result.stderr).toBe('');
 
-  const commandDir = path.join(tempDir, '.aynig', 'command');
+  const commandDir = path.join(tempDir, '.dwp', 'command');
   const cleanCommand = path.join(commandDir, 'clean');
-  const commandsDoc = path.join(tempDir, '.aynig', 'COMMANDS.md');
+  const commandsDoc = path.join(tempDir, '.dwp', 'COMMANDS.md');
   const gitignorePath = path.join(tempDir, '.gitignore');
 
   expect(fs.existsSync(commandDir)).toBe(true);
@@ -49,5 +49,5 @@ test('init creates command directory and clean command', () => {
 
   const gitignoreContent = fs.readFileSync(gitignorePath, 'utf8');
   expect(gitignoreContent).toMatch(/(^|\n)\.worktrees\/\n?/);
-  expect(gitignoreContent).toMatch(/(^|\n)\.aynig\/logs\/\n?/);
+  expect(gitignoreContent).toMatch(/(^|\n)\.dwp\/logs\/\n?/);
 });
