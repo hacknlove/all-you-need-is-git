@@ -9,14 +9,14 @@ func TestFirstLowerTrailerValue(t *testing.T) {
 		want     string
 	}{
 		{name: "missing", trailers: map[string][]string{}, want: ""},
-		{name: "case insensitive", trailers: map[string][]string{"AYNIG-REMOTE": []string{"origin"}}, want: "origin"},
-		{name: "trims", trailers: map[string][]string{"aynig-remote": []string{"  upstream  "}}, want: "upstream"},
-		{name: "empty values", trailers: map[string][]string{"aynig-remote": []string{}}, want: ""},
+		{name: "case insensitive", trailers: map[string][]string{"DWP-SOURCE": []string{"git:origin"}}, want: "git:origin"},
+		{name: "trims", trailers: map[string][]string{"dwp-source": []string{"  git:upstream  "}}, want: "git:upstream"},
+		{name: "empty values", trailers: map[string][]string{"dwp-source": []string{}}, want: ""},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := firstLowerTrailerValue(tt.trailers, "aynig-remote")
+			got := firstLowerTrailerValue(tt.trailers, "dwp-source")
 			if got != tt.want {
 				t.Fatalf("unexpected value: got %q want %q", got, tt.want)
 			}

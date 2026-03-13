@@ -7,7 +7,7 @@ description: Install a workflow pack from another repository.
 aynig install <repo> [ref] [subfolder]
 ```
 
-Copies the source repository’s `.aynig/` directory into the current repository.
+Copies the source repository’s `.dwp/` directory into the current repository.
 
 If `<repo>` is in the form `owner/name`, AYNIG expands it to `https://github.com/owner/name.git`.
 

@@ -67,11 +67,18 @@ export function trailerValue(trailers, key) {
   return '';
 }
 
-export function resolveAynigRemote(cliRemote, headTrailers) {
+export function resolveDwpRemote(cliRemote, headTrailers) {
   if (cliRemote && String(cliRemote).trim() !== '') {
     return String(cliRemote).trim();
   }
-  return trailerValue(headTrailers, 'aynig-remote').trim();
+  const raw = trailerValue(headTrailers, 'dwp-source').trim();
+  if (!raw) {
+    return '';
+  }
+  if (raw.startsWith('git:')) {
+    return raw.slice('git:'.length).trim();
+  }
+  return '';
 }
 
 export async function validateRemoteExists(remote) {

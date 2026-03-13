@@ -10,21 +10,21 @@ Before executing, the runner creates a `working` commit to claim the branch.
 Reserved trailers include:
 
 ```text
-aynig-state: working
-aynig-origin-state: <state>
-aynig-run-id: <uuid>
-aynig-runner-id: <host-id>
-aynig-lease-seconds: <ttl>
+dwp-state: working
+dwp-origin-state: <state>
+dwp-run-id: <uuid>
+dwp-runner-id: <host-id>
+dwp-lease-seconds: <ttl>
 ```
 
 Liveness is tracked via the **committer timestamp** of `HEAD`. If the lease expires, another runner may take over.
 
-While running, commands must keep `aynig-state: working` and renew the lease by pushing commits. Liveness is based only on the committer timestamp of `HEAD`.
+While running, commands must keep `dwp-state: working` and renew the lease by pushing commits. Liveness is based only on the committer timestamp of `HEAD`.
 
 If a lease expires, a runner may mark the branch as stalled:
 
 ```
-aynig-state: stalled
+dwp-state: stalled
 ```
 
 For the full specification, see [Runner Contract](/contract/).

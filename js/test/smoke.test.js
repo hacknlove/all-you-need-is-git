@@ -50,4 +50,5 @@ test('init creates command directory and clean command', () => {
   const gitignoreContent = fs.readFileSync(gitignorePath, 'utf8');
   expect(gitignoreContent).toMatch(/(^|\n)\.worktrees\/\n?/);
   expect(gitignoreContent).toMatch(/(^|\n)\.dwp\/logs\/\n?/);
+  expect(gitignoreContent).not.toMatch(/\.aynig\/logs/);
 });

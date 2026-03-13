@@ -17,7 +17,7 @@ func TestPrepareCommandLogFile(t *testing.T) {
 		t.Fatalf("unexpected close error: %v", err)
 	}
 
-	expected := filepath.Join(worktreePath, ".aynig", "logs", "deadbeef.log")
+	expected := filepath.Join(worktreePath, ".dwp", "logs", "deadbeef.log")
 	if logPath != expected {
 		t.Fatalf("unexpected log path: got %q want %q", logPath, expected)
 	}

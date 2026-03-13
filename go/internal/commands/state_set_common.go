@@ -69,11 +69,18 @@ func parseTrailerArg(raw string) (statex.Trailer, error) {
 	return statex.Trailer{Key: key, Value: value}, nil
 }
 
-func resolveAynigRemote(cliRemote string, headTrailers map[string][]string) string {
+func resolveDwpRemote(cliRemote string, headTrailers map[string][]string) string {
 	if strings.TrimSpace(cliRemote) != "" {
 		return strings.TrimSpace(cliRemote)
 	}
-	return strings.TrimSpace(trailerValue(headTrailers, "aynig-remote"))
+	raw := strings.TrimSpace(trailerValue(headTrailers, "dwp-source"))
+	if raw == "" {
+		return ""
+	}
+	if strings.HasPrefix(raw, "git:") {
+		return strings.TrimSpace(strings.TrimPrefix(raw, "git:"))
+	}
+	return ""
 }
 
 func validateRemoteExists(remote string) error {
@@ -106,7 +113,7 @@ func randomRunID() (string, error) {
 }
 
 func parseLeaseSeconds(headTrailers map[string][]string) int {
-	raw := strings.TrimSpace(trailerValue(headTrailers, "aynig-lease-seconds"))
+	raw := strings.TrimSpace(trailerValue(headTrailers, "dwp-lease-seconds"))
 	if raw == "" {
 		return config.Default().LeaseSeconds
 	}
@@ -117,11 +124,11 @@ func parseLeaseSeconds(headTrailers map[string][]string) int {
 	return value
 }
 
-func appendAynigCopiedTrailers(out []statex.Trailer, headTrailers map[string][]string, reserved map[string]struct{}) []statex.Trailer {
+func appendDwpCopiedTrailers(out []statex.Trailer, headTrailers map[string][]string, reserved map[string]struct{}) []statex.Trailer {
 	keys := make([]string, 0)
 	for key := range headTrailers {
 		lower := strings.ToLower(strings.TrimSpace(key))
-		if !strings.HasPrefix(lower, "aynig-") {
+		if !strings.HasPrefix(lower, "dwp-") {
 			continue
 		}
 		if _, blocked := reserved[lower]; blocked {

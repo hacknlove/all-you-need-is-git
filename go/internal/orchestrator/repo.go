@@ -31,9 +31,14 @@ func (r *Repo) Run() error {
 	if r.config.UseRemote == "" {
 		commit, readErr := gitx.ReadCommit("HEAD")
 		if readErr == nil {
-			if remote := firstLowerTrailerValue(commit.Trailers, "aynig-remote"); remote != "" {
-				r.config.UseRemote = remote
-				r.logger.Infof("Using remote from trailer aynig-remote=%s", remote)
+			if remote := firstLowerTrailerValue(commit.Trailers, "dwp-source"); remote != "" {
+				if strings.HasPrefix(remote, "git:") {
+					remote = strings.TrimSpace(strings.TrimPrefix(remote, "git:"))
+					if remote != "" {
+						r.config.UseRemote = remote
+						r.logger.Infof("Using remote from trailer dwp-source=git:%s", remote)
+					}
+				}
 			}
 		}
 	}

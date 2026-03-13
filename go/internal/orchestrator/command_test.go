@@ -17,21 +17,21 @@ func TestResolveStateTrailer(t *testing.T) {
 		},
 		{
 			name:       "single state",
-			trailers:   map[string][]string{"aynig-state": []string{" Build "}},
+			trailers:   map[string][]string{"dwp-state": []string{" Build "}},
 			wantState:  "build",
 			wantReason: "",
 		},
 		{
-			name:       "multiple state trailers",
-			trailers:   map[string][]string{"aynig-state": []string{"build", "review"}},
-			wantState:  "",
-			wantReason: "multiple aynig-state trailers",
+			name:       "multiple state trailers (last wins)",
+			trailers:   map[string][]string{"dwp-state": []string{"build", "review"}},
+			wantState:  "review",
+			wantReason: "",
 		},
 		{
 			name:       "empty state trailer",
-			trailers:   map[string][]string{"aynig-state": []string{"  "}},
+			trailers:   map[string][]string{"dwp-state": []string{"  "}},
 			wantState:  "",
-			wantReason: "empty aynig-state trailer",
+			wantReason: "empty dwp-state trailer",
 		},
 	}
 

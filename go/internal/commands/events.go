@@ -69,9 +69,9 @@ func Events(opts EventsOptions) error {
 		if parseErr != nil {
 			return parseErr
 		}
-		stateValue := trailerValue(trailers, "aynig-state")
-		runIDValue := trailerValue(trailers, "aynig-run-id")
-		originValue := trailerValue(trailers, "aynig-origin-state")
+		stateValue := trailerValue(trailers, "dwp-state")
+		runIDValue := trailerValue(trailers, "dwp-run-id")
+		originValue := trailerValue(trailers, "dwp-origin-state")
 
 		var statePtr *string
 		if stateValue != "" {

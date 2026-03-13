@@ -47,15 +47,13 @@ func VerifyHeadStateTrailer(dir string) error {
 		return err
 	}
 
-	stateValues := valuesForKey(parsed, "aynig-state")
+	stateValues := valuesForKey(parsed, "dwp-state")
 	if len(stateValues) == 0 {
 		return errors.New("Invalid trailer block: trailers must be contiguous at end of message")
 	}
-	if len(stateValues) > 1 {
-		return errors.New("Invalid trailer block: multiple aynig-state trailers")
-	}
-	if strings.TrimSpace(stateValues[0]) == "" {
-		return errors.New("Invalid trailer block: empty aynig-state trailer")
+	last := stateValues[len(stateValues)-1]
+	if strings.TrimSpace(last) == "" {
+		return errors.New("Invalid trailer block: empty dwp-state trailer")
 	}
 
 	return nil

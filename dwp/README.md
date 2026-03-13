@@ -167,7 +167,7 @@ This repository is intentionally split into three layers:
 - Update AYNIG implementation to use DWP keys:
   - parse `dwp-state` (canonical)
   - emit `dwp-*` trailers for the working lease
-- Update docs pages that currently mention `aynig-state` to mention DWP + DWP/GC.
+- Update docs pages that currently mention legacy protocol naming to mention DWP + DWP/GC.
 
 ### Compatibility
 

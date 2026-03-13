@@ -14,19 +14,19 @@ func Init() error {
 		return fmt.Errorf("Error: Not a Git repository. Please run `git init` first.")
 	}
 
-	aynigDir := ".aynig"
-	aynigCreated := false
-	if err := os.Mkdir(aynigDir, 0o755); err != nil {
+	dwpDir := ".dwp"
+	dwpCreated := false
+	if err := os.Mkdir(dwpDir, 0o755); err != nil {
 		if !os.IsExist(err) {
 			return err
 		}
-		fmt.Printf("⊘ %s/ already exists, skipping\n", aynigDir)
+		fmt.Printf("⊘ %s/ already exists, skipping\n", dwpDir)
 	} else {
-		fmt.Printf("✓ Created %s/\n", aynigDir)
-		aynigCreated = true
+		fmt.Printf("✓ Created %s/\n", dwpDir)
+		dwpCreated = true
 	}
 
-	commandDir := filepath.Join(aynigDir, "command")
+	commandDir := filepath.Join(dwpDir, "command")
 	if err := os.Mkdir(commandDir, 0o755); err != nil {
 		if !os.IsExist(err) {
 			return err
@@ -36,14 +36,14 @@ func Init() error {
 		fmt.Printf("✓ Created %s/\n", commandDir)
 	}
 
-	if aynigCreated {
-		if err := os.WriteFile(filepath.Join(aynigDir, "COMMANDS.md"), []byte(commandsMd), 0o644); err != nil {
+	if dwpCreated {
+		if err := os.WriteFile(filepath.Join(dwpDir, "COMMANDS.md"), []byte(commandsMd), 0o644); err != nil {
 			return err
 		}
 		fmt.Println("✓ Created COMMANDS.md")
 	}
 
-	contractPath := filepath.Join(aynigDir, "CONTRACT.md")
+	contractPath := filepath.Join(dwpDir, "CONTRACT.md")
 	if _, err := os.Stat(contractPath); err == nil {
 		fmt.Println("⊘ CONTRACT.md already exists, skipping")
 	} else if !os.IsNotExist(err) {
@@ -78,7 +78,7 @@ func Init() error {
 	}
 
 	gitignorePath := ".gitignore"
-	gitignoreEntries := []string{".worktrees/", ".aynig/logs/"}
+	gitignoreEntries := []string{".worktrees/", ".dwp/logs/"}
 	gitignoreContent, err := os.ReadFile(gitignorePath)
 	if err != nil && !os.IsNotExist(err) {
 		return fmt.Errorf("Error updating .gitignore: %w", err)
@@ -99,7 +99,7 @@ func Init() error {
 		return fmt.Errorf("Error updating .gitignore: %w", err)
 	}
 
-	fmt.Println("\nAYNIG initialized successfully!")
+	fmt.Println("\nDWP/AYNIG initialized successfully!")
 	return nil
 }
 

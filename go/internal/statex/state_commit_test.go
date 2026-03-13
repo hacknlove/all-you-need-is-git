@@ -7,8 +7,8 @@ import (
 
 func TestBuildCommitMessage(t *testing.T) {
 	message := BuildCommitMessage("chore: working", "keep lease alive", []Trailer{
-		{Key: "aynig-state", Value: "working"},
-		{Key: "aynig-run-id", Value: "abc"},
+		{Key: "dwp-state", Value: "working"},
+		{Key: "dwp-run-id", Value: "abc"},
 	})
 
 	expected := []string{
@@ -16,8 +16,8 @@ func TestBuildCommitMessage(t *testing.T) {
 		"",
 		"keep lease alive",
 		"",
-		"aynig-state: working",
-		"aynig-run-id: abc",
+		"dwp-state: working",
+		"dwp-run-id: abc",
 		"",
 	}
 	if message != strings.Join(expected, "\n") {

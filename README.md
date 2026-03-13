@@ -1,7 +1,7 @@
 # AYNIG (developer README)
 
 ## What is AYNIG?
-AYNIG (All You Need Is Git) is a coordination protocol for software development teams with one or more humans and one or more agents, so everyone knows whose turn it is and what to do next.
+AYNIG (All You Need Is Git) is an implementation of the DWP/GC protocol for software development teams with one or more humans and one or more agents, so everyone knows whose turn it is and what to do next.
 
 Imagine the following workflow:
 1. An architect prompts an agent to generate a plan, and they iterate together until the architect is satisfied.
@@ -21,15 +21,17 @@ Humans can still interact with each other through their preferred channels, and 
 
 > **WORK IN PROGRESS:** This project is under active development. APIs, commands, and documentation may change without notice.
 
-This repository contains the AYNIG implementations and the documentation site.
+This repository contains the AYNIG implementations, the DWP drafts, and the documentation site.
 
 - User docs: https://aynig.org
-- Kernel contract: `CONTRACT.md`
+- Protocol drafts: `dwp/README.md` and `dwp/DWP-GC.md`
+- Runner contract: `CONTRACT.md`
 
 ## Repository layout
 
-- `go/` — Go implementation
-- `js/` — Node.js implementation (CLI entrypoint)
+- `go/` — Go implementation (AYNIG runner/CLI)
+- `js/` — Node.js implementation (AYNIG runner/CLI)
+- `dwp/` — DWP protocol drafts
 - `docs/` — Documentation site (Astro + Starlight)
 - `slides/` — Slidev presentation workspace (index + scoped decks, Cloudflare Pages-ready build output)
 - `ops-workflow-pack/` — optional workflow pack

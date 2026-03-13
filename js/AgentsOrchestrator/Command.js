@@ -97,8 +97,8 @@ export class Command {
         );
 
         try {
-            if (this.config.aynigRemote) {
-                await git.worktree(['add', '-b', this.branchName, worktreePath, `${this.config.aynigRemote}/${this.branchName}`]);
+            if (this.config.dwpRemote) {
+                await git.worktree(['add', '-b', this.branchName, worktreePath, `${this.config.dwpRemote}/${this.branchName}`]);
             } else {
                 await git.worktree(['add', worktreePath, this.branchName]);
             }
@@ -119,7 +119,7 @@ export class Command {
             return false;
         }
 
-        const roleName = String(this.config?.role || '').trim() || String(process.env.DWP_ROLE || '').trim();
+        const roleName = String(this.config?.role || '').trim() || String(process.env.AYNIG_ROLE || '').trim();
         if (roleName) {
             const roleDir = resolve(worktreePath, '.dwp', 'roles', roleName, 'command');
             const rolePath = await resolveCommandPath(roleDir, commandName);
@@ -164,15 +164,15 @@ export class Command {
             { key: 'dwp-state', value: 'stalled' },
             { key: 'dwp-stalled-run', value: stalledRun }
         ];
-        if (this.config.aynigRemote) {
-            stalledTrailers.push({ key: 'dwp-source', value: `git:${this.config.aynigRemote}` });
+        if (this.config.dwpRemote) {
+            stalledTrailers.push({ key: 'dwp-source', value: `git:${this.config.dwpRemote}` });
         }
         await commitState(worktreeGit, 'chore: stalled', 'Lease expired', stalledTrailers);
 
-        if (this.config.aynigRemote) {
+        if (this.config.dwpRemote) {
             try {
-                this.logger.info('Pushing stalled state for %s to %s', this.branchName, this.config.aynigRemote);
-                await worktreeGit.push(this.config.aynigRemote, this.branchName);
+                this.logger.info('Pushing stalled state for %s to %s', this.branchName, this.config.dwpRemote);
+                await worktreeGit.push(this.config.dwpRemote, this.branchName);
             } catch {
                 return;
             }
@@ -224,15 +224,15 @@ export class Command {
             { key: 'dwp-runner-id', value: runnerId },
             { key: 'dwp-lease-seconds', value: String(leaseSeconds) }
         ];
-        if (this.config.aynigRemote) {
-            workingTrailers.push({ key: 'dwp-source', value: `git:${this.config.aynigRemote}` });
+        if (this.config.dwpRemote) {
+            workingTrailers.push({ key: 'dwp-source', value: `git:${this.config.dwpRemote}` });
         }
         await commitState(worktreeGit, `chore: working`, `command ${this.command} takes control of the branch`, workingTrailers);
 
-        if (this.config.aynigRemote) {
+        if (this.config.dwpRemote) {
             try {
-                this.logger.info('Pushing branch %s to %s', this.branchName, this.config.aynigRemote);
-                await worktreeGit.push(this.config.aynigRemote, this.branchName);
+                this.logger.info('Pushing branch %s to %s', this.branchName, this.config.dwpRemote);
+                await worktreeGit.push(this.config.dwpRemote, this.branchName);
             } catch {
                 return;
             }
