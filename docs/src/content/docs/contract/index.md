@@ -25,7 +25,7 @@ A commit contains:
 The mandatory trailer is:
 
 ```text
-aynig-state: <state>
+dwp-state: <state>
 ```
 
 The `<state>` value is the key used to select the command to execute.
@@ -42,7 +42,7 @@ AYNIG never interprets business semantics.
 
 ## 2. Command selection
 
-`aynig-state: <state>` → executable command.
+`dwp-state: <state>` → executable command.
 
 AYNIG does not define what a state means; it only uses it to select a command.
 Meaning belongs to your workflow.
@@ -73,7 +73,7 @@ AYNIG prevents two runners from working on the same branch at the same time by u
 Before executing, the runner creates a commit:
 
 ```text
-aynig-state: working
+dwp-state: working
 ```
 
 and pushes it to the branch.
@@ -85,11 +85,11 @@ This behaves like a **remote compare-and-swap** without external coordination.
 ### Reserved `working` trailers
 
 ```text
-aynig-state: working
-aynig-origin-state: <state>
-aynig-run-id: <uuid>
-aynig-runner-id: <host-id>
-aynig-lease-seconds: <ttl>
+dwp-state: working
+dwp-origin-state: <state>
+dwp-run-id: <uuid>
+dwp-runner-id: <host-id>
+dwp-lease-seconds: <ttl>
 ```
 
 Reason: enable distributed runners without local locks.
@@ -98,8 +98,8 @@ Reason: enable distributed runners without local locks.
 
 While executing, the command must renew the lease:
 
-- all intermediate commits → `aynig-state: working`
-- same `aynig-run-id`
+- all intermediate commits → `dwp-state: working`
+- same `dwp-run-id`
 - implicit heartbeat update (committer date)
 
 AYNIG uses the **committer timestamp of HEAD** as the liveness signal.
@@ -124,7 +124,7 @@ History is never scanned.
 
 A step is valid when, after execution:
 
-- `HEAD` contains `aynig-state: <state>`
+- `HEAD` contains `dwp-state: <state>`
 - `state != working`
 
 That commit is the **step output**.
@@ -139,15 +139,16 @@ Reason: avoid duplication, loops, and temporal ambiguity.
 If a runner finds:
 
 ```text
-aynig-state: working
+dwp-state: working
 lease expired
 ```
 
 it may recover the branch by creating:
 
 ```text
-aynig-state: stalled
-aynig-stalled-run: <run-id>
+dwp-state: stalled
+dwp-stalled-run: <run-id>
+dwp-origin-state: <state>
 ```
 
 and continue evaluation.

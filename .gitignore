@@ -48,4 +48,4 @@ config.json
 .worktrees/
 
 /temp/
-.aynig/logs/
+.dwp/logs/

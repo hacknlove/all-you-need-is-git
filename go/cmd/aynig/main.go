@@ -57,22 +57,22 @@ func runCmd(args []string) {
 		out := fs.Output()
 		fmt.Fprintln(out, "Usage of run:")
 		fmt.Fprintln(out, "  --role <name>")
-		fmt.Fprintln(out, "        Use role-specific commands from .aynig/roles/<name>/command when available")
+		fmt.Fprintln(out, "        Use role-specific commands from .dwp/roles/<name>/command when available")
 		fmt.Fprintln(out, "  --current-branch <mode>")
 		fmt.Fprintln(out, "        How to handle the current branch: skip (default), include, only (default \"skip\")")
 		fmt.Fprintln(out, "  --log-level <level>")
 		fmt.Fprintln(out, "        Log verbosity: debug, info, warn, error (default \"error\")")
-		fmt.Fprintln(out, "        Precedence: --log-level > aynig-log-level trailer > AYNIG_LOG_LEVEL")
-		fmt.Fprintln(out, "  --aynig-remote <name>")
+		fmt.Fprintln(out, "        Precedence: --log-level > dwp-log-level trailer > AYNIG_LOG_LEVEL")
+		fmt.Fprintln(out, "  --dwp-remote <name>")
 		fmt.Fprintln(out, "        Use remote branches instead of local (specify remote name, e.g., origin)")
 		fmt.Fprintln(out, "  -w, --worktree <path>")
 		fmt.Fprintln(out, "        Specify custom worktree directory (default: .worktrees) (default \".worktrees\")")
 	}
 	worktree := fs.String("worktree", config.Default().WorkTree, "Specify custom worktree directory (default: .worktrees)")
 	fs.StringVar(worktree, "w", config.Default().WorkTree, "Specify custom worktree directory (default: .worktrees)")
-	useRemote := fs.String("aynig-remote", "", "Use remote branches instead of local (specify remote name, e.g., origin)")
+	useRemote := fs.String("dwp-remote", "", "Use remote branches instead of local (specify remote name, e.g., origin)")
 	currentBranch := fs.String("current-branch", config.Default().CurrentBranch, "How to handle the current branch: skip (default), include, only")
-	role := fs.String("role", "", "Use role-specific commands from .aynig/roles/<name>/command when available")
+	role := fs.String("role", "", "Use role-specific commands from .dwp/roles/<name>/command when available")
 	logLevel := &stringFlag{value: config.Default().LogLevel}
 	fs.Var(logLevel, "log-level", "Log verbosity: debug, info, warn, error")
 	fs.Parse(args)
@@ -155,8 +155,8 @@ func setWorkingCmd(args []string) {
 	prompt := fs.String("prompt", "", "Commit prompt/body")
 	promptFile := fs.String("prompt-file", "", "Path to file used as prompt/body")
 	promptStdin := fs.Bool("prompt-stdin", false, "Read prompt/body from stdin")
-	leaseSeconds := fs.Int("lease-seconds", 0, "Lease duration in seconds (overrides aynig-lease-seconds trailer)")
-	remote := fs.String("aynig-remote", "", "Remote name to push after commit")
+	leaseSeconds := fs.Int("lease-seconds", 0, "Lease duration in seconds (overrides dwp-lease-seconds trailer)")
+	remote := fs.String("dwp-remote", "", "Remote name to push after commit")
 	var trailers trailerListFlag
 	fs.Var(&trailers, "trailer", "Additional trailer in key:value format (repeatable)")
 	fs.Parse(args)
@@ -167,7 +167,7 @@ func setWorkingCmd(args []string) {
 		PromptFile:   *promptFile,
 		PromptStdin:  *promptStdin,
 		LeaseSeconds: *leaseSeconds,
-		AynigRemote:  *remote,
+		DwpRemote:    *remote,
 		Trailers:     trailers,
 	}); err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -177,12 +177,12 @@ func setWorkingCmd(args []string) {
 
 func setStateCmd(args []string) {
 	fs := flag.NewFlagSet("set-state", flag.ExitOnError)
-	state := fs.String("aynig-state", "", "Next state to set (required, must not be working)")
+	state := fs.String("dwp-state", "", "Next state to set (required, must not be working)")
 	subject := fs.String("subject", "", "Commit title")
 	prompt := fs.String("prompt", "", "Commit prompt/body")
 	promptFile := fs.String("prompt-file", "", "Path to file used as prompt/body")
 	promptStdin := fs.Bool("prompt-stdin", false, "Read prompt/body from stdin")
-	remote := fs.String("aynig-remote", "", "Remote name to push after commit")
+	remote := fs.String("dwp-remote", "", "Remote name to push after commit")
 	var trailers trailerListFlag
 	fs.Var(&trailers, "trailer", "Additional trailer in key:value format (repeatable)")
 	fs.Parse(args)
@@ -193,7 +193,7 @@ func setStateCmd(args []string) {
 		Prompt:      *prompt,
 		PromptFile:  *promptFile,
 		PromptStdin: *promptStdin,
-		AynigRemote: *remote,
+		DwpRemote:   *remote,
 		Trailers:    trailers,
 	}); err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -220,20 +220,20 @@ func printUsage() {
 	fmt.Println("")
 	fmt.Println("Commands:")
 	fmt.Println("  run       Run AYNIG for the current repository")
-	fmt.Println("            --aynig-remote can also be persisted in commits via aynig-remote trailer")
+	fmt.Println("            --dwp-remote can also be persisted in commits via dwp-source trailer")
 	fmt.Println("  set-working  Create a working lease commit")
-	fmt.Println("  set-state    Create a commit with a non-working aynig-state")
-	fmt.Println("  status    Show current AYNIG state")
+	fmt.Println("  set-state    Create a commit with a non-working dwp-state")
+	fmt.Println("  status    Show current DWP state")
 	fmt.Println("  init      Initialize AYNIG in the current repository")
-	fmt.Println("  install   Install AYNIG workflows from another repository")
-	fmt.Println("  events    Show recent AYNIG events")
+	fmt.Println("  install   Install DWP workflows from another repository")
+	fmt.Println("  events    Show recent DWP events")
 	fmt.Println("  update    Download and install the latest AYNIG release")
 	fmt.Println("  version   Print the current AYNIG version")
 }
 
 func statusCmd(args []string) {
 	fs := flag.NewFlagSet("status", flag.ExitOnError)
-	role := fs.String("role", "", "Use role-specific commands from .aynig/roles/<name>/command when available")
+	role := fs.String("role", "", "Use role-specific commands from .dwp/roles/<name>/command when available")
 	fs.Parse(args)
 
 	if err := commands.Status(commands.StatusOptions{Role: *role}); err != nil {

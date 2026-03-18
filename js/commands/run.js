@@ -33,7 +33,7 @@ export function registerRunCommand(program) {
     .command('run')
     .description('Run AYNIG for the current repository')
     .option('-w, --worktree <path>', 'Specify custom worktree directory (default: .worktrees)')
-    .option('--aynig-remote <name>', 'Use remote branches instead of local (specify remote name, e.g., origin)')
+    .option('--dwp-remote <name>', 'Use remote branches instead of local (specify remote name, e.g., origin)')
     .option('--role <name>', 'Use role-specific commands from .dwp/roles/<name>/command when available')
     .option('--log-level <level>', 'Log verbosity: debug, info, warn, error')
     .option('--current-branch <mode>', 'How to handle the current branch: skip (default), include, only', 'skip')

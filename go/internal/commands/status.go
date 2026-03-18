@@ -70,10 +70,10 @@ func Status(options StatusOptions) error {
 		return err
 	}
 
-	state := trailerValue(trailers, "aynig-state")
-	runID := trailerValue(trailers, "aynig-run-id")
-	leaseSecondsRaw := trailerValue(trailers, "aynig-lease-seconds")
-	originState := trailerValue(trailers, "aynig-origin-state")
+	state := trailerValue(trailers, "dwp-state")
+	runID := trailerValue(trailers, "dwp-run-id")
+	leaseSecondsRaw := trailerValue(trailers, "dwp-lease-seconds")
+	originState := trailerValue(trailers, "dwp-origin-state")
 
 	leaseStatus := leaseStatusForState(state, leaseSecondsRaw, committerDate)
 
@@ -93,28 +93,7 @@ func Status(options StatusOptions) error {
 	}
 
 	if shouldResolveCommand && commandState != "" && commandState != "working" {
-		if roleName != "" {
-			rolePath := filepath.Join(repoRoot, ".aynig", "roles", filepath.FromSlash(roleName), "command", commandState)
-			if info, statErr := os.Stat(rolePath); statErr == nil {
-				if info.Mode().IsRegular() && info.Mode()&0o111 != 0 {
-					commandStatus = "exists"
-					commandPath = rolePath
-				} else {
-					commandStatus = "missing"
-					commandPath = rolePath
-				}
-			}
-		}
-		if commandPath == "" {
-			commandPath = filepath.Join(repoRoot, ".aynig", "command", commandState)
-			if info, statErr := os.Stat(commandPath); statErr == nil {
-				if info.Mode().IsRegular() && info.Mode()&0o111 != 0 {
-					commandStatus = "exists"
-				} else {
-					commandStatus = "missing"
-				}
-			}
-		}
+		commandStatus, commandPath = resolveCommandPath(repoRoot, roleName, commandState)
 	} else if !shouldResolveCommand {
 		commandStatus = "lease"
 	}
@@ -122,17 +101,17 @@ func Status(options StatusOptions) error {
 	fmt.Printf("branch: %s\n", branch)
 	fmt.Printf("head: %s\n", headCommit)
 	if state != "" {
-		fmt.Printf("aynig-state: %s\n", state)
+		fmt.Printf("dwp-state: %s\n", state)
 	} else {
-		fmt.Printf("aynig-state: n/a\n")
+		fmt.Printf("dwp-state: n/a\n")
 	}
 	if state == "working" && originState != "" {
-		fmt.Printf("aynig-origin-state: %s\n", originState)
+		fmt.Printf("dwp-origin-state: %s\n", originState)
 	}
 	if runID != "" {
-		fmt.Printf("aynig-run-id: %s\n", runID)
+		fmt.Printf("dwp-run-id: %s\n", runID)
 	} else {
-		fmt.Printf("aynig-run-id: n/a\n")
+		fmt.Printf("dwp-run-id: n/a\n")
 	}
 	fmt.Printf("lease: %s\n", leaseStatus)
 	fmt.Printf("command: %s\n", commandStatus)
@@ -140,4 +119,25 @@ func Status(options StatusOptions) error {
 		fmt.Printf("command-path: %s\n", commandPath)
 	}
 	return nil
+}
+
+func resolveCommandPath(repoRoot string, roleName string, commandState string) (string, string) {
+	commandStatus := "missing"
+	commandPath := ""
+	if roleName != "" {
+		rolePath := filepath.Join(repoRoot, ".dwp", "roles", filepath.FromSlash(roleName), "command", commandState)
+		if info, statErr := os.Stat(rolePath); statErr == nil {
+			if info.Mode().IsRegular() && info.Mode()&0o111 != 0 {
+				return "exists", rolePath
+			}
+			return "missing", rolePath
+		}
+	}
+	commandPath = filepath.Join(repoRoot, ".dwp", "command", commandState)
+	if info, statErr := os.Stat(commandPath); statErr == nil {
+		if info.Mode().IsRegular() && info.Mode()&0o111 != 0 {
+			commandStatus = "exists"
+		}
+	}
+	return commandStatus, commandPath
 }

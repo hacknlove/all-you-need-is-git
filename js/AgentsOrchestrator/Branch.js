@@ -45,8 +45,8 @@ export class Branch {
         });
         const baseLogger = this.config.logger || new Logger(baseLevel);
         // If using remote branches, only process branches from the specified remote
-        if (this.config.aynigRemote && !this.branchName.startsWith(`${this.config.aynigRemote}/`)) {
-            buffer.debug('Skipping branch %s (not on remote %s)', this.branchName, this.config.aynigRemote);
+        if (this.config.dwpRemote && !this.branchName.startsWith(`${this.config.dwpRemote}/`)) {
+            buffer.debug('Skipping branch %s (not on remote %s)', this.branchName, this.config.dwpRemote);
             buffer.flush(baseLogger);
             return;
         }
@@ -57,7 +57,7 @@ export class Branch {
             commitDate
         } = await this.parseLastCommitMessage();
 
-        const trailerLevel = String(this.trailerValue(trailers, 'aynig-log-level')).trim();
+        const trailerLevel = String(this.trailerValue(trailers, 'dwp-log-level')).trim();
         const resolvedLevel = resolveLevel({
             cliLevel: this.config.logLevel,
             cliSet: this.config.logLevelSet,

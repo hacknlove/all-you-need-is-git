@@ -74,7 +74,6 @@ async function action(options) {
     if (shouldResolveCommand && commandState && commandState !== 'working') {
       const roleName =
         String(options.role || '').trim() ||
-        String(process.env.DWP_ROLE || '').trim() ||
         String(process.env.AYNIG_ROLE || '').trim();
       if (roleName) {
         const rolePath = path.join(repoRoot, '.dwp', 'roles', roleName, 'command', commandState);

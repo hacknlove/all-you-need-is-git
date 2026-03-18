@@ -5,8 +5,8 @@ description: A minimal, real workflow you can copy-paste.
 
 This guide builds the smallest end-to-end workflow:
 
-- You create a commit with `aynig-state: build`
-- AYNIG runs `.aynig/command/build`
+- You create a commit with `dwp-state: build`
+- AYNIG runs `.dwp/command/build`
 - The command emits a new commit advancing the state
 
 ## 1) Initialize the repo
@@ -18,17 +18,17 @@ aynig init
 ## 2) Create a command
 
 ```bash
-cat > .aynig/command/build <<'EOF'
+cat > .dwp/command/build <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
 
 echo "Build requested: ${AYNIG_BODY}" > build.out
 
 git add build.out
-git commit -m "build: done" -m $'Build completed.\n\naynig-state: done'
+git commit -m "build: done" -m $'Build completed.\n\ndwp-state: done'
 EOF
 
-chmod +x .aynig/command/build
+chmod +x .dwp/command/build
 ```
 
 ## 3) Request a build (commit protocol)
@@ -40,7 +40,7 @@ chore: request build
 
 Build this project.
 
-aynig-state: build
+dwp-state: build
 ```
 
 ## 4) Run
@@ -51,7 +51,7 @@ aynig run
 
 ## 5) Verify
 
-- `aynig-state` should now be `done`
+- `dwp-state` should now be `done`
 - `build.out` should exist
 
 ## Notes

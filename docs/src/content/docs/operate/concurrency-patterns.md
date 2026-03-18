@@ -7,7 +7,7 @@ AYNIG provides mutual exclusion per branch. Concurrency patterns are implemented
 
 Examples (conceptual):
 
-- Fan-out: create N branches each with its own `aynig-state`
+- Fan-out: create N branches each with its own `dwp-state`
 - Fan-in: a coordinator branch waits for results and merges or references outputs
 
-Use correlation trailers (e.g. `aynig-correlation-id`) to relate work across branches.
+Use correlation trailers (e.g. `dwp-correlation-id`) to relate work across branches.

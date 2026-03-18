@@ -7,10 +7,10 @@ description: Execute one workflow step for actionable branches.
 
 > Note: by default, the runner **skips the current branch**. If you're testing on the branch you're currently on, pass `--current-branch only`.
 
-If `HEAD` contains an `aynig-state:` trailer, AYNIG will run:
+If `HEAD` contains a `dwp-state:` trailer, AYNIG will run:
 
 ```text
-.aynig/command/<state>
+.dwp/command/<state>
 ```
 
 ## Commit format
@@ -22,7 +22,7 @@ chore: whatever title for humans
 
 Here goes the prompt to be processed by the agent.
 
-aynig-state: some-state
+dwp-state: some-state
 foo: bar
 baz: qux
 ```
@@ -30,15 +30,15 @@ baz: qux
 ## Options
 
 - `-w, --worktree <path>` — worktree directory (default: `.worktrees`)
-- `--aynig-remote <name>` — use remote branches instead of local
+- `--dwp-remote <name>` — use remote branches instead of local
 - `--current-branch <mode>` — `skip` (default), `include`, or `only`
 - `--log-level <level>` — `debug`, `info`, `warn`, or `error` (default)
 
-In `--aynig-remote` mode, `--current-branch` resolves against the upstream branch of your local current branch (for example `origin/main`). If no upstream exists, `only` runs zero branches.
+In `--dwp-remote` mode, `--current-branch` resolves against the upstream branch of your local current branch (for example `origin/main`). If no upstream exists, `only` runs zero branches.
 
-If `--aynig-remote` is omitted, AYNIG also checks the latest commit trailer `aynig-remote: <name>` and uses that remote when present.
+If `--dwp-remote` is omitted, AYNIG checks the latest commit trailer `dwp-source: git:<name>` and uses that remote when present.
 
-Log level precedence: `--log-level` > `aynig-log-level` trailer > `AYNIG_LOG_LEVEL` env.
+Log level precedence: `--log-level` > `dwp-log-level` trailer > `AYNIG_LOG_LEVEL` env.
 
 ## Environment variables
 
@@ -53,4 +53,4 @@ Commands receive metadata via env vars such as:
 
 Branch logs use the resolved log level after trailers are parsed. Early branch logs are buffered and flushed once the level is known.
 
-Command stdout/stderr is written to `.aynig/logs/<commit-hash>.log`, where `<commit-hash>` is the commit that triggered the command.
+Command stdout/stderr is written to `.dwp/logs/<commit-hash>.log`, where `<commit-hash>` is the commit that triggered the command.
