@@ -1,7 +1,15 @@
 package commands
 
-import "all-you-need-is-git/go/internal/gitx"
+import (
+	"strings"
+
+	"all-you-need-is-git/go/internal/gitx"
+)
 
 func gitShowHeadBody() (string, error) {
-	return gitx.Run("", "show", "-s", "--format=%B", "HEAD")
+	output, err := gitx.Run("", "show", "-s", "--format=%B", "HEAD")
+	if err != nil && strings.Contains(err.Error(), "unknown revision") {
+		return "", nil
+	}
+	return output, err
 }

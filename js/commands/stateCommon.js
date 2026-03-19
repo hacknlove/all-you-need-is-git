@@ -3,13 +3,20 @@ import { git } from '../gitHelpers/git.js';
 import { parseCommitMessage } from '../gitHelpers/parseCommitMessage.js';
 
 export async function readHeadCommitMessage() {
-  const raw = await git.raw(['show', '-s', '--format=%B', 'HEAD']);
-  const normalized = raw.replace(/\r\n/g, '\n');
-  const lines = normalized.split('\n');
-  const firstLine = lines.shift() || '';
-  let body = lines.join('\n');
-  body = body.replace(/^\n+/, '');
-  return parseCommitMessage({ message: firstLine, body });
+  try {
+    const raw = await git.raw(['show', '-s', '--format=%B', 'HEAD']);
+    const normalized = raw.replace(/\r\n/g, '\n');
+    const lines = normalized.split('\n');
+    const firstLine = lines.shift() || '';
+    let body = lines.join('\n');
+    body = body.replace(/^\n+/, '');
+    return parseCommitMessage({ message: firstLine, body });
+  } catch (err) {
+    if (err.message && err.message.includes('unknown revision')) {
+      return { message: '', body: '', trailers: {} };
+    }
+    throw err;
+  }
 }
 
 export async function readPrompt({ prompt, promptFile, promptStdin }, fallback = '') {
