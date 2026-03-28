@@ -3,19 +3,15 @@ import { parseGitTrailersStrict } from '../gitHelpers/parseTrailers.js';
 
 export function buildStateCommitMessage(subject, prompt, trailers) {
   const cleanSubject = String(subject || '').replace(/\n+$/, '');
-  const cleanPrompt = String(prompt || '').replace(/\n+$/, '');
+  const rawPrompt = String(prompt || '');
+  const trailerLines = (trailers || []).map((trailer) => `${trailer.key}: ${trailer.value}`);
 
-  const lines = [cleanSubject, '', cleanPrompt, ''];
-  for (const trailer of trailers || []) {
-    lines.push(`${trailer.key}: ${trailer.value}`);
-  }
-
-  return `${lines.join('\n')}\n`;
+  return `${cleanSubject}\n\n${rawPrompt}\n\n${trailerLines.join('\n')}\n`;
 }
 
 export async function commitState(worktreeGit, subject, prompt, trailers) {
   const message = buildStateCommitMessage(subject, prompt, trailers);
-  await worktreeGit.commit(message, { '--allow-empty': null });
+  await worktreeGit.commit(message, { '--allow-empty': null, '--cleanup': 'verbatim' });
 
   const headBody = await worktreeGit.raw(['show', '-s', '--format=%B', 'HEAD']);
   const trailersRaw = await interpretTrailers(headBody);
