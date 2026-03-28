@@ -21,6 +21,8 @@ build/
 .dist/
 js/build-meta.json
 *.tsbuildinfo
+aynig
+.opencode/package-lock.json
 
 # Coverage
 coverage/
