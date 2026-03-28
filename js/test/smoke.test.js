@@ -22,6 +22,29 @@ test('CLI help renders successfully', () => {
   expect(result.stderr).toBe('');
 });
 
+test('CLI accepts -v as version alias', () => {
+  const result = spawnSync(process.execPath, ['--no-warnings', 'index.js', '-v'], {
+    cwd: projectDir,
+    encoding: 'utf8'
+  });
+
+  expect(result.status).toBe(0);
+  expect(result.stdout).toMatch(/^0\.0\.1 \d+\n$/);
+  expect(result.stderr).toBe('');
+});
+
+test('run exits non-zero outside a git repository', () => {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'aynig-run-'));
+  const result = spawnSync(process.execPath, ['--no-warnings', path.join(projectDir, 'index.js'), 'run'], {
+    cwd: tempDir,
+    encoding: 'utf8'
+  });
+
+  expect(result.status).toBe(1);
+  expect(result.stdout).toBe('');
+  expect(result.stderr).toMatch(/Error trying to set up the Repository:/);
+});
+
 test('init creates command directory and clean command', () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'dwp-init-'));
   const initRepo = spawnSync('git', ['init'], {

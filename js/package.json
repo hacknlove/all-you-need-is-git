@@ -1,6 +1,7 @@
 {
   "name": "all-you-need-is-git",
   "version": "0.0.1",
+  "buildTimestampUnix": "0",
   "description": "Agents orchestrator based on just git",
   "main": "index.js",
   "type": "module",
@@ -8,6 +9,7 @@
     "aynig": "./index.js"
   },
   "scripts": {
+    "build:stamp": "node scripts/write-build-meta.js",
     "dev": "node --watch index.js",
     "start": "node --no-warnings index.js",
     "test": "vitest run"

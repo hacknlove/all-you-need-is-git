@@ -10,6 +10,7 @@ import (
 )
 
 var version = "dev"
+var buildTimestampUnix = "0"
 
 func main() {
 	if len(os.Args) < 2 {
@@ -19,7 +20,7 @@ func main() {
 
 	switch os.Args[1] {
 	case "version", "-v", "--version":
-		fmt.Println(version)
+		fmt.Printf("%s %s\n", version, buildTimestampUnix)
 	case "run":
 		runCmd(os.Args[2:])
 	case "set-working":
@@ -230,7 +231,7 @@ func printUsage() {
 	fmt.Println("  install   Install DWP workflows from another repository")
 	fmt.Println("  events    Show recent DWP events")
 	fmt.Println("  update    Download and install the latest AYNIG release")
-	fmt.Println("  version   Print the current AYNIG version")
+	fmt.Println("  version   Print the current AYNIG version and build timestamp")
 }
 
 func statusCmd(args []string) {

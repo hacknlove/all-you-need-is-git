@@ -59,6 +59,14 @@ cd ../docs
 npm run dev
 ```
 
+### Build local binary
+
+```bash
+./scripts/local.sh
+```
+
+This builds the Go binary to `~/.local/bin/aynig` for testing without releasing.
+
 ## Documentation contributions
 
 User-facing docs live in `docs/src/content/docs/`.

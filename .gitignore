@@ -19,6 +19,7 @@ lerna-debug.log*
 dist/
 build/
 .dist/
+js/build-meta.json
 *.tsbuildinfo
 
 # Coverage

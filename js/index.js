@@ -14,13 +14,25 @@ import { readFileSync } from 'node:fs';
 
 const pkg = JSON.parse(readFileSync(new URL('./package.json', import.meta.url), 'utf8'));
 
+function readBuildTimestampUnix() {
+  try {
+    const meta = JSON.parse(readFileSync(new URL('./build-meta.json', import.meta.url), 'utf8'));
+    return String(meta.buildTimestampUnix || '0');
+  } catch {
+    return '0';
+  }
+}
+
+const versionText = `${pkg.version} ${readBuildTimestampUnix()}`;
+const argv = process.argv.map((arg) => (arg === '-v' ? '--version' : arg));
+
 const program = new Command();
 
 // Configure CLI
 program
   .name('aynig')
   .description('Git-native orchestration tool for agentic workflows')
-  .version(pkg.version);
+  .version(versionText);
 
 // Register commands
 registerRunCommand(program);
@@ -34,4 +46,4 @@ registerSetWorkingCommand(program);
 registerSetStateCommand(program);
 
 // Parse arguments
-program.parse();
+program.parse(argv);

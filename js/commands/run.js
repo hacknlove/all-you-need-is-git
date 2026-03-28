@@ -25,6 +25,7 @@ async function action(options) {
     await repository.run();
   } catch (error) {
     console.error('Error trying to set up the Repository:', error);
+    process.exitCode = 1;
   }
 }
 
