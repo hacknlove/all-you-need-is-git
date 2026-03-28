@@ -32,12 +32,12 @@ func TestParseLeaseSeconds(t *testing.T) {
 func TestAppendDwpCopiedTrailers(t *testing.T) {
 	reserved := map[string]struct{}{"dwp-state": {}}
 	trailers := map[string][]string{
-		"dwp-note":  {"hello"},
+		"dwp-note":  {"hello", "again"},
 		"dwp-state": {"build"},
 		"custom":    {"skip"},
 	}
 	got := appendDwpCopiedTrailers(nil, trailers, reserved)
-	if len(got) != 1 || got[0].Key != "dwp-note" || got[0].Value != "hello" {
+	if len(got) != 2 || got[0].Key != "dwp-note" || got[0].Value != "hello" || got[1].Key != "dwp-note" || got[1].Value != "again" {
 		t.Fatalf("unexpected copied trailers: %+v", got)
 	}
 }

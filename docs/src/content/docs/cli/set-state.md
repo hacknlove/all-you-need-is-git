@@ -21,6 +21,7 @@ format, and can push the current branch when a remote is configured.
 - The default commit title is `chore: set <state>` when `--subject` is not provided.
 - The body can be provided with `--prompt`, `--prompt-file`, or `--prompt-stdin`.
 - Trailers from `HEAD` are not copied by default, because this is treated as a completely new state.
+- `--keep-trailers` copies existing `dwp-*` trailers from `HEAD` except the ones this command manages itself.
 - The push remote is resolved from `--dwp-remote` first, then from the `dwp-source` trailer on `HEAD`.
 - When a remote is resolved, the command pushes the current branch after the commit.
 
@@ -87,6 +88,18 @@ Example:
 
 ```bash
 aynig set-state --dwp-state review --dwp-remote origin
+```
+
+### `--keep-trailers`
+
+Copies existing `dwp-*` trailers from `HEAD` into the new state commit, while still
+replacing trailers managed by `aynig set-state` such as `dwp-state` and, when applicable,
+`dwp-source`.
+
+Example:
+
+```bash
+aynig set-state --dwp-state review --keep-trailers
 ```
 
 ### `--trailer <key:value>`

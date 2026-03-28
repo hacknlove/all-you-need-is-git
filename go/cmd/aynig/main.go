@@ -182,19 +182,21 @@ func setStateCmd(args []string) {
 	prompt := fs.String("prompt", "", "Commit prompt/body")
 	promptFile := fs.String("prompt-file", "", "Path to file used as prompt/body")
 	promptStdin := fs.Bool("prompt-stdin", false, "Read prompt/body from stdin")
+	keepTrailers := fs.Bool("keep-trailers", false, "Preserve existing dwp-* trailers from HEAD except managed ones")
 	remote := fs.String("dwp-remote", "", "Remote name to push after commit")
 	var trailers trailerListFlag
 	fs.Var(&trailers, "trailer", "Additional trailer in key:value format (repeatable)")
 	fs.Parse(args)
 
 	if err := commands.SetState(commands.SetStateOptions{
-		State:       *state,
-		Subject:     *subject,
-		Prompt:      *prompt,
-		PromptFile:  *promptFile,
-		PromptStdin: *promptStdin,
-		DwpRemote:   *remote,
-		Trailers:    trailers,
+		State:        *state,
+		Subject:      *subject,
+		Prompt:       *prompt,
+		PromptFile:   *promptFile,
+		PromptStdin:  *promptStdin,
+		KeepTrailers: *keepTrailers,
+		DwpRemote:    *remote,
+		Trailers:     trailers,
 	}); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)

@@ -1,6 +1,7 @@
 import { commitState } from '../AgentsOrchestrator/stateCommit.js';
 import { git } from '../gitHelpers/git.js';
 import {
+  appendDwpCopiedTrailers,
   parseTrailerArg,
   pushCurrentBranch,
   readHeadCommitMessage,
@@ -32,6 +33,14 @@ export async function action(options) {
     trailers.push({ key: 'dwp-source', value: `git:${remote}` });
   }
 
+  if (options.keepTrailers) {
+    const reserved = new Set(['dwp-state']);
+    if (remote) {
+      reserved.add('dwp-source');
+    }
+    appendDwpCopiedTrailers(trailers, headTrailers, reserved);
+  }
+
   for (const raw of options.trailer || []) {
     const parsedTrailer = parseTrailerArg(raw);
     if (parsedTrailer.key.trim().toLowerCase() === 'dwp-state') {
@@ -53,6 +62,7 @@ export function registerSetStateCommand(program) {
     .option('--prompt <text>', 'Commit prompt/body')
     .option('--prompt-file <path>', 'Path to file used as prompt/body')
     .option('--prompt-stdin', 'Read prompt/body from stdin')
+    .option('--keep-trailers', 'Preserve existing dwp-* trailers from HEAD except managed ones')
     .option('--dwp-remote <name>', 'Remote name to push after commit')
     .option('--trailer <key:value>', 'Additional trailer (repeatable)', (value, acc) => {
       acc.push(value);

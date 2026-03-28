@@ -74,6 +74,26 @@ export function trailerValue(trailers, key) {
   return '';
 }
 
+export function appendDwpCopiedTrailers(out, headTrailers, reserved = new Set()) {
+  const keys = Object.keys(headTrailers || {})
+    .filter((key) => key.trim().toLowerCase().startsWith('dwp-'))
+    .filter((key) => !reserved.has(key.trim().toLowerCase()))
+    .sort((a, b) => a.localeCompare(b));
+
+  for (const key of keys) {
+    const values = Array.isArray(headTrailers[key]) ? headTrailers[key] : [headTrailers[key]];
+    for (const raw of values) {
+      const value = String(raw || '').trim();
+      if (!value) {
+        continue;
+      }
+      out.push({ key: key.trim().toLowerCase(), value });
+    }
+  }
+
+  return out;
+}
+
 export function resolveDwpRemote(cliRemote, headTrailers) {
   if (cliRemote && String(cliRemote).trim() !== '') {
     return String(cliRemote).trim();

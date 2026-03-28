@@ -8,13 +8,14 @@ import (
 )
 
 type SetStateOptions struct {
-	State       string
-	Subject     string
-	Prompt      string
-	PromptFile  string
-	PromptStdin bool
-	DwpRemote   string
-	Trailers    []string
+	State        string
+	Subject      string
+	Prompt       string
+	PromptFile   string
+	PromptStdin  bool
+	KeepTrailers bool
+	DwpRemote    string
+	Trailers     []string
 }
 
 func SetState(opts SetStateOptions) error {
@@ -54,6 +55,13 @@ func SetState(opts SetStateOptions) error {
 	trailers := []statex.Trailer{{Key: "dwp-state", Value: state}}
 	if remote != "" {
 		trailers = append(trailers, statex.Trailer{Key: "dwp-source", Value: "git:" + remote})
+	}
+	if opts.KeepTrailers {
+		reserved := map[string]struct{}{"dwp-state": {}}
+		if remote != "" {
+			reserved["dwp-source"] = struct{}{}
+		}
+		trailers = appendDwpCopiedTrailers(trailers, headTrailers, reserved)
 	}
 
 	for _, raw := range opts.Trailers {

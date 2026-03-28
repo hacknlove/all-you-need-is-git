@@ -138,11 +138,12 @@ func appendDwpCopiedTrailers(out []statex.Trailer, headTrailers map[string][]str
 	}
 	sort.Strings(keys)
 	for _, key := range keys {
-		value := trailerValue(headTrailers, key)
-		if strings.TrimSpace(value) == "" {
-			continue
+		for _, value := range headTrailers[key] {
+			if strings.TrimSpace(value) == "" {
+				continue
+			}
+			out = append(out, statex.Trailer{Key: strings.ToLower(strings.TrimSpace(key)), Value: strings.TrimSpace(value)})
 		}
-		out = append(out, statex.Trailer{Key: strings.ToLower(strings.TrimSpace(key)), Value: value})
 	}
 	return out
 }
