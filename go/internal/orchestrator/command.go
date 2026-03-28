@@ -82,7 +82,7 @@ func (c *Command) Run() error {
 	}
 	commandPath, err := c.getCommandPath(worktreePath)
 	if err != nil || commandPath == "" {
-		c.logger.Debugf("Command path not found for %s", c.command)
+		c.logger.Warnf("Command path not found for %s on branch %s", c.command, c.branchName)
 		return err
 	}
 	c.logger.Debugf("Command path: %s", commandPath)
@@ -264,7 +264,7 @@ func (c *Command) findCommandPath(worktreePath string, commandName string) (stri
 	}
 	if roleName != "" {
 		roleDir := filepath.Join(worktreePath, ".dwp", "roles", filepath.FromSlash(roleName), "command")
-		rolePath, err := resolveCommandPath(roleDir, commandName)
+		rolePath, err := c.resolveCommandPath(roleDir, commandName)
 		if err != nil {
 			return "", err
 		}
@@ -273,23 +273,30 @@ func (c *Command) findCommandPath(worktreePath string, commandName string) (stri
 		}
 	}
 	baseDir := filepath.Join(worktreePath, ".dwp", "command")
-	return resolveCommandPath(baseDir, commandName)
+	return c.resolveCommandPath(baseDir, commandName)
 }
 
-func resolveCommandPath(baseDir string, commandName string) (string, error) {
+func (c *Command) resolveCommandPath(baseDir string, commandName string) (string, error) {
 	baseDirAbs, err := filepath.Abs(baseDir)
 	if err != nil {
 		return "", err
 	}
 	commandPath := filepath.Join(baseDirAbs, filepath.FromSlash(commandName))
+	c.logger.Debugf("Trying command path: %s", commandPath)
 	if !strings.HasPrefix(commandPath, baseDirAbs+string(os.PathSeparator)) {
+		c.logger.Infof("Command path not found at %s (outside base directory %s)", commandPath, baseDirAbs)
 		return "", nil
 	}
 	info, err := os.Stat(commandPath)
 	if err != nil {
+		if os.IsNotExist(err) {
+			c.logger.Infof("Command path not found at %s", commandPath)
+			return "", nil
+		}
 		return "", nil
 	}
 	if info.Mode()&0o111 == 0 {
+		c.logger.Infof("Command path not found at %s (not executable)", commandPath)
 		return "", nil
 	}
 	return commandPath, nil

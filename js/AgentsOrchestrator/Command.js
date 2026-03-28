@@ -122,14 +122,14 @@ export class Command {
         const roleName = String(this.config?.role || '').trim() || String(process.env.AYNIG_ROLE || '').trim();
         if (roleName) {
             const roleDir = resolve(worktreePath, '.dwp', 'roles', roleName, 'command');
-            const rolePath = await resolveCommandPath(roleDir, commandName);
+            const rolePath = await this.resolveCommandPath(roleDir, commandName);
             if (rolePath) {
                 return rolePath;
             }
         }
 
         const baseDir = resolve(worktreePath, '.dwp', 'command');
-        return resolveCommandPath(baseDir, commandName);
+        return this.resolveCommandPath(baseDir, commandName);
     }
 
     async checkWorking() {
@@ -207,7 +207,7 @@ export class Command {
 
         const commandPath = await this.getCommandPath(worktreePath);
         if (!commandPath) {
-            this.logger.debug('Command path not found for %s', this.command);
+            this.logger.warn('Command path not found for %s on branch %s', this.command, this.branchName);
             return;
         }
 
@@ -276,20 +276,31 @@ export class Command {
         this.logger.info('Launched %s in %s', this.command, worktreePath);
         this.logger.debug('Command log: %s', logPath);
     }
-}
 
-async function resolveCommandPath(baseDir, commandName) {
-    const commandPath = resolve(baseDir, commandName);
-    const rel = relative(baseDir, commandPath);
-    if (!rel || isAbsolute(rel) || rel === '..' || rel.startsWith(`..${sep}`)) {
-        return false;
-    }
+    async resolveCommandPath(baseDir, commandName) {
+        const commandPath = resolve(baseDir, commandName);
+        this.logger.debug('Trying command path: %s', commandPath);
+        const rel = relative(baseDir, commandPath);
+        if (!rel || isAbsolute(rel) || rel === '..' || rel.startsWith(`..${sep}`)) {
+            this.logger.info('Command path not found at %s (outside base directory %s)', commandPath, resolve(baseDir));
+            return false;
+        }
 
-    try {
-        await access(commandPath, constants.X_OK);
-        return commandPath;
-    } catch {
-        return false;
+        try {
+            await access(commandPath, constants.X_OK);
+            return commandPath;
+        } catch (err) {
+            if (err?.code === 'ENOENT') {
+                this.logger.info('Command path not found at %s', commandPath);
+                return false;
+            }
+            if (err?.code === 'EACCES') {
+                this.logger.info('Command path not found at %s (not executable)', commandPath);
+                return false;
+            }
+            this.logger.info('Command path not found at %s (%s)', commandPath, err?.message || err);
+            return false;
+        }
     }
 }
 
