@@ -7,7 +7,6 @@ Thanks for your interest in contributing to **AYNIG**.
 This repository contains:
 
 - **Go** implementation: `go/`
-- **JS** implementation: `js/`
 - **Docs site** (Astro + Starlight): `docs/`
 - Optional workflow pack: `ops-workflow-pack/`
 
@@ -16,30 +15,22 @@ This repository contains:
 ### Prereqs
 
 - Git
-- Node.js (for `js/` and `docs/`)
+- Node.js (for `docs/`)
 - Go 1.22+ (for `go/`)
 
 ### Install dependencies
 
 ```bash
-# JS runner/CLI
-cd js
-npm ci
-
 # Docs
-cd ../docs
+cd docs
 npm ci
 ```
 
 ### Run tests
 
 ```bash
-# JS
-cd js
-npm test
-
 # Go
-cd ../go
+cd go
 go test ./...
 
 # Docs build
@@ -50,12 +41,8 @@ npm run build
 ### Run locally
 
 ```bash
-# JS CLI (watch)
-cd js
-npm run dev
-
 # Docs (dev server)
-cd ../docs
+cd docs
 npm run dev
 ```
 

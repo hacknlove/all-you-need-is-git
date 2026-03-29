@@ -21,7 +21,7 @@ Humans can still interact with each other through their preferred channels, and 
 
 > **WORK IN PROGRESS:** This project is under active development. APIs, commands, and documentation may change without notice.
 
-This repository contains the AYNIG implementations, the DWP drafts, and the documentation site.
+This repository contains the AYNIG implementation, the DWP drafts, and the documentation site.
 
 - User docs: https://aynig.org
 - Protocol drafts: `dwp/README.md` and `dwp/DWP-GC.md`
@@ -30,7 +30,6 @@ This repository contains the AYNIG implementations, the DWP drafts, and the docu
 ## Repository layout
 
 - `go/` — Go implementation (AYNIG runner/CLI)
-- `js/` — Node.js implementation (AYNIG runner/CLI)
 - `dwp/` — DWP protocol drafts
 - `docs/` — Documentation site (Astro + Starlight)
 - `slides/` — Slidev presentation workspace (index + scoped decks, Cloudflare Pages-ready build output)
@@ -43,21 +42,6 @@ This repository contains the AYNIG implementations, the DWP drafts, and the docu
 ```bash
 cd go
 go test ./...
-```
-
-### JS
-
-```bash
-cd js
-npm ci
-npm test
-```
-
-Run the JS CLI locally:
-
-```bash
-cd js
-npm run dev
 ```
 
 ### Docs
