@@ -19,15 +19,11 @@ func splitCommitMessage(full string) (string, string) {
 	return firstLine, body
 }
 
-func parseTrailersFromBody(body string) (map[string][]string, error) {
-	if strings.TrimSpace(body) == "" {
+func parseTrailersFromMessage(fullMessage string) (map[string][]string, error) {
+	if strings.TrimSpace(fullMessage) == "" {
 		return map[string][]string{}, nil
 	}
-	raw, err := gitx.RunWithInput("", body, "interpret-trailers", "--parse", "--only-trailers")
-	if err != nil {
-		return nil, err
-	}
-	return gitx.ParseTrailersStrict(raw, nil)
+	return gitx.ParseCommitTrailers("", fullMessage)
 }
 
 func trailerValue(trailers map[string][]string, key string) string {

@@ -63,9 +63,9 @@ func Status(options StatusOptions) error {
 	if err != nil {
 		return err
 	}
-	firstLine, body := splitCommitMessage(fullMessage)
+	firstLine, _ := splitCommitMessage(fullMessage)
 	_ = firstLine
-	trailers, err := parseTrailersFromBody(body)
+	trailers, err := parseTrailersFromMessage(fullMessage)
 	if err != nil {
 		return err
 	}

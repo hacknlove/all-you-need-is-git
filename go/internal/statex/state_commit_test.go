@@ -45,6 +45,14 @@ func TestVerifyHeadStateTrailer(t *testing.T) {
 			}, "\n"),
 		},
 		{
+			name: "trailer only body from separate message flag",
+			message: strings.Join([]string{
+				"chore: set bar",
+				"",
+				"dwp-state: bar",
+			}, "\n"),
+		},
+		{
 			name: "multiple state trailers last wins",
 			message: strings.Join([]string{
 				"chore: review",

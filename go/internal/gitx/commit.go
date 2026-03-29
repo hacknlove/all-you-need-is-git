@@ -26,12 +26,12 @@ func ReadCommit(branch string) (CommitMessage, error) {
 	date := strings.TrimSpace(parts[2])
 
 	trailers := map[string][]string{}
+	fullMessage := message
 	if body != "" {
-		trailersRaw, err := RunWithInput("", body, "interpret-trailers", "--parse", "--only-trailers")
-		if err != nil {
-			return CommitMessage{}, err
-		}
-		parsed, err := ParseTrailersStrict(trailersRaw, nil)
+		fullMessage += "\n\n" + body
+	}
+	if fullMessage != "" {
+		parsed, err := ParseCommitTrailers("", fullMessage)
 		if err != nil {
 			return CommitMessage{}, err
 		}

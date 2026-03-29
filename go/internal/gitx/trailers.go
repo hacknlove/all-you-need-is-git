@@ -6,6 +6,17 @@ import (
 	"strings"
 )
 
+func ParseCommitTrailers(dir string, fullMessage string) (map[string][]string, error) {
+	if strings.TrimSpace(fullMessage) == "" {
+		return map[string][]string{}, nil
+	}
+	raw, err := RunWithInput(dir, fullMessage, "interpret-trailers", "--parse", "--only-trailers")
+	if err != nil {
+		return nil, err
+	}
+	return ParseTrailersStrict(raw, nil)
+}
+
 type TrailerOptions struct {
 	Separators   []string
 	LowerCaseKey bool

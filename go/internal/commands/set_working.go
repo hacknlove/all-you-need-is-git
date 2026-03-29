@@ -24,8 +24,7 @@ func SetWorking(opts SetWorkingOptions) error {
 	if err != nil {
 		return err
 	}
-	_, headBody := splitCommitMessage(fullMessage)
-	headTrailers, err := parseTrailersFromBody(headBody)
+	headTrailers, err := parseTrailersFromMessage(fullMessage)
 	if err != nil {
 		return err
 	}

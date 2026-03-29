@@ -33,16 +33,12 @@ func CommitState(dir string, subject string, prompt string, trailers []Trailer) 
 }
 
 func VerifyHeadStateTrailer(dir string) error {
-	body, err := gitx.Run(dir, "show", "-s", "--format=%B", "HEAD")
+	fullMessage, err := gitx.Run(dir, "show", "-s", "--format=%B", "HEAD")
 	if err != nil {
 		return err
 	}
 
-	trailersRaw, err := gitx.RunWithInput(dir, body, "interpret-trailers", "--parse", "--only-trailers")
-	if err != nil {
-		return err
-	}
-	parsed, err := gitx.ParseTrailersStrict(trailersRaw, nil)
+	parsed, err := gitx.ParseCommitTrailers(dir, fullMessage)
 	if err != nil {
 		return err
 	}

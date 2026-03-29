@@ -65,7 +65,8 @@ func Events(opts EventsOptions) error {
 		}
 
 		firstLine, body := splitCommitMessage(message)
-		trailers, parseErr := parseTrailersFromBody(body)
+		_ = body
+		trailers, parseErr := parseTrailersFromMessage(message)
 		if parseErr != nil {
 			return parseErr
 		}
