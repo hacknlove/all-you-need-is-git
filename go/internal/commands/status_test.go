@@ -6,6 +6,12 @@ import (
 	"testing"
 )
 
+func TestLeaseStatusForStateNonWorkingIsNA(t *testing.T) {
+	if got := leaseStatusForState("", "", ""); got != "n/a" {
+		t.Fatalf("expected n/a for empty state, got %q", got)
+	}
+}
+
 func TestResolveCommandPathPrefersRole(t *testing.T) {
 	repoRoot := t.TempDir()
 	rolePath := filepath.Join(repoRoot, ".dwp", "roles", "ops", "command", "build")

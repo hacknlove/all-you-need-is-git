@@ -74,6 +74,7 @@ func Status(options StatusOptions) error {
 	runID := trailerValue(trailers, "dwp-run-id")
 	leaseSecondsRaw := trailerValue(trailers, "dwp-lease-seconds")
 	originState := trailerValue(trailers, "dwp-origin-state")
+	inDWPState := state != ""
 
 	leaseStatus := leaseStatusForState(state, leaseSecondsRaw, committerDate)
 
@@ -81,7 +82,10 @@ func Status(options StatusOptions) error {
 	commandPath := ""
 	commandState := state
 	shouldResolveCommand := true
-	if state == "working" && originState != "" {
+	if !inDWPState {
+		shouldResolveCommand = false
+		commandStatus = "not in a DWP state"
+	} else if state == "working" && originState != "" {
 		commandState = originState
 	} else if state == "working" {
 		shouldResolveCommand = false
@@ -100,11 +104,12 @@ func Status(options StatusOptions) error {
 
 	fmt.Printf("branch: %s\n", branch)
 	fmt.Printf("head: %s\n", headCommit)
-	if state != "" {
-		fmt.Printf("dwp-state: %s\n", state)
-	} else {
-		fmt.Printf("dwp-state: n/a\n")
+	if !inDWPState {
+		fmt.Printf("dwp-state: not in a DWP state\n")
+		fmt.Printf("command: %s\n", commandStatus)
+		return nil
 	}
+	fmt.Printf("dwp-state: %s\n", state)
 	if state == "working" && originState != "" {
 		fmt.Printf("dwp-origin-state: %s\n", originState)
 	}
