@@ -1,6 +1,10 @@
 package orchestrator
 
-import "testing"
+import (
+	"testing"
+
+	"all-you-need-is-git/go/internal/config"
+)
 
 func TestResolveStateTrailer(t *testing.T) {
 	tests := []struct {
@@ -45,5 +49,22 @@ func TestResolveStateTrailer(t *testing.T) {
 				t.Fatalf("reason mismatch: got %q want %q", gotReason, tt.wantReason)
 			}
 		})
+	}
+}
+
+func TestGetWorkspaceUsesRepoRootForCurrentBranch(t *testing.T) {
+	repoRoot := t.TempDir()
+	cmd := NewCommand(CommandParams{
+		Config: config.Config{RepoRoot: repoRoot},
+		BranchName: "main",
+		IsCurrentBranch: true,
+	})
+
+	got, err := cmd.getWorkspace()
+	if err != nil {
+		t.Fatalf("getWorkspace returned error: %v", err)
+	}
+	if got != repoRoot {
+		t.Fatalf("workspace mismatch: got %q want %q", got, repoRoot)
 	}
 }

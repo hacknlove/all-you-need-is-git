@@ -206,8 +206,8 @@ func (c *Command) checkWorking() error {
 
 func (c *Command) getWorkspace() (string, error) {
 	if c.isCurrentBranch {
-		c.logger.Debugf("Using current working directory for %s", c.branchName)
-		return os.Getwd()
+		c.logger.Debugf("Using repository root for current branch %s", c.branchName)
+		return c.config.RepoRoot, nil
 	}
 
 	worktrees, err := gitx.WorktreeList(c.config.RepoRoot)
