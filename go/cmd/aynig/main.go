@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 
 	"all-you-need-is-git/go/internal/commands"
 	"all-you-need-is-git/go/internal/config"
@@ -237,9 +238,40 @@ func printUsage() {
 func statusCmd(args []string) {
 	fs := flag.NewFlagSet("status", flag.ExitOnError)
 	role := fs.String("role", "", "Use role-specific commands from .dwp/roles/<name>/command when available")
+	branch := fs.String("branch", "", "Inspect a specific local branch without checking it out")
+	branchPattern := fs.String("branch-pattern", "", "Inspect all local branches matching the given pattern")
+	fs.Usage = func() {
+		out := fs.Output()
+		fmt.Fprintln(out, "Usage of status:")
+		fmt.Fprintln(out, "  aynig status [branch|pattern] [options]")
+		fmt.Fprintln(out, "  --role <name>")
+		fmt.Fprintln(out, "        Use role-specific commands from .dwp/roles/<name>/command when available")
+		fmt.Fprintln(out, "  --branch <name>")
+		fmt.Fprintln(out, "        Inspect a specific local branch without checking it out")
+		fmt.Fprintln(out, "  --branch-pattern <pattern>")
+		fmt.Fprintln(out, "        Inspect all local branches matching the given pattern")
+	}
 	fs.Parse(args)
+	if fs.NArg() > 1 {
+		fmt.Fprintln(os.Stderr, "status accepts at most one branch or pattern argument")
+		fs.Usage()
+		os.Exit(1)
+	}
+	if fs.NArg() == 1 {
+		selector := fs.Arg(0)
+		if *branch != "" || *branchPattern != "" {
+			fmt.Fprintln(os.Stderr, "status positional branch/pattern cannot be combined with --branch or --branch-pattern")
+			fs.Usage()
+			os.Exit(1)
+		}
+		if strings.ContainsAny(selector, "*?[") {
+			*branchPattern = selector
+		} else {
+			*branch = selector
+		}
+	}
 
-	if err := commands.Status(commands.StatusOptions{Role: *role}); err != nil {
+	if err := commands.Status(commands.StatusOptions{Role: *role, Branch: *branch, BranchPattern: *branchPattern}); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
