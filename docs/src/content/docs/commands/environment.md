@@ -11,7 +11,7 @@ Common variables:
 - `COMMIT_HASH` — the triggering commit hash
 - `LOG_PATH` — absolute path to the command log file for this run
 - `LOG_LEVEL` — resolved log level for the run/branch
-- `ROLE` — selects `.dwp/roles/<role>/command` when set
+- `ROLE` — selects `.aynig/roles/<role>/command` when set
 - `WORKTREE_PATH` — absolute path to the worktree used for this command run
 
 Precedence: `--log-level` > `dwp-log-level` trailer > `LOG_LEVEL` env.

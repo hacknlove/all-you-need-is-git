@@ -23,10 +23,10 @@ It is the main entry point for processing AYNIG state transitions.
 - In remote mode, current-branch resolution is based on the upstream branch of
   the current local branch, such as `origin/main`.
 - `--role` and `ROLE` make AYNIG check
-  `.dwp/roles/<role>/command/<state>` before `.dwp/command/<state>`.
+  `.aynig/roles/<role>/command/<state>` before `.aynig/command/<state>`.
 - Log level precedence is `--log-level` > `dwp-log-level` trailer >
   `LOG_LEVEL` > default `error`.
-- Command stdout and stderr are written to `.dwp/logs/<commit-hash>.log`.
+- Command stdout and stderr are written to `.aynig/logs/<commit-hash>.log`.
 - The command also receives that log path in `LOG_PATH`.
 
 ## Options
@@ -55,7 +55,7 @@ aynig run --remote origin
 
 ### `--role <name>`
 
-Prefers role-specific commands from `.dwp/roles/<name>/command` when present.
+Prefers role-specific commands from `.aynig/roles/<name>/command` when present.
 
 Example:
 

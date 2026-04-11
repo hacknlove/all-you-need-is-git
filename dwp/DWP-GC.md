@@ -91,7 +91,7 @@ Other bindings MAY reuse `dwp-source` (e.g. HTTP endpoints).
 
 DWP/GC specifies only the Git commit binding rules. It does not define:
 
-- repository layout (e.g. `.dwp/`)
+- repository layout (e.g. `.aynig/`)
 - command resolution paths
 - CLI flags or env vars
 - logging or runner behavior beyond dispatch

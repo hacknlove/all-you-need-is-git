@@ -214,7 +214,7 @@ func resolveCommandPath(repoRoot string, roleName string, commandState string) (
 	commandStatus := "missing"
 	commandPath := ""
 	if roleName != "" {
-		rolePath := filepath.Join(repoRoot, ".dwp", "roles", filepath.FromSlash(roleName), "command", commandState)
+		rolePath := filepath.Join(repoRoot, ".aynig", "roles", filepath.FromSlash(roleName), "command", commandState)
 		if info, statErr := os.Stat(rolePath); statErr == nil {
 			if info.Mode().IsRegular() && info.Mode()&0o111 != 0 {
 				return "exists", rolePath
@@ -222,7 +222,7 @@ func resolveCommandPath(repoRoot string, roleName string, commandState string) (
 			return "missing", rolePath
 		}
 	}
-	commandPath = filepath.Join(repoRoot, ".dwp", "command", commandState)
+	commandPath = filepath.Join(repoRoot, ".aynig", "command", commandState)
 	if info, statErr := os.Stat(commandPath); statErr == nil {
 		if info.Mode().IsRegular() && info.Mode()&0o111 != 0 {
 			commandStatus = "exists"

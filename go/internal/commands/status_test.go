@@ -17,7 +17,7 @@ func TestLeaseStatusForStateNonWorkingIsNA(t *testing.T) {
 
 func TestResolveCommandPathPrefersRole(t *testing.T) {
 	repoRoot := t.TempDir()
-	rolePath := filepath.Join(repoRoot, ".dwp", "roles", "ops", "command", "build")
+	rolePath := filepath.Join(repoRoot, ".aynig", "roles", "ops", "command", "build")
 	if err := os.MkdirAll(filepath.Dir(rolePath), 0o755); err != nil {
 		t.Fatalf("mkdir failed: %v", err)
 	}
@@ -36,7 +36,7 @@ func TestResolveCommandPathPrefersRole(t *testing.T) {
 
 func TestResolveCommandPathFallsBackToBase(t *testing.T) {
 	repoRoot := t.TempDir()
-	basePath := filepath.Join(repoRoot, ".dwp", "command", "build")
+	basePath := filepath.Join(repoRoot, ".aynig", "command", "build")
 	if err := os.MkdirAll(filepath.Dir(basePath), 0o755); err != nil {
 		t.Fatalf("mkdir failed: %v", err)
 	}
@@ -55,7 +55,7 @@ func TestResolveCommandPathFallsBackToBase(t *testing.T) {
 
 func TestStatusReadsSpecificBranchWithoutCheckout(t *testing.T) {
 	repoDir := newStatusTestRepo(t)
-	writeExecutable(t, filepath.Join(repoDir, ".dwp", "command", "build"))
+	writeExecutable(t, filepath.Join(repoDir, ".aynig", "command", "build"))
 	commitEmpty(t, repoDir, "seed", "body")
 	createBranchCommit(t, repoDir, "1-bootstrap", "feat: bootstrap", "body\n\ndwp-state: build\ndwp-run-id: run-123")
 
@@ -81,8 +81,8 @@ func TestStatusReadsSpecificBranchWithoutCheckout(t *testing.T) {
 
 func TestStatusReadsBranchPattern(t *testing.T) {
 	repoDir := newStatusTestRepo(t)
-	writeExecutable(t, filepath.Join(repoDir, ".dwp", "command", "build"))
-	writeExecutable(t, filepath.Join(repoDir, ".dwp", "command", "review"))
+	writeExecutable(t, filepath.Join(repoDir, ".aynig", "command", "build"))
+	writeExecutable(t, filepath.Join(repoDir, ".aynig", "command", "review"))
 	commitEmpty(t, repoDir, "seed", "body")
 	createBranchCommit(t, repoDir, "1-bootstrap", "feat: bootstrap", "body\n\ndwp-state: build")
 	createBranchCommit(t, repoDir, "1-probing", "feat: probing", "body\n\ndwp-state: review")
@@ -110,8 +110,8 @@ func TestStatusReadsBranchPattern(t *testing.T) {
 
 func TestStatusPrefersLocalBranchRefOverMatchingTag(t *testing.T) {
 	repoDir := newStatusTestRepo(t)
-	writeExecutable(t, filepath.Join(repoDir, ".dwp", "command", "build"))
-	writeExecutable(t, filepath.Join(repoDir, ".dwp", "command", "review"))
+	writeExecutable(t, filepath.Join(repoDir, ".aynig", "command", "build"))
+	writeExecutable(t, filepath.Join(repoDir, ".aynig", "command", "review"))
 	commitEmpty(t, repoDir, "seed", "body")
 	createBranchCommit(t, repoDir, "foo", "feat: branch foo", "body\n\ndwp-state: build")
 	runGit(t, repoDir, "tag", "foo", "main")

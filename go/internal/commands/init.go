@@ -14,7 +14,7 @@ func Init() error {
 		return fmt.Errorf("Error: Not a Git repository. Please run `git init` first.")
 	}
 
-	dwpDir := ".dwp"
+	dwpDir := ".aynig"
 	dwpCreated := false
 	if err := os.Mkdir(dwpDir, 0o755); err != nil {
 		if !os.IsExist(err) {
@@ -78,7 +78,7 @@ func Init() error {
 	}
 
 	gitignorePath := ".gitignore"
-	gitignoreEntries := []string{".worktrees/", ".dwp/logs/"}
+	gitignoreEntries := []string{".worktrees/", ".aynig/logs/"}
 	gitignoreContent, err := os.ReadFile(gitignorePath)
 	if err != nil && !os.IsNotExist(err) {
 		return fmt.Errorf("Error updating .gitignore: %w", err)

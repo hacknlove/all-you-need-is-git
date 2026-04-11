@@ -31,7 +31,7 @@ func Install(repo string, ref string, subfolder string) error {
 		return err
 	}
 
-	sourcePath := filepath.Join(tmpDir, ".dwp")
+	sourcePath := filepath.Join(tmpDir, ".aynig")
 	if subfolder != "" {
 		sourcePath = filepath.Join(tmpDir, subfolder)
 	}
@@ -47,16 +47,16 @@ func Install(repo string, ref string, subfolder string) error {
 		if subfolder != "" {
 			return fmt.Errorf("Error: Subfolder not found in %s%s: %s", repo, refInfo, subfolder)
 		}
-		return fmt.Errorf("Error: No .dwp directory found in %s%s%s", repo, refInfo, subfolderInfo)
+		return fmt.Errorf("Error: No .aynig directory found in %s%s%s", repo, refInfo, subfolderInfo)
 	}
 
-	destPath := ".dwp"
+	destPath := ".aynig"
 	statusBefore, err := gitx.StatusPorcelain("", destPath)
 	if err != nil {
 		return err
 	}
 	if strings.TrimSpace(statusBefore) != "" {
-		return fmt.Errorf("\nError: .dwp has uncommitted changes. Please commit or stash them first.")
+		return fmt.Errorf("\nError: .aynig has uncommitted changes. Please commit or stash them first.")
 	}
 
 	fmt.Println("Copying workflows...")
@@ -70,8 +70,8 @@ func Install(repo string, ref string, subfolder string) error {
 	}
 	modified, untracked := parseStatus(statusAfter)
 
-	overwritten := filterFiles(modified, ".dwp/COMMANDS.md")
-	newFiles := filterFiles(untracked, ".dwp/COMMANDS.md")
+	overwritten := filterFiles(modified, ".aynig/COMMANDS.md")
+	newFiles := filterFiles(untracked, ".aynig/COMMANDS.md")
 
 	if len(newFiles) > 0 {
 		fmt.Printf("✓ Installed new: %s\n", strings.Join(newFiles, ", "))
@@ -80,9 +80,9 @@ func Install(repo string, ref string, subfolder string) error {
 		fmt.Printf("⚠  Overwritten: %s\n", strings.Join(overwritten, ", "))
 	}
 
-	commandsMdModified := contains(modified, ".dwp/COMMANDS.md")
+	commandsMdModified := contains(modified, ".aynig/COMMANDS.md")
 	if commandsMdModified && len(overwritten) > 0 {
-		diff, err := gitx.DiffFile("", ".dwp/COMMANDS.md")
+		diff, err := gitx.DiffFile("", ".aynig/COMMANDS.md")
 		if err != nil {
 			return err
 		}
@@ -116,7 +116,7 @@ func Install(repo string, ref string, subfolder string) error {
 			preview := diffPreview(diff, 20)
 			fmt.Printf("\nGit diff preview:\n%s\n", preview)
 			if len(strings.Split(diff, "\n")) > 20 {
-				fmt.Println("... (run `git diff .dwp/COMMANDS.md` to see full diff)")
+				fmt.Println("... (run `git diff .aynig/COMMANDS.md` to see full diff)")
 			}
 		}
 	} else if commandsMdModified {

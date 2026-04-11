@@ -21,13 +21,13 @@ aynig init
 
 This creates:
 
-- `.dwp/` with starter files
+- `.aynig/` with starter files
 - `.worktrees/` for ephemeral execution worktrees
-- `.worktrees/` and `.dwp/logs/` entries in `.gitignore`
+- `.worktrees/` and `.aynig/logs/` entries in `.gitignore`
 
 ## 3) Add a command
 
-Create an executable command at `.dwp/command/human-turn` with something like this:
+Create an executable command at `.aynig/command/human-turn` with something like this:
 
 ```bash
 #!/bin/bash

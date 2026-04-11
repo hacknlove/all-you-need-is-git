@@ -82,7 +82,7 @@ func TestCommandEnvIncludesLogPath(t *testing.T) {
 		LogLevel: "debug",
 	})
 
-	logPath := filepath.Join("/tmp", ".dwp", "logs", "deadbeef.log")
+	logPath := filepath.Join("/tmp", ".aynig", "logs", "deadbeef.log")
 	env := cmd.commandEnv("deadbeef", logPath, "/tmp/worktree")
 
 	wantEntries := []string{

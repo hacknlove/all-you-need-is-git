@@ -10,7 +10,7 @@ description: Execute one workflow step for actionable branches.
 If `HEAD` contains a `dwp-state:` trailer, AYNIG will run:
 
 ```text
-.dwp/command/<state>
+.aynig/command/<state>
 ```
 
 ## Commit format
@@ -53,4 +53,4 @@ Commands receive metadata via env vars such as:
 
 Branch logs use the resolved log level after trailers are parsed. Early branch logs are buffered and flushed once the level is known.
 
-Command stdout/stderr is written to `.dwp/logs/<commit-hash>.log`, where `<commit-hash>` is the commit that triggered the command.
+Command stdout/stderr is written to `.aynig/logs/<commit-hash>.log`, where `<commit-hash>` is the commit that triggered the command.

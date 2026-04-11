@@ -22,7 +22,7 @@ It is a read-only command intended for quick inspection and debugging.
   when the current state is `working`.
 - Uses `command: lease` when the current commit is `working` but there is no
   origin state to resolve.
-- Prefers `.dwp/roles/<role>/command/<state>` over `.dwp/command/<state>` when
+- Prefers `.aynig/roles/<role>/command/<state>` over `.aynig/command/<state>` when
   a role is provided.
 - With `--branch` or a positional branch name, inspects that branch directly.
 - With `--branch-pattern` or a positional glob such as `"1-*"`, prints one

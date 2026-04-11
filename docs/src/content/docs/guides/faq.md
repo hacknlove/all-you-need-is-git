@@ -27,13 +27,13 @@ Confirm:
 Your state `foo` must have an executable file:
 
 ```text
-.dwp/command/foo
+.aynig/command/foo
 ```
 
 Make it executable:
 
 ```bash
-chmod +x .dwp/command/foo
+chmod +x .aynig/command/foo
 ```
 
 ## "permission denied" running a command

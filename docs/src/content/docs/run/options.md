@@ -40,5 +40,5 @@ Use `--role <name>` (or set `ROLE`) to run commands from a role-specific directo
 
 Resolution order:
 
-1. `.dwp/roles/<role>/command/<state>`
-2. `.dwp/command/<state>`
+1. `.aynig/roles/<role>/command/<state>`
+2. `.aynig/command/<state>`

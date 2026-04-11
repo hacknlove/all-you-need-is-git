@@ -48,7 +48,7 @@ AYNIG never interprets business semantics.
 `dwp-state: <state>` → executable command.
 
 If a role is specified (`--role <name>` or `AYNIG_ROLE`), AYNIG first looks for
-`.dwp/roles/<role>/command/<state>` and falls back to `.dwp/command/<state>`.
+`.aynig/roles/<role>/command/<state>` and falls back to `.aynig/command/<state>`.
 
 AYNIG does not define what a state means; it only uses it as a selector.
 Semantics belong to upper layers (frameworks, policies, profiles).
