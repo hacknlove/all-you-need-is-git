@@ -8,7 +8,7 @@ import (
 
 func TestSetStateRequiresState(t *testing.T) {
 	err := SetState(SetStateOptions{})
-	if err == nil || err.Error() != "Missing required flag: --dwp-state" {
+	if err == nil || err.Error() != "Missing required flag: --state" {
 		t.Fatalf("unexpected error: %v", err)
 	}
 }

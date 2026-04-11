@@ -22,7 +22,7 @@ cat > .dwp/command/build <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "Build requested: ${AYNIG_BODY}" > build.out
+echo "Build requested: ${BODY}" > build.out
 
 git add build.out
 git commit -m "build: done" -m $'Build completed.\n\ndwp-state: done'

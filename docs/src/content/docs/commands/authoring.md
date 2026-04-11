@@ -20,7 +20,7 @@ cat > .dwp/command/review <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "Review requested: $AYNIG_BODY"
+echo "Review requested: $BODY"
 EOF
 
 chmod +x .dwp/command/review
@@ -31,5 +31,5 @@ chmod +x .dwp/command/review
 - Commands run with the working directory set to the worktree.
 - Keep commands idempotent when possible.
 - Commands should emit a new commit advancing the workflow by setting a new `dwp-state`.
-- Use `AYNIG_LOG_PATH` when a command needs to append related diagnostics to the run log.
-- Honor `AYNIG_LOG_LEVEL` if your command supports verbosity.
+- Use `LOG_PATH` when a command needs to append related diagnostics to the run log.
+- Honor `LOG_LEVEL` if your command supports verbosity.

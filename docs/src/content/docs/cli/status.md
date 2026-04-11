@@ -30,7 +30,7 @@ It is a read-only command intended for quick inspection and debugging.
 ### `--role <name>`
 
 Checks the role-specific command directory first when resolving the command for
-the current state. If omitted, AYNIG falls back to `AYNIG_ROLE` when it is set.
+the current state. If omitted, AYNIG falls back to `ROLE` when it is set.
 
 Example:
 
@@ -72,5 +72,7 @@ aynig status --role reviewer
 Use the environment variable form for role selection:
 
 ```bash
-AYNIG_ROLE=reviewer aynig status
+ROLE=reviewer aynig status
+
+Legacy alias: `AYNIG_ROLE`.
 ```

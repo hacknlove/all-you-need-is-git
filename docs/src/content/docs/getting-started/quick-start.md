@@ -34,11 +34,11 @@ Create an executable command at `.dwp/command/human-turn` with something like th
 
 case "$(uname)" in
   Darwin)
-    osascript -e "display notification \"$AYNIG_BODY\" with title \"AYNIG\""
+    osascript -e "display notification \"$BODY\" with title \"AYNIG\""
     afplay /System/Library/Sounds/Glass.aiff >/dev/null 2>&1 &
     ;;
   Linux)
-    notify-send "AYNIG" "$AYNIG_BODY"
+    notify-send "AYNIG" "$BODY"
     paplay /usr/share/sounds/freedesktop/stereo/complete.oga >/dev/null 2>&1 &
     ;;
 esac

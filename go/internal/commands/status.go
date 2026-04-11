@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"all-you-need-is-git/go/internal/envx"
 	"all-you-need-is-git/go/internal/gitx"
 )
 
@@ -93,7 +94,7 @@ func Status(options StatusOptions) error {
 
 	roleName := strings.TrimSpace(options.Role)
 	if roleName == "" {
-		roleName = strings.TrimSpace(os.Getenv("AYNIG_ROLE"))
+		roleName = envx.First("ROLE", "AYNIG_ROLE")
 	}
 
 	if shouldResolveCommand && commandState != "" && commandState != "working" {

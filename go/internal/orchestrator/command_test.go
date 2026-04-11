@@ -73,7 +73,7 @@ func TestGetWorkspaceUsesRepoRootForCurrentBranch(t *testing.T) {
 
 func TestCommandEnvIncludesLogPath(t *testing.T) {
 	cmd := NewCommand(CommandParams{
-		Config: config.Config{},
+		Config: config.Config{Role: "reviewer"},
 		Trailers: map[string][]string{
 			"dwp-state": {"review"},
 			"foo-bar":   {"baz", "qux"},
@@ -86,11 +86,19 @@ func TestCommandEnvIncludesLogPath(t *testing.T) {
 	env := cmd.commandEnv("deadbeef", logPath)
 
 	wantEntries := []string{
+		"BODY=prompt body",
 		"AYNIG_BODY=prompt body",
+		"COMMIT_HASH=deadbeef",
 		"AYNIG_COMMIT_HASH=deadbeef",
+		"LOG_PATH=" + logPath,
 		"AYNIG_LOG_PATH=" + logPath,
+		"LOG_LEVEL=debug",
 		"AYNIG_LOG_LEVEL=debug",
+		"ROLE=reviewer",
+		"AYNIG_ROLE=reviewer",
+		"DWP_STATE=review",
 		"AYNIG_TRAILER_DWP_STATE=review",
+		"FOO_BAR=baz,qux",
 		"AYNIG_TRAILER_FOO_BAR=baz,qux",
 	}
 	for _, want := range wantEntries {

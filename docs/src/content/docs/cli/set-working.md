@@ -28,7 +28,7 @@ run metadata, and can push the branch when a remote is configured.
   the default of `300` seconds.
 - Existing `dwp-*` trailers are copied from `HEAD` except for the reserved
   working-state trailers that AYNIG manages itself.
-- The push remote is resolved from `--dwp-remote` first, then from the
+- The push remote is resolved from `--remote` first, then from the
   `dwp-source` trailer on `HEAD`.
 - When a remote is resolved, the command pushes the current branch after the commit.
 
@@ -84,7 +84,7 @@ Example:
 aynig set-working --lease-seconds 600
 ```
 
-### `--dwp-remote <name>`
+### `--remote <name>`
 
 Uses the named git remote for the post-commit push and records it as
 `dwp-source: git:<name>`.
@@ -92,7 +92,7 @@ Uses the named git remote for the post-commit push and records it as
 Example:
 
 ```bash
-aynig set-working --dwp-remote origin
+aynig set-working --remote origin
 ```
 
 ### `--trailer <key:value>`
@@ -140,5 +140,7 @@ printf "Still debugging the failing worker.\n" | aynig set-working --prompt-stdi
 Push through a specific remote and add extra trailers:
 
 ```bash
-aynig set-working --dwp-remote origin --trailer "dwp-note: retry" --trailer "dwp-ticket: 42"
+aynig set-working --remote origin --trailer "dwp-note: retry" --trailer "dwp-ticket: 42"
+
+Legacy alias: `--dwp-remote`.
 ```

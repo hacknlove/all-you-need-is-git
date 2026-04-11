@@ -21,7 +21,7 @@ type SetStateOptions struct {
 func SetState(opts SetStateOptions) error {
 	state := strings.ToLower(strings.TrimSpace(opts.State))
 	if state == "" {
-		return fmt.Errorf("Missing required flag: --dwp-state")
+		return fmt.Errorf("Missing required flag: --state")
 	}
 	if state == "working" {
 		return fmt.Errorf("Invalid dwp-state: working (use aynig set-working)")
@@ -69,7 +69,7 @@ func SetState(opts SetStateOptions) error {
 			return parseErr
 		}
 		if strings.EqualFold(strings.TrimSpace(parsed.Key), "dwp-state") {
-			return fmt.Errorf("Invalid trailer: dwp-state is managed by --dwp-state")
+			return fmt.Errorf("Invalid trailer: dwp-state is managed by --state")
 		}
 		trailers = append(trailers, parsed)
 	}
