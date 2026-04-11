@@ -9,6 +9,7 @@ Common variables:
 
 - `AYNIG_BODY` — the commit message body (prompt)
 - `AYNIG_COMMIT_HASH` — the triggering commit hash
+- `AYNIG_LOG_PATH` — absolute path to the command log file for this run
 - `AYNIG_LOG_LEVEL` — resolved log level for the run/branch
 - `AYNIG_ROLE` — selects `.dwp/roles/<role>/command` when set
 

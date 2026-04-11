@@ -27,6 +27,7 @@ It is the main entry point for processing AYNIG state transitions.
 - Log level precedence is `--log-level` > `dwp-log-level` trailer >
   `AYNIG_LOG_LEVEL` > default `error`.
 - Command stdout and stderr are written to `.dwp/logs/<commit-hash>.log`.
+- The command also receives that log path in `AYNIG_LOG_PATH`.
 
 ## Options
 

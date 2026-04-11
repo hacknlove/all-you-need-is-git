@@ -132,17 +132,7 @@ func (c *Command) Run() error {
 		}
 	}
 
-	env := append([]string{}, os.Environ()...)
-	env = append(env, "AYNIG_BODY="+c.body)
-	env = append(env, "AYNIG_COMMIT_HASH="+currentCommitHash)
-	if c.logLevel != "" {
-		env = append(env, "AYNIG_LOG_LEVEL="+c.logLevel)
-	}
-	for key, values := range c.trailers {
-		upperKey := strings.ToUpper(strings.ReplaceAll(key, "-", "_"))
-		envValue := strings.Join(values, ",")
-		env = append(env, "AYNIG_TRAILER_"+upperKey+"="+envValue)
-	}
+	env := c.commandEnv(currentCommitHash, logPath)
 
 	cmd := exec.Command(commandPath)
 	cmd.Dir = worktreePath
@@ -363,4 +353,20 @@ func prepareCommandLogFile(worktreePath string, commitHash string) (*os.File, st
 		return nil, "", err
 	}
 	return file, logPath, nil
+}
+
+func (c *Command) commandEnv(commitHash, logPath string) []string {
+	env := append([]string{}, os.Environ()...)
+	env = append(env, "AYNIG_BODY="+c.body)
+	env = append(env, "AYNIG_COMMIT_HASH="+commitHash)
+	env = append(env, "AYNIG_LOG_PATH="+logPath)
+	if c.logLevel != "" {
+		env = append(env, "AYNIG_LOG_LEVEL="+c.logLevel)
+	}
+	for key, values := range c.trailers {
+		upperKey := strings.ToUpper(strings.ReplaceAll(key, "-", "_"))
+		envValue := strings.Join(values, ",")
+		env = append(env, "AYNIG_TRAILER_"+upperKey+"="+envValue)
+	}
+	return env
 }

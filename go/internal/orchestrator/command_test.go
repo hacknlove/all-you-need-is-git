@@ -1,6 +1,8 @@
 package orchestrator
 
 import (
+	"path/filepath"
+	"strings"
 	"testing"
 
 	"all-you-need-is-git/go/internal/config"
@@ -55,8 +57,8 @@ func TestResolveStateTrailer(t *testing.T) {
 func TestGetWorkspaceUsesRepoRootForCurrentBranch(t *testing.T) {
 	repoRoot := t.TempDir()
 	cmd := NewCommand(CommandParams{
-		Config: config.Config{RepoRoot: repoRoot},
-		BranchName: "main",
+		Config:          config.Config{RepoRoot: repoRoot},
+		BranchName:      "main",
 		IsCurrentBranch: true,
 	})
 
@@ -67,4 +69,42 @@ func TestGetWorkspaceUsesRepoRootForCurrentBranch(t *testing.T) {
 	if got != repoRoot {
 		t.Fatalf("workspace mismatch: got %q want %q", got, repoRoot)
 	}
+}
+
+func TestCommandEnvIncludesLogPath(t *testing.T) {
+	cmd := NewCommand(CommandParams{
+		Config: config.Config{},
+		Trailers: map[string][]string{
+			"dwp-state": {"review"},
+			"foo-bar":   {"baz", "qux"},
+		},
+		Body:     "prompt body",
+		LogLevel: "debug",
+	})
+
+	logPath := filepath.Join("/tmp", ".dwp", "logs", "deadbeef.log")
+	env := cmd.commandEnv("deadbeef", logPath)
+
+	wantEntries := []string{
+		"AYNIG_BODY=prompt body",
+		"AYNIG_COMMIT_HASH=deadbeef",
+		"AYNIG_LOG_PATH=" + logPath,
+		"AYNIG_LOG_LEVEL=debug",
+		"AYNIG_TRAILER_DWP_STATE=review",
+		"AYNIG_TRAILER_FOO_BAR=baz,qux",
+	}
+	for _, want := range wantEntries {
+		if !containsEnvEntry(env, want) {
+			t.Fatalf("missing env entry %q in %v", want, env)
+		}
+	}
+}
+
+func containsEnvEntry(env []string, want string) bool {
+	for _, entry := range env {
+		if strings.TrimSpace(entry) == want {
+			return true
+		}
+	}
+	return false
 }
