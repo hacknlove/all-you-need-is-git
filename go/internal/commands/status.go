@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -31,7 +32,21 @@ func leaseStatusForState(state string, leaseSecondsRaw string, committerDate str
 }
 
 type StatusOptions struct {
-	Role string
+	Role          string
+	Branch        string
+	BranchPattern string
+}
+
+type branchStatus struct {
+	Branch      string
+	HeadCommit  string
+	State       string
+	RunID       string
+	LeaseStatus string
+	OriginState string
+	InDWPState  bool
+	Command     string
+	CommandPath string
 }
 
 func Status(options StatusOptions) error {
@@ -41,33 +56,81 @@ func Status(options StatusOptions) error {
 	}
 	repoRoot = strings.TrimSpace(repoRoot)
 
-	branch, err := gitx.Run("", "rev-parse", "--abbrev-ref", "HEAD")
+	roleName := strings.TrimSpace(options.Role)
+	if roleName == "" {
+		roleName = strings.TrimSpace(os.Getenv("ROLE"))
+	}
+
+	branches, err := resolveStatusBranches(options)
 	if err != nil {
 		return err
 	}
-	branch = strings.TrimSpace(branch)
 
-	headCommit, err := gitx.Run("", "rev-parse", "HEAD")
+	for i, branch := range branches {
+		status, err := readBranchStatus(branch, repoRoot, roleName)
+		if err != nil {
+			return err
+		}
+		printBranchStatus(status)
+		if i < len(branches)-1 {
+			fmt.Println()
+		}
+	}
+	return nil
+}
+
+func resolveStatusBranches(options StatusOptions) ([]string, error) {
+	branch := strings.TrimSpace(options.Branch)
+	pattern := strings.TrimSpace(options.BranchPattern)
+	if branch != "" && pattern != "" {
+		return nil, fmt.Errorf("status accepts either --branch or --branch-pattern, not both")
+	}
+	if branch != "" {
+		if _, err := gitx.Run("", "rev-parse", "--verify", "refs/heads/"+branch); err != nil {
+			return nil, fmt.Errorf("branch %q not found", branch)
+		}
+		return []string{branch}, nil
+	}
+	if pattern != "" {
+		out, err := gitx.Run("", "branch", "--list", "--format=%(refname:short)", pattern)
+		if err != nil {
+			return nil, err
+		}
+		branches := splitStatusLines(out)
+		if len(branches) == 0 {
+			return nil, fmt.Errorf("no branches match pattern %q", pattern)
+		}
+		sort.Strings(branches)
+		return branches, nil
+	}
+	branch, err := gitx.Run("", "rev-parse", "--abbrev-ref", "HEAD")
 	if err != nil {
-		return err
+		return nil, err
+	}
+	return []string{strings.TrimSpace(branch)}, nil
+}
+
+func readBranchStatus(branch string, repoRoot string, roleName string) (branchStatus, error) {
+	branchRef := localBranchRef(branch)
+	headCommit, err := gitx.Run("", "rev-parse", branchRef)
+	if err != nil {
+		return branchStatus{}, err
 	}
 	headCommit = strings.TrimSpace(headCommit)
 
-	committerDate, err := gitx.Run("", "log", "-1", "--format=%cI")
+	committerDate, err := gitx.Run("", "log", "-1", "--format=%cI", branchRef)
 	if err != nil {
-		return err
+		return branchStatus{}, err
 	}
 	committerDate = strings.TrimSpace(committerDate)
 
-	fullMessage, err := gitx.Run("", "log", "-1", "--format=%B")
+	fullMessage, err := gitx.Run("", "log", "-1", "--format=%B", branchRef)
 	if err != nil {
-		return err
+		return branchStatus{}, err
 	}
-	firstLine, _ := splitCommitMessage(fullMessage)
-	_ = firstLine
 	trailers, err := parseTrailersFromMessage(fullMessage)
 	if err != nil {
-		return err
+		return branchStatus{}, err
 	}
 
 	state := trailerValue(trailers, "dwp-state")
@@ -75,7 +138,6 @@ func Status(options StatusOptions) error {
 	leaseSecondsRaw := trailerValue(trailers, "dwp-lease-seconds")
 	originState := trailerValue(trailers, "dwp-origin-state")
 	inDWPState := state != ""
-
 	leaseStatus := leaseStatusForState(state, leaseSecondsRaw, committerDate)
 
 	commandStatus := "missing"
@@ -90,40 +152,62 @@ func Status(options StatusOptions) error {
 	} else if state == "working" {
 		shouldResolveCommand = false
 	}
-
-	roleName := strings.TrimSpace(options.Role)
-	if roleName == "" {
-		roleName = strings.TrimSpace(os.Getenv("ROLE"))
-	}
-
 	if shouldResolveCommand && commandState != "" && commandState != "working" {
 		commandStatus, commandPath = resolveCommandPath(repoRoot, roleName, commandState)
 	} else if !shouldResolveCommand {
 		commandStatus = "lease"
 	}
 
-	fmt.Printf("branch: %s\n", branch)
-	fmt.Printf("head: %s\n", headCommit)
-	if !inDWPState {
+	return branchStatus{
+		Branch:      branch,
+		HeadCommit:  headCommit,
+		State:       state,
+		RunID:       runID,
+		LeaseStatus: leaseStatus,
+		OriginState: originState,
+		InDWPState:  inDWPState,
+		Command:     commandStatus,
+		CommandPath: commandPath,
+	}, nil
+}
+
+func printBranchStatus(status branchStatus) {
+	fmt.Printf("branch: %s\n", status.Branch)
+	fmt.Printf("head: %s\n", status.HeadCommit)
+	if !status.InDWPState {
 		fmt.Printf("dwp-state: not in a DWP state\n")
-		fmt.Printf("command: %s\n", commandStatus)
-		return nil
+		fmt.Printf("command: %s\n", status.Command)
+		return
 	}
-	fmt.Printf("dwp-state: %s\n", state)
-	if state == "working" && originState != "" {
-		fmt.Printf("dwp-origin-state: %s\n", originState)
+	fmt.Printf("dwp-state: %s\n", status.State)
+	if status.State == "working" && status.OriginState != "" {
+		fmt.Printf("dwp-origin-state: %s\n", status.OriginState)
 	}
-	if runID != "" {
-		fmt.Printf("dwp-run-id: %s\n", runID)
+	if status.RunID != "" {
+		fmt.Printf("dwp-run-id: %s\n", status.RunID)
 	} else {
 		fmt.Printf("dwp-run-id: n/a\n")
 	}
-	fmt.Printf("lease: %s\n", leaseStatus)
-	fmt.Printf("command: %s\n", commandStatus)
-	if commandPath != "" {
-		fmt.Printf("command-path: %s\n", commandPath)
+	fmt.Printf("lease: %s\n", status.LeaseStatus)
+	fmt.Printf("command: %s\n", status.Command)
+	if status.CommandPath != "" {
+		fmt.Printf("command-path: %s\n", status.CommandPath)
 	}
-	return nil
+}
+
+func splitStatusLines(out string) []string {
+	lines := []string{}
+	for _, line := range strings.Split(out, "\n") {
+		trimmed := strings.TrimSpace(line)
+		if trimmed != "" {
+			lines = append(lines, trimmed)
+		}
+	}
+	return lines
+}
+
+func localBranchRef(branch string) string {
+	return "refs/heads/" + branch
 }
 
 func resolveCommandPath(repoRoot string, roleName string, commandState string) (string, string) {
