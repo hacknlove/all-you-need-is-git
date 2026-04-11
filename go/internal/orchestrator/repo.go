@@ -1,11 +1,11 @@
 package orchestrator
 
 import (
+	"os"
 	"strings"
 	"sync"
 
 	"all-you-need-is-git/go/internal/config"
-	"all-you-need-is-git/go/internal/envx"
 	"all-you-need-is-git/go/internal/gitx"
 	"all-you-need-is-git/go/internal/logx"
 )
@@ -16,7 +16,7 @@ type Repo struct {
 }
 
 func NewRepo(cfg config.Config) *Repo {
-	resolved := logx.ResolveLevel(cfg.LogLevel, cfg.LogLevelSet, "", envx.First("LOG_LEVEL", "AYNIG_LOG_LEVEL"), config.Default().LogLevel)
+	resolved := logx.ResolveLevel(cfg.LogLevel, cfg.LogLevelSet, "", strings.TrimSpace(os.Getenv("LOG_LEVEL")), config.Default().LogLevel)
 	return &Repo{config: cfg, logger: logx.New(resolved)}
 }
 

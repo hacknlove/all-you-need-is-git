@@ -149,7 +149,4 @@ Push through a specific remote and add extra trailers:
 
 ```bash
 aynig set-state --state triage --remote origin --trailer "dwp-issue: 42" --trailer "dwp-note: waiting on upstream fix"
-
-Legacy aliases `--dwp-state` and `--dwp-remote` still work for compatibility, but
-the shorter forms are preferred.
 ```

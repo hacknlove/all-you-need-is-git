@@ -49,8 +49,6 @@ Commands receive metadata via env vars such as:
 - `FOO`
 - `BAZ`
 
-(Legacy aliases such as `AYNIG_BODY` and `AYNIG_TRAILER_FOO` still work.)
-
 (See also: Commands → Environment Variables.)
 
 Branch logs use the resolved log level after trailers are parsed. Early branch logs are buffered and flushed once the level is known.

@@ -71,9 +71,7 @@ func runCmd(args []string) {
 	}
 	worktree := fs.String("worktree", config.Default().WorkTree, "Specify custom worktree directory (default: .worktrees)")
 	fs.StringVar(worktree, "w", config.Default().WorkTree, "Specify custom worktree directory (default: .worktrees)")
-	var useRemote string
-	fs.StringVar(&useRemote, "remote", "", "Use remote branches instead of local (specify remote name, e.g., origin)")
-	fs.StringVar(&useRemote, "dwp-remote", "", "Legacy alias for --remote")
+	useRemote := fs.String("remote", "", "Use remote branches instead of local (specify remote name, e.g., origin)")
 	currentBranch := fs.String("current-branch", config.Default().CurrentBranch, "How to handle the current branch: skip (default), include, only")
 	role := fs.String("role", "", "Use role-specific commands from .dwp/roles/<name>/command when available")
 	logLevel := &stringFlag{value: config.Default().LogLevel}
@@ -82,7 +80,7 @@ func runCmd(args []string) {
 
 	cfg := config.Default()
 	cfg.WorkTree = *worktree
-	cfg.UseRemote = useRemote
+	cfg.UseRemote = *useRemote
 	cfg.CurrentBranch = *currentBranch
 	cfg.Role = *role
 	cfg.LogLevel = logLevel.value
@@ -159,9 +157,7 @@ func setWorkingCmd(args []string) {
 	promptFile := fs.String("prompt-file", "", "Path to file used as prompt/body")
 	promptStdin := fs.Bool("prompt-stdin", false, "Read prompt/body from stdin")
 	leaseSeconds := fs.Int("lease-seconds", 0, "Lease duration in seconds (overrides dwp-lease-seconds trailer)")
-	var remote string
-	fs.StringVar(&remote, "remote", "", "Remote name to push after commit")
-	fs.StringVar(&remote, "dwp-remote", "", "Legacy alias for --remote")
+	remote := fs.String("remote", "", "Remote name to push after commit")
 	var trailers trailerListFlag
 	fs.Var(&trailers, "trailer", "Additional trailer in key:value format (repeatable)")
 	fs.Parse(args)
@@ -172,7 +168,7 @@ func setWorkingCmd(args []string) {
 		PromptFile:   *promptFile,
 		PromptStdin:  *promptStdin,
 		LeaseSeconds: *leaseSeconds,
-		DwpRemote:    remote,
+		DwpRemote:    *remote,
 		Trailers:     trailers,
 	}); err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -182,29 +178,25 @@ func setWorkingCmd(args []string) {
 
 func setStateCmd(args []string) {
 	fs := flag.NewFlagSet("set-state", flag.ExitOnError)
-	var state string
-	fs.StringVar(&state, "state", "", "Next state to set (required, must not be working)")
-	fs.StringVar(&state, "dwp-state", "", "Legacy alias for --state")
+	state := fs.String("state", "", "Next state to set (required, must not be working)")
 	subject := fs.String("subject", "", "Commit title")
 	prompt := fs.String("prompt", "", "Commit prompt/body")
 	promptFile := fs.String("prompt-file", "", "Path to file used as prompt/body")
 	promptStdin := fs.Bool("prompt-stdin", false, "Read prompt/body from stdin")
 	keepTrailers := fs.Bool("keep-trailers", false, "Preserve existing dwp-* trailers from HEAD except managed ones")
-	var remote string
-	fs.StringVar(&remote, "remote", "", "Remote name to push after commit")
-	fs.StringVar(&remote, "dwp-remote", "", "Legacy alias for --remote")
+	remote := fs.String("remote", "", "Remote name to push after commit")
 	var trailers trailerListFlag
 	fs.Var(&trailers, "trailer", "Additional trailer in key:value format (repeatable)")
 	fs.Parse(args)
 
 	if err := commands.SetState(commands.SetStateOptions{
-		State:        state,
+		State:        *state,
 		Subject:      *subject,
 		Prompt:       *prompt,
 		PromptFile:   *promptFile,
 		PromptStdin:  *promptStdin,
 		KeepTrailers: *keepTrailers,
-		DwpRemote:    remote,
+		DwpRemote:    *remote,
 		Trailers:     trailers,
 	}); err != nil {
 		fmt.Fprintln(os.Stderr, err)

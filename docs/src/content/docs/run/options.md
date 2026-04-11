@@ -38,8 +38,6 @@ This is useful when runners operate as distributed workers and the remote branch
 
 Use `--role <name>` (or set `ROLE`) to run commands from a role-specific directory.
 
-Legacy aliases remain supported: `--dwp-remote` and `AYNIG_ROLE`.
-
 Resolution order:
 
 1. `.dwp/roles/<role>/command/<state>`

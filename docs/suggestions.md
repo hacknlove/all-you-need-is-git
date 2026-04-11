@@ -49,17 +49,17 @@ This helps developers structure their command logic.
 
 ## 5. Environment Variables Reference Location
 
-The Environment Variables page exists but it's easy to miss. A prominent link in the authoring guide pointing to it would help, since commands need to know what context they receive (AYNIG_BODY, trailers, etc.).
+The Environment Variables page exists but it's easy to miss. A prominent link in the authoring guide pointing to it would help, since commands need to know what context they receive (`BODY`, trailers, etc.).
 
-## 6. Mention `AYNIG_BODY` Wherever `--prompt` Is Introduced
+## 6. Mention `BODY` Wherever `--prompt` Is Introduced
 
-It took extra digging to confirm that the body passed with `aynig set-state --prompt ...` reaches the next command as `AYNIG_BODY`.
+It took extra digging to confirm that the body passed with `aynig set-state --prompt ...` reaches the next command as `BODY`.
 
 That connection is important for real command patterns such as an `idle` command that reads guidance from the triggering commit body to decide what to prioritize next.
 
-The environment variables page documents `AYNIG_BODY`, but the same fact should also be called out directly in places where users are most likely to need it:
+The environment variables page documents `BODY`, but the same fact should also be called out directly in places where users are most likely to need it:
 - command authoring docs
 - `set-state` docs
 - run/commit format docs
 
-Without that cross-linking, `AYNIG_BODY` feels effectively undocumented unless the reader already knows where to look.
+Without that cross-linking, `BODY` feels effectively undocumented unless the reader already knows where to look.

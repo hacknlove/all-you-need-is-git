@@ -121,6 +121,4 @@ Use the environment variable form for role selection:
 
 ```bash
 ROLE=reviewer aynig run
-
-Legacy aliases remain supported: `--dwp-remote`, `AYNIG_ROLE`, and `AYNIG_LOG_LEVEL`.
 ```

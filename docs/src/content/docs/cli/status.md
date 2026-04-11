@@ -73,6 +73,4 @@ Use the environment variable form for role selection:
 
 ```bash
 ROLE=reviewer aynig status
-
-Legacy alias: `AYNIG_ROLE`.
 ```

@@ -141,6 +141,4 @@ Push through a specific remote and add extra trailers:
 
 ```bash
 aynig set-working --remote origin --trailer "dwp-note: retry" --trailer "dwp-ticket: 42"
-
-Legacy alias: `--dwp-remote`.
 ```

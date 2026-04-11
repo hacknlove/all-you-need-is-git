@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"all-you-need-is-git/go/internal/config"
-	"all-you-need-is-git/go/internal/envx"
 	"all-you-need-is-git/go/internal/gitx"
 	"all-you-need-is-git/go/internal/logx"
 	"all-you-need-is-git/go/internal/statex"
@@ -133,7 +132,7 @@ func (c *Command) Run() error {
 		}
 	}
 
-	env := c.commandEnv(currentCommitHash, logPath)
+	env := c.commandEnv(currentCommitHash, logPath, worktreePath)
 
 	cmd := exec.Command(commandPath)
 	cmd.Dir = worktreePath
@@ -249,7 +248,7 @@ func (c *Command) getCommandPath(worktreePath string) (string, error) {
 
 func (c *Command) findCommandPath(worktreePath string, commandName string) (string, error) {
 	roleName := strings.TrimSpace(c.config.Role)
-	roleEnv := envx.First("ROLE", "AYNIG_ROLE")
+	roleEnv := strings.TrimSpace(os.Getenv("ROLE"))
 	if roleName == "" {
 		roleName = roleEnv
 	}
@@ -356,27 +355,22 @@ func prepareCommandLogFile(worktreePath string, commitHash string) (*os.File, st
 	return file, logPath, nil
 }
 
-func (c *Command) commandEnv(commitHash, logPath string) []string {
+func (c *Command) commandEnv(commitHash, logPath, worktreePath string) []string {
 	env := append([]string{}, os.Environ()...)
 	env = append(env, "BODY="+c.body)
-	env = append(env, "AYNIG_BODY="+c.body)
 	env = append(env, "COMMIT_HASH="+commitHash)
-	env = append(env, "AYNIG_COMMIT_HASH="+commitHash)
 	env = append(env, "LOG_PATH="+logPath)
-	env = append(env, "AYNIG_LOG_PATH="+logPath)
+	env = append(env, "WORKTREE_PATH="+worktreePath)
 	if c.logLevel != "" {
 		env = append(env, "LOG_LEVEL="+c.logLevel)
-		env = append(env, "AYNIG_LOG_LEVEL="+c.logLevel)
 	}
 	if role := strings.TrimSpace(c.config.Role); role != "" {
 		env = append(env, "ROLE="+role)
-		env = append(env, "AYNIG_ROLE="+role)
 	}
 	for key, values := range c.trailers {
 		upperKey := strings.ToUpper(strings.ReplaceAll(key, "-", "_"))
 		envValue := strings.Join(values, ",")
 		env = append(env, upperKey+"="+envValue)
-		env = append(env, "AYNIG_TRAILER_"+upperKey+"="+envValue)
 	}
 	return env
 }

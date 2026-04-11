@@ -83,23 +83,17 @@ func TestCommandEnvIncludesLogPath(t *testing.T) {
 	})
 
 	logPath := filepath.Join("/tmp", ".dwp", "logs", "deadbeef.log")
-	env := cmd.commandEnv("deadbeef", logPath)
+	env := cmd.commandEnv("deadbeef", logPath, "/tmp/worktree")
 
 	wantEntries := []string{
 		"BODY=prompt body",
-		"AYNIG_BODY=prompt body",
 		"COMMIT_HASH=deadbeef",
-		"AYNIG_COMMIT_HASH=deadbeef",
 		"LOG_PATH=" + logPath,
-		"AYNIG_LOG_PATH=" + logPath,
+		"WORKTREE_PATH=/tmp/worktree",
 		"LOG_LEVEL=debug",
-		"AYNIG_LOG_LEVEL=debug",
 		"ROLE=reviewer",
-		"AYNIG_ROLE=reviewer",
 		"DWP_STATE=review",
-		"AYNIG_TRAILER_DWP_STATE=review",
 		"FOO_BAR=baz,qux",
-		"AYNIG_TRAILER_FOO_BAR=baz,qux",
 	}
 	for _, want := range wantEntries {
 		if !containsEnvEntry(env, want) {
