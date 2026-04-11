@@ -108,6 +108,30 @@ func TestStatusReadsBranchPattern(t *testing.T) {
 	}
 }
 
+func TestStatusPrefersLocalBranchRefOverMatchingTag(t *testing.T) {
+	repoDir := newStatusTestRepo(t)
+	writeExecutable(t, filepath.Join(repoDir, ".dwp", "command", "build"))
+	writeExecutable(t, filepath.Join(repoDir, ".dwp", "command", "review"))
+	commitEmpty(t, repoDir, "seed", "body")
+	createBranchCommit(t, repoDir, "foo", "feat: branch foo", "body\n\ndwp-state: build")
+	runGit(t, repoDir, "tag", "foo", "main")
+
+	output := captureStatusOutput(t, repoDir, StatusOptions{Branch: "foo"})
+
+	if !strings.Contains(output, "branch: foo\n") {
+		t.Fatalf("expected branch in output, got %q", output)
+	}
+	if !strings.Contains(output, "dwp-state: build\n") {
+		t.Fatalf("expected branch state to win over tag target, got %q", output)
+	}
+	if strings.Contains(output, "dwp-state: review\n") {
+		t.Fatalf("expected status to ignore matching tag ref, got %q", output)
+	}
+	if !strings.Contains(output, "command: exists\n") {
+		t.Fatalf("expected branch command resolution, got %q", output)
+	}
+}
+
 func newStatusTestRepo(t *testing.T) string {
 	t.Helper()
 	repoDir := t.TempDir()

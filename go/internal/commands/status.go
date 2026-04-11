@@ -111,19 +111,20 @@ func resolveStatusBranches(options StatusOptions) ([]string, error) {
 }
 
 func readBranchStatus(branch string, repoRoot string, roleName string) (branchStatus, error) {
-	headCommit, err := gitx.Run("", "rev-parse", branch)
+	branchRef := localBranchRef(branch)
+	headCommit, err := gitx.Run("", "rev-parse", branchRef)
 	if err != nil {
 		return branchStatus{}, err
 	}
 	headCommit = strings.TrimSpace(headCommit)
 
-	committerDate, err := gitx.Run("", "log", "-1", "--format=%cI", branch)
+	committerDate, err := gitx.Run("", "log", "-1", "--format=%cI", branchRef)
 	if err != nil {
 		return branchStatus{}, err
 	}
 	committerDate = strings.TrimSpace(committerDate)
 
-	fullMessage, err := gitx.Run("", "log", "-1", "--format=%B", branch)
+	fullMessage, err := gitx.Run("", "log", "-1", "--format=%B", branchRef)
 	if err != nil {
 		return branchStatus{}, err
 	}
@@ -203,6 +204,10 @@ func splitStatusLines(out string) []string {
 		}
 	}
 	return lines
+}
+
+func localBranchRef(branch string) string {
+	return "refs/heads/" + branch
 }
 
 func resolveCommandPath(repoRoot string, roleName string, commandState string) (string, string) {
