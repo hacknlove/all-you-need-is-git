@@ -366,13 +366,13 @@ func (c *Command) commandEnv(commitHash, logPath, worktreePath string) []string 
 	envNames["LOG_PATH"] = struct{}{}
 	env = append(env, "WORKTREE_PATH="+worktreePath)
 	envNames["WORKTREE_PATH"] = struct{}{}
+	envNames["ROLE"] = struct{}{}
 	if c.logLevel != "" {
 		env = append(env, "LOG_LEVEL="+c.logLevel)
 		envNames["LOG_LEVEL"] = struct{}{}
 	}
 	if role := strings.TrimSpace(c.config.Role); role != "" {
 		env = append(env, "ROLE="+role)
-		envNames["ROLE"] = struct{}{}
 	}
 	for key, values := range c.trailers {
 		upperKey := strings.ToUpper(strings.ReplaceAll(key, "-", "_"))

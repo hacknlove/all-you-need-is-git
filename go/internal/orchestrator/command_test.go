@@ -141,6 +141,27 @@ func TestCommandEnvDoesNotOverrideInheritedOrReservedEnvNames(t *testing.T) {
 	}
 }
 
+func TestCommandEnvReservesRoleEvenWhenUnset(t *testing.T) {
+	cmd := NewCommand(CommandParams{
+		Config: config.Config{},
+		Trailers: map[string][]string{
+			"role":      {"reviewer"},
+			"dwp-state": {"review"},
+		},
+		Body:     "prompt body",
+		LogLevel: "debug",
+	})
+
+	env := cmd.commandEnv("deadbeef", "/tmp/log", "/tmp/worktree")
+
+	if containsEnvEntry(env, "ROLE=reviewer") {
+		t.Fatalf("unexpected trailer-created ROLE when no role was configured: %v", env)
+	}
+	if !containsEnvEntry(env, "DWP_STATE=review") {
+		t.Fatalf("expected non-reserved trailer env to remain exported: %v", env)
+	}
+}
+
 func containsEnvEntry(env []string, want string) bool {
 	for _, entry := range env {
 		if strings.TrimSpace(entry) == want {
