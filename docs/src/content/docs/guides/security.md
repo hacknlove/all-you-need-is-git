@@ -3,7 +3,7 @@ title: Security & Trust Model
 description: What AYNIG assumes and what you must control.
 ---
 
-AYNIG executes code from your repository (`.dwp/command/<state>`). Treat it like CI.
+AYNIG executes code from your repository (`.aynig/command/<state>`). Treat it like CI.
 
 ## What AYNIG assumes
 
@@ -19,13 +19,13 @@ If an attacker can push a commit that sets:
 dwp-state: <some-state>
 ```
 
-they can potentially cause a runner to execute `.dwp/command/<some-state>`.
+they can potentially cause a runner to execute `.aynig/command/<some-state>`.
 
 ## Recommendations
 
 - Run workflows on dedicated branches.
 - Restrict who can push to those branches.
-- Keep `.dwp/command/` small and reviewable.
+- Keep `.aynig/command/` small and reviewable.
 - Prefer running in a sandboxed environment (CI runner / container / VM).
 - Avoid storing secrets in the repo; use environment injection.
 

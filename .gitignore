@@ -51,4 +51,4 @@ config.json
 .worktrees/
 
 /temp/
-.dwp/logs/
+.aynig/logs/

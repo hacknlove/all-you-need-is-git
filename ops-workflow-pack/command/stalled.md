@@ -1,11 +1,11 @@
-Read `.dwp/CONTRACT.md`.
+Read `.aynig/CONTRACT.md`.
 
 The current job is in state `stalled`.
 
 Your goal is to decide the next state.
 
 Instructions:
-1) Read `.dwp/COMMANDS.md` to learn:
+1) Read `.aynig/COMMANDS.md` to learn:
    - available states and their instructions
 2) Find the `working` commit for this run:
    - use `dwp-stalled-run` to locate the last `dwp-state: working` commit for the run

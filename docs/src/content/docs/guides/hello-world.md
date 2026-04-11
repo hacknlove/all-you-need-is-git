@@ -6,7 +6,7 @@ description: A minimal, real workflow you can copy-paste.
 This guide builds the smallest end-to-end workflow:
 
 - You create a commit with `dwp-state: build`
-- AYNIG runs `.dwp/command/build`
+- AYNIG runs `.aynig/command/build`
 - The command emits a new commit advancing the state
 
 ## 1) Initialize the repo
@@ -18,7 +18,7 @@ aynig init
 ## 2) Create a command
 
 ```bash
-cat > .dwp/command/build <<'EOF'
+cat > .aynig/command/build <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
 
@@ -28,7 +28,7 @@ git add build.out
 git commit -m "build: done" -m $'Build completed.\n\ndwp-state: done'
 EOF
 
-chmod +x .dwp/command/build
+chmod +x .aynig/command/build
 ```
 
 ## 3) Request a build (commit protocol)

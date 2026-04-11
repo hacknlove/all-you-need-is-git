@@ -1,12 +1,12 @@
 ---
 title: Authoring Commands
-description: Create executable commands in .dwp/command/<state>.
+description: Create executable commands in .aynig/command/<state>.
 ---
 
 Commands are executable files located at:
 
 ```text
-.dwp/command/<state>
+.aynig/command/<state>
 ```
 
 When `dwp-state: <state>` appears in the latest commit trailer, AYNIG executes the matching command.
@@ -16,14 +16,14 @@ When `dwp-state: <state>` appears in the latest commit trailer, AYNIG executes t
 Create a command `review`:
 
 ```bash
-cat > .dwp/command/review <<'EOF'
+cat > .aynig/command/review <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
 
 echo "Review requested: $BODY"
 EOF
 
-chmod +x .dwp/command/review
+chmod +x .aynig/command/review
 ```
 
 ## Tips

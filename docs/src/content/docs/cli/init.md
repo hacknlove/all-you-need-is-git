@@ -16,13 +16,13 @@ created.
 ## Behavior
 
 - Requires the current directory to be a git repository.
-- Creates `.dwp/` if it does not already exist.
-- Creates `.dwp/command/` if it does not already exist.
-- Creates `.dwp/COMMANDS.md` only when `.dwp/` is newly created.
-- Creates `.dwp/CONTRACT.md` when it is missing.
-- Creates `.dwp/command/clean` when it is missing.
+- Creates `.aynig/` if it does not already exist.
+- Creates `.aynig/command/` if it does not already exist.
+- Creates `.aynig/COMMANDS.md` only when `.aynig/` is newly created.
+- Creates `.aynig/CONTRACT.md` when it is missing.
+- Creates `.aynig/command/clean` when it is missing.
 - Creates `.worktrees/` when it is missing.
-- Ensures `.worktrees/` and `.dwp/logs/` are present in `.gitignore`.
+- Ensures `.worktrees/` and `.aynig/logs/` are present in `.gitignore`.
 - Skips existing files instead of overwriting them.
 
 ## Options
@@ -33,13 +33,13 @@ This command has no flags.
 
 Depending on what already exists, `aynig init` may create:
 
-- `.dwp/`
-- `.dwp/COMMANDS.md`
-- `.dwp/CONTRACT.md`
-- `.dwp/command/`
-- `.dwp/command/clean`
+- `.aynig/`
+- `.aynig/COMMANDS.md`
+- `.aynig/CONTRACT.md`
+- `.aynig/command/`
+- `.aynig/command/clean`
 - `.worktrees/`
-- `.gitignore` entries for `.worktrees/` and `.dwp/logs/`
+- `.gitignore` entries for `.worktrees/` and `.aynig/logs/`
 
 ## Examples
 

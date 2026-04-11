@@ -253,7 +253,7 @@ func (c *Command) findCommandPath(worktreePath string, commandName string) (stri
 		roleName = roleEnv
 	}
 	if roleName != "" {
-		roleDir := filepath.Join(worktreePath, ".dwp", "roles", filepath.FromSlash(roleName), "command")
+		roleDir := filepath.Join(worktreePath, ".aynig", "roles", filepath.FromSlash(roleName), "command")
 		rolePath, err := c.resolveCommandPath(roleDir, commandName)
 		if err != nil {
 			return "", err
@@ -262,7 +262,7 @@ func (c *Command) findCommandPath(worktreePath string, commandName string) (stri
 			return rolePath, nil
 		}
 	}
-	baseDir := filepath.Join(worktreePath, ".dwp", "command")
+	baseDir := filepath.Join(worktreePath, ".aynig", "command")
 	return c.resolveCommandPath(baseDir, commandName)
 }
 
@@ -343,7 +343,7 @@ func resolveStateTrailer(trailers map[string][]string) (string, string) {
 }
 
 func prepareCommandLogFile(worktreePath string, commitHash string) (*os.File, string, error) {
-	logsDir := filepath.Join(worktreePath, ".dwp", "logs")
+	logsDir := filepath.Join(worktreePath, ".aynig", "logs")
 	if err := os.MkdirAll(logsDir, 0o755); err != nil {
 		return nil, "", err
 	}

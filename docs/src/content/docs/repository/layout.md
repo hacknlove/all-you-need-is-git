@@ -6,7 +6,7 @@ description: Recommended layout for AYNIG-enabled repos.
 A minimal AYNIG repository typically includes:
 
 ```text
-.dwp/
+.aynig/
   command/
     <state>
   roles/
@@ -17,13 +17,13 @@ A minimal AYNIG repository typically includes:
 .worktrees/     # ephemeral; created/cleaned by AYNIG
 ```
 
-The `dwp-state` trailer selects which command runs. When `ROLE` (or `--role`) is set, AYNIG checks `.dwp/roles/<role>/command/<state>` first.
+The `dwp-state` trailer selects which command runs. When `ROLE` (or `--role`) is set, AYNIG checks `.aynig/roles/<role>/command/<state>` first.
 
 ## .worktrees/
 
 AYNIG runs each command inside a dedicated Git worktree. Worktrees are created under this directory and reused across runs when possible. This directory is ignored via `.gitignore`.
 
-## .dwp/logs/
+## .aynig/logs/
 
 Command stdout/stderr logs are written here as `<commit-hash>.log`. This directory is ignored via `.gitignore`.
 Keep `.worktrees/` ignored. Commands should not create/manage worktrees manually.

@@ -11,7 +11,7 @@ This repository includes an optional workflow pack in `ops-workflow-pack/`.
 aynig install hacknlove/all-you-need-is-git ops-workflow-pack
 ```
 
-This copies a `.dwp/` directory into your current repository.
+This copies a `.aynig/` directory into your current repository.
 
 ## Included states
 

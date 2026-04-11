@@ -124,7 +124,7 @@ This repository is intentionally split into three layers:
   - Defines: how DWP is carried via commit messages and Git trailers, and how to parse/resolve `dwp-state`.
   - Does not define: command paths, role resolution, CLI flags, or logging.
 - **AYNIG (implementation)**
-  - Defines: `.dwp/` layout, CLI behavior, env vars, logging, worktrees, and UX defaults.
+  - Defines: `.aynig/` layout, CLI behavior, env vars, logging, worktrees, and UX defaults.
   - Does not define: protocol semantics beyond DWP and DWP/GC.
 
 ---
@@ -142,7 +142,7 @@ This repository is intentionally split into three layers:
 
 - DWP keys are canonical: `dwp-*` only.
 - The binding is named **DWP/GC** for Git commit transport.
-- AYNIG **implements DWP/GC** and uses `.dwp/` as the repo root.
+- AYNIG **implements DWP/GC** and uses `.aynig/` as the repo root.
 - No legacy names are supported.
 
 ---
