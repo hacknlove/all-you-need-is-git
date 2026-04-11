@@ -5,4 +5,4 @@
 git commit --allow-empty -m "chore: aynig is done"
 
 # Remove the worktree
-rm -rf "$AYNIG_WORKTREE_PATH"
+rm -rf "$WORKTREE_PATH"

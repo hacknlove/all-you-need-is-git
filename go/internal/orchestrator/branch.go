@@ -26,7 +26,7 @@ func NewBranch(cfg config.Config, branchName string, isCurrentBranch bool) *Bran
 func (b *Branch) Run() error {
 	buffer := logx.NewBufferedLogger()
 	buffer.Debugf("Inspecting branch %s", b.branchName)
-	baseLevel := logx.ResolveLevel(b.config.LogLevel, b.config.LogLevelSet, "", os.Getenv("AYNIG_LOG_LEVEL"), config.Default().LogLevel)
+	baseLevel := logx.ResolveLevel(b.config.LogLevel, b.config.LogLevelSet, "", strings.TrimSpace(os.Getenv("LOG_LEVEL")), config.Default().LogLevel)
 	baseLogger := logx.New(baseLevel)
 	if b.config.UseRemote != "" && !strings.HasPrefix(b.branchName, b.config.UseRemote+"/") {
 		buffer.Debugf("Skipping branch %s (not on remote %s)", b.branchName, b.config.UseRemote)
@@ -40,7 +40,7 @@ func (b *Branch) Run() error {
 		return err
 	}
 	trailerLevel := trailerValue(commit.Trailers, "dwp-log-level")
-	resolvedLevel := logx.ResolveLevel(b.config.LogLevel, b.config.LogLevelSet, trailerLevel, os.Getenv("AYNIG_LOG_LEVEL"), config.Default().LogLevel)
+	resolvedLevel := logx.ResolveLevel(b.config.LogLevel, b.config.LogLevelSet, trailerLevel, strings.TrimSpace(os.Getenv("LOG_LEVEL")), config.Default().LogLevel)
 	branchLogger := logx.New(resolvedLevel)
 	buffer.Flush(branchLogger)
 

@@ -16,7 +16,7 @@ type Repo struct {
 }
 
 func NewRepo(cfg config.Config) *Repo {
-	resolved := logx.ResolveLevel(cfg.LogLevel, cfg.LogLevelSet, "", os.Getenv("AYNIG_LOG_LEVEL"), config.Default().LogLevel)
+	resolved := logx.ResolveLevel(cfg.LogLevel, cfg.LogLevelSet, "", strings.TrimSpace(os.Getenv("LOG_LEVEL")), config.Default().LogLevel)
 	return &Repo{config: cfg, logger: logx.New(resolved)}
 }
 

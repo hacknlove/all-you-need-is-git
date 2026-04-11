@@ -7,17 +7,20 @@ AYNIG exposes commit metadata to commands via environment variables.
 
 Common variables:
 
-- `AYNIG_BODY` — the commit message body (prompt)
-- `AYNIG_COMMIT_HASH` — the triggering commit hash
-- `AYNIG_LOG_PATH` — absolute path to the command log file for this run
-- `AYNIG_LOG_LEVEL` — resolved log level for the run/branch
-- `AYNIG_ROLE` — selects `.dwp/roles/<role>/command` when set
+- `BODY` — the commit message body (prompt)
+- `COMMIT_HASH` — the triggering commit hash
+- `LOG_PATH` — absolute path to the command log file for this run
+- `LOG_LEVEL` — resolved log level for the run/branch
+- `ROLE` — selects `.dwp/roles/<role>/command` when set
+- `WORKTREE_PATH` — absolute path to the worktree used for this command run
 
-Precedence: `--log-level` > `dwp-log-level` trailer > `AYNIG_LOG_LEVEL` env.
+Precedence: `--log-level` > `dwp-log-level` trailer > `LOG_LEVEL` env.
 
 Trailers are also exposed as environment variables:
 
-- trailer key `foo: bar` → `AYNIG_TRAILER_FOO=bar`
-- trailer key `baz: qux` → `AYNIG_TRAILER_BAZ=qux`
+- trailer key `foo: bar` → `FOO=bar`
+- trailer key `baz: qux` → `BAZ=qux`
 
-> Implementation note: keys are uppercased and normalized for shells.
+> Implementation note: keys are uppercased and normalized for shells. Trailer-derived
+> variables are skipped when they would overwrite an existing or reserved env var such
+> as `PATH`, `HOME`, `BODY`, `LOG_PATH`, or `ROLE`.

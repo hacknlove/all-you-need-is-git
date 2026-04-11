@@ -30,24 +30,24 @@ baz: qux
 ## Options
 
 - `-w, --worktree <path>` — worktree directory (default: `.worktrees`)
-- `--dwp-remote <name>` — use remote branches instead of local
+- `--remote <name>` — use remote branches instead of local
 - `--current-branch <mode>` — `skip` (default), `include`, or `only`
 - `--log-level <level>` — `debug`, `info`, `warn`, or `error` (default)
 
-In `--dwp-remote` mode, `--current-branch` resolves against the upstream branch of your local current branch (for example `origin/main`). If no upstream exists, `only` runs zero branches.
+In `--remote` mode, `--current-branch` resolves against the upstream branch of your local current branch (for example `origin/main`). If no upstream exists, `only` runs zero branches.
 
-If `--dwp-remote` is omitted, AYNIG checks the latest commit trailer `dwp-source: git:<name>` and uses that remote when present.
+If `--remote` is omitted, AYNIG checks the latest commit trailer `dwp-source: git:<name>` and uses that remote when present.
 
-Log level precedence: `--log-level` > `dwp-log-level` trailer > `AYNIG_LOG_LEVEL` env.
+Log level precedence: `--log-level` > `dwp-log-level` trailer > `LOG_LEVEL` env.
 
 ## Environment variables
 
 Commands receive metadata via env vars such as:
 
-- `AYNIG_BODY`
-- `AYNIG_COMMIT_HASH`
-- `AYNIG_TRAILER_FOO`
-- `AYNIG_TRAILER_BAZ`
+- `BODY`
+- `COMMIT_HASH`
+- `FOO`
+- `BAZ`
 
 (See also: Commands → Environment Variables.)
 

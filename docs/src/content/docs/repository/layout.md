@@ -17,7 +17,7 @@ A minimal AYNIG repository typically includes:
 .worktrees/     # ephemeral; created/cleaned by AYNIG
 ```
 
-The `dwp-state` trailer selects which command runs. When `AYNIG_ROLE` (or `--role`) is set, AYNIG checks `.dwp/roles/<role>/command/<state>` first.
+The `dwp-state` trailer selects which command runs. When `ROLE` (or `--role`) is set, AYNIG checks `.dwp/roles/<role>/command/<state>` first.
 
 ## .worktrees/
 

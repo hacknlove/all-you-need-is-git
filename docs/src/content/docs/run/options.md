@@ -22,21 +22,21 @@ aynig run --current-branch only
 
 ## Use remote branches
 
-Use `--dwp-remote <name>` to scan a remote instead of local branches.
+Use `--remote <name>` to scan a remote instead of local branches.
 
-If `--dwp-remote` is omitted, AYNIG checks the latest commit trailer `dwp-source: git:<name>` and uses that remote when present.
+If `--remote` is omitted, AYNIG checks the latest commit trailer `dwp-source: git:<name>` and uses that remote when present.
 
 Example:
 
 ```bash
-aynig run --dwp-remote origin
+aynig run --remote origin
 ```
 
 This is useful when runners operate as distributed workers and the remote branch is the source of truth.
 
 ## Role-specific commands
 
-Use `--role <name>` (or set `AYNIG_ROLE`) to run commands from a role-specific directory.
+Use `--role <name>` (or set `ROLE`) to run commands from a role-specific directory.
 
 Resolution order:
 

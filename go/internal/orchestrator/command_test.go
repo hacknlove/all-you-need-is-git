@@ -73,7 +73,7 @@ func TestGetWorkspaceUsesRepoRootForCurrentBranch(t *testing.T) {
 
 func TestCommandEnvIncludesLogPath(t *testing.T) {
 	cmd := NewCommand(CommandParams{
-		Config: config.Config{},
+		Config: config.Config{Role: "reviewer"},
 		Trailers: map[string][]string{
 			"dwp-state": {"review"},
 			"foo-bar":   {"baz", "qux"},
@@ -83,20 +83,82 @@ func TestCommandEnvIncludesLogPath(t *testing.T) {
 	})
 
 	logPath := filepath.Join("/tmp", ".dwp", "logs", "deadbeef.log")
-	env := cmd.commandEnv("deadbeef", logPath)
+	env := cmd.commandEnv("deadbeef", logPath, "/tmp/worktree")
 
 	wantEntries := []string{
-		"AYNIG_BODY=prompt body",
-		"AYNIG_COMMIT_HASH=deadbeef",
-		"AYNIG_LOG_PATH=" + logPath,
-		"AYNIG_LOG_LEVEL=debug",
-		"AYNIG_TRAILER_DWP_STATE=review",
-		"AYNIG_TRAILER_FOO_BAR=baz,qux",
+		"BODY=prompt body",
+		"COMMIT_HASH=deadbeef",
+		"LOG_PATH=" + logPath,
+		"WORKTREE_PATH=/tmp/worktree",
+		"LOG_LEVEL=debug",
+		"ROLE=reviewer",
+		"DWP_STATE=review",
+		"FOO_BAR=baz,qux",
 	}
 	for _, want := range wantEntries {
 		if !containsEnvEntry(env, want) {
 			t.Fatalf("missing env entry %q in %v", want, env)
 		}
+	}
+}
+
+func TestCommandEnvDoesNotOverrideInheritedOrReservedEnvNames(t *testing.T) {
+	t.Setenv("PATH", "/tmp/original-path")
+	t.Setenv("HOME", "/tmp/original-home")
+
+	cmd := NewCommand(CommandParams{
+		Config: config.Config{Role: "reviewer"},
+		Trailers: map[string][]string{
+			"path":      {"/tmp/evil-bin"},
+			"home":      {"/tmp/evil-home"},
+			"role":      {"other"},
+			"log-path":  {"/tmp/other.log"},
+			"dwp-state": {"review"},
+		},
+		Body:     "prompt body",
+		LogLevel: "debug",
+	})
+
+	env := cmd.commandEnv("deadbeef", "/tmp/log", "/tmp/worktree")
+
+	if !containsEnvEntry(env, "PATH=/tmp/original-path") {
+		t.Fatalf("expected inherited PATH to be preserved: %v", env)
+	}
+	if !containsEnvEntry(env, "HOME=/tmp/original-home") {
+		t.Fatalf("expected inherited HOME to be preserved: %v", env)
+	}
+	if containsEnvEntry(env, "PATH=/tmp/evil-bin") {
+		t.Fatalf("unexpected trailer override for PATH: %v", env)
+	}
+	if containsEnvEntry(env, "HOME=/tmp/evil-home") {
+		t.Fatalf("unexpected trailer override for HOME: %v", env)
+	}
+	if containsEnvEntry(env, "ROLE=other") {
+		t.Fatalf("unexpected trailer override for ROLE: %v", env)
+	}
+	if containsEnvEntry(env, "LOG_PATH=/tmp/other.log") {
+		t.Fatalf("unexpected trailer override for LOG_PATH: %v", env)
+	}
+}
+
+func TestCommandEnvReservesRoleEvenWhenUnset(t *testing.T) {
+	cmd := NewCommand(CommandParams{
+		Config: config.Config{},
+		Trailers: map[string][]string{
+			"role":      {"reviewer"},
+			"dwp-state": {"review"},
+		},
+		Body:     "prompt body",
+		LogLevel: "debug",
+	})
+
+	env := cmd.commandEnv("deadbeef", "/tmp/log", "/tmp/worktree")
+
+	if containsEnvEntry(env, "ROLE=reviewer") {
+		t.Fatalf("unexpected trailer-created ROLE when no role was configured: %v", env)
+	}
+	if !containsEnvEntry(env, "DWP_STATE=review") {
+		t.Fatalf("expected non-reserved trailer env to remain exported: %v", env)
 	}
 }
 

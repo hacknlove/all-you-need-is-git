@@ -15,19 +15,19 @@ It is the main entry point for processing AYNIG state transitions.
 ## Behavior
 
 - Uses `.worktrees` by default for worktree management.
-- Resolves the remote from `--dwp-remote` when provided.
-- If `--dwp-remote` is omitted, AYNIG checks the latest commit trailer
+- Resolves the remote from `--remote` when provided.
+- If `--remote` is omitted, AYNIG checks the latest commit trailer
   `dwp-source: git:<name>` and uses that remote when present.
 - `--current-branch` controls whether the current branch is skipped,
   included, or used as the only branch.
 - In remote mode, current-branch resolution is based on the upstream branch of
   the current local branch, such as `origin/main`.
-- `--role` and `AYNIG_ROLE` make AYNIG check
+- `--role` and `ROLE` make AYNIG check
   `.dwp/roles/<role>/command/<state>` before `.dwp/command/<state>`.
 - Log level precedence is `--log-level` > `dwp-log-level` trailer >
-  `AYNIG_LOG_LEVEL` > default `error`.
+  `LOG_LEVEL` > default `error`.
 - Command stdout and stderr are written to `.dwp/logs/<commit-hash>.log`.
-- The command also receives that log path in `AYNIG_LOG_PATH`.
+- The command also receives that log path in `LOG_PATH`.
 
 ## Options
 
@@ -42,7 +42,7 @@ Example:
 aynig run --worktree .aynig-worktrees
 ```
 
-### `--dwp-remote <name>`
+### `--remote <name>`
 
 Runs against branches discovered from the named remote instead of using only
 local branches.
@@ -50,7 +50,7 @@ local branches.
 Example:
 
 ```bash
-aynig run --dwp-remote origin
+aynig run --remote origin
 ```
 
 ### `--role <name>`
@@ -102,7 +102,7 @@ aynig run --role reviewer
 Run against remote branches:
 
 ```bash
-aynig run --dwp-remote origin
+aynig run --remote origin
 ```
 
 Run only the current branch:
@@ -120,5 +120,5 @@ aynig run --worktree .aynig-worktrees --log-level debug
 Use the environment variable form for role selection:
 
 ```bash
-AYNIG_ROLE=reviewer aynig run
+ROLE=reviewer aynig run
 ```

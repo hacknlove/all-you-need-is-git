@@ -64,15 +64,15 @@ func runCmd(args []string) {
 		fmt.Fprintln(out, "        How to handle the current branch: skip (default), include, only (default \"skip\")")
 		fmt.Fprintln(out, "  --log-level <level>")
 		fmt.Fprintln(out, "        Log verbosity: debug, info, warn, error (default \"error\")")
-		fmt.Fprintln(out, "        Precedence: --log-level > dwp-log-level trailer > AYNIG_LOG_LEVEL")
-		fmt.Fprintln(out, "  --dwp-remote <name>")
+		fmt.Fprintln(out, "        Precedence: --log-level > dwp-log-level trailer > LOG_LEVEL")
+		fmt.Fprintln(out, "  --remote <name>")
 		fmt.Fprintln(out, "        Use remote branches instead of local (specify remote name, e.g., origin)")
 		fmt.Fprintln(out, "  -w, --worktree <path>")
 		fmt.Fprintln(out, "        Specify custom worktree directory (default: .worktrees) (default \".worktrees\")")
 	}
 	worktree := fs.String("worktree", config.Default().WorkTree, "Specify custom worktree directory (default: .worktrees)")
 	fs.StringVar(worktree, "w", config.Default().WorkTree, "Specify custom worktree directory (default: .worktrees)")
-	useRemote := fs.String("dwp-remote", "", "Use remote branches instead of local (specify remote name, e.g., origin)")
+	useRemote := fs.String("remote", "", "Use remote branches instead of local (specify remote name, e.g., origin)")
 	currentBranch := fs.String("current-branch", config.Default().CurrentBranch, "How to handle the current branch: skip (default), include, only")
 	role := fs.String("role", "", "Use role-specific commands from .dwp/roles/<name>/command when available")
 	logLevel := &stringFlag{value: config.Default().LogLevel}
@@ -158,7 +158,7 @@ func setWorkingCmd(args []string) {
 	promptFile := fs.String("prompt-file", "", "Path to file used as prompt/body")
 	promptStdin := fs.Bool("prompt-stdin", false, "Read prompt/body from stdin")
 	leaseSeconds := fs.Int("lease-seconds", 0, "Lease duration in seconds (overrides dwp-lease-seconds trailer)")
-	remote := fs.String("dwp-remote", "", "Remote name to push after commit")
+	remote := fs.String("remote", "", "Remote name to push after commit")
 	var trailers trailerListFlag
 	fs.Var(&trailers, "trailer", "Additional trailer in key:value format (repeatable)")
 	fs.Parse(args)
@@ -179,13 +179,13 @@ func setWorkingCmd(args []string) {
 
 func setStateCmd(args []string) {
 	fs := flag.NewFlagSet("set-state", flag.ExitOnError)
-	state := fs.String("dwp-state", "", "Next state to set (required, must not be working)")
+	state := fs.String("state", "", "Next state to set (required, must not be working)")
 	subject := fs.String("subject", "", "Commit title")
 	prompt := fs.String("prompt", "", "Commit prompt/body")
 	promptFile := fs.String("prompt-file", "", "Path to file used as prompt/body")
 	promptStdin := fs.Bool("prompt-stdin", false, "Read prompt/body from stdin")
 	keepTrailers := fs.Bool("keep-trailers", false, "Preserve existing dwp-* trailers from HEAD except managed ones")
-	remote := fs.String("dwp-remote", "", "Remote name to push after commit")
+	remote := fs.String("remote", "", "Remote name to push after commit")
 	var trailers trailerListFlag
 	fs.Var(&trailers, "trailer", "Additional trailer in key:value format (repeatable)")
 	fs.Parse(args)
@@ -224,7 +224,7 @@ func printUsage() {
 	fmt.Println("")
 	fmt.Println("Commands:")
 	fmt.Println("  run       Run AYNIG for the current repository")
-	fmt.Println("            --dwp-remote can also be persisted in commits via dwp-source trailer")
+	fmt.Println("            --remote can also be persisted in commits via dwp-source trailer")
 	fmt.Println("  set-working  Create a working lease commit")
 	fmt.Println("  set-state    Create a commit with a non-working dwp-state")
 	fmt.Println("  status    Show current DWP state")

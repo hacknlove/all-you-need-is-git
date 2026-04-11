@@ -58,7 +58,7 @@ func Status(options StatusOptions) error {
 
 	roleName := strings.TrimSpace(options.Role)
 	if roleName == "" {
-		roleName = strings.TrimSpace(os.Getenv("AYNIG_ROLE"))
+		roleName = strings.TrimSpace(os.Getenv("ROLE"))
 	}
 
 	branches, err := resolveStatusBranches(options)
