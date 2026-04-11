@@ -102,6 +102,45 @@ func TestCommandEnvIncludesLogPath(t *testing.T) {
 	}
 }
 
+func TestCommandEnvDoesNotOverrideInheritedOrReservedEnvNames(t *testing.T) {
+	t.Setenv("PATH", "/tmp/original-path")
+	t.Setenv("HOME", "/tmp/original-home")
+
+	cmd := NewCommand(CommandParams{
+		Config: config.Config{Role: "reviewer"},
+		Trailers: map[string][]string{
+			"path":      {"/tmp/evil-bin"},
+			"home":      {"/tmp/evil-home"},
+			"role":      {"other"},
+			"log-path":  {"/tmp/other.log"},
+			"dwp-state": {"review"},
+		},
+		Body:     "prompt body",
+		LogLevel: "debug",
+	})
+
+	env := cmd.commandEnv("deadbeef", "/tmp/log", "/tmp/worktree")
+
+	if !containsEnvEntry(env, "PATH=/tmp/original-path") {
+		t.Fatalf("expected inherited PATH to be preserved: %v", env)
+	}
+	if !containsEnvEntry(env, "HOME=/tmp/original-home") {
+		t.Fatalf("expected inherited HOME to be preserved: %v", env)
+	}
+	if containsEnvEntry(env, "PATH=/tmp/evil-bin") {
+		t.Fatalf("unexpected trailer override for PATH: %v", env)
+	}
+	if containsEnvEntry(env, "HOME=/tmp/evil-home") {
+		t.Fatalf("unexpected trailer override for HOME: %v", env)
+	}
+	if containsEnvEntry(env, "ROLE=other") {
+		t.Fatalf("unexpected trailer override for ROLE: %v", env)
+	}
+	if containsEnvEntry(env, "LOG_PATH=/tmp/other.log") {
+		t.Fatalf("unexpected trailer override for LOG_PATH: %v", env)
+	}
+}
+
 func containsEnvEntry(env []string, want string) bool {
 	for _, entry := range env {
 		if strings.TrimSpace(entry) == want {
