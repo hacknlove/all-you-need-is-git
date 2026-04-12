@@ -11,6 +11,10 @@ aynig set-state --state <state> [options]
 Use it when a DWP run has moved into a new state such as `review`, `failed`, or
 `triage` and you want the runner to take action on the next cycle.
 
+This command is primarily a manual escape hatch. Normal workflow commands are
+expected to emit `SET_STATE {...}` on stdout and let `aynig run` materialize
+the final commit.
+
 The command writes `dwp-state: <state>` automatically, validates trailer
 format, and can push the current branch when a remote is configured.
 

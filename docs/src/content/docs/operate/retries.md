@@ -10,7 +10,7 @@ A simple convention:
 - Use trailers like:
   - `dwp-attempt: 1`
   - `dwp-max-attempts: 3`
-- If a command fails, create a new commit with the same `dwp-state` and increment the attempt.
+- If a command wants a retry, emit `SET_STATE {...}` with the same `dwp-state` and increment the attempt trailer.
 - Stop retrying when attempt reaches max.
 
 These are conventions only; AYNIG does not interpret them.

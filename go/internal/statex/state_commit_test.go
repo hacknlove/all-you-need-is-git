@@ -109,6 +109,52 @@ func TestVerifyHeadStateTrailer(t *testing.T) {
 	}
 }
 
+func TestValidateTrailer(t *testing.T) {
+	tests := []struct {
+		name        string
+		trailer     Trailer
+		wantErrText string
+	}{
+		{
+			name:    "valid trailer",
+			trailer: Trailer{Key: "dwp-note", Value: "hello"},
+		},
+		{
+			name:        "empty key",
+			trailer:     Trailer{Key: "   ", Value: "hello"},
+			wantErrText: "Invalid trailer: empty key",
+		},
+		{
+			name:        "invalid key format",
+			trailer:     Trailer{Key: "bad key", Value: "hello"},
+			wantErrText: `Invalid trailer key: "bad key"`,
+		},
+		{
+			name:        "newline in value",
+			trailer:     Trailer{Key: "dwp-note", Value: "line1\nline2"},
+			wantErrText: `Invalid trailer value for "dwp-note": newlines are not allowed`,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := ValidateTrailer(tt.trailer)
+			if tt.wantErrText == "" {
+				if err != nil {
+					t.Fatalf("ValidateTrailer() error = %v", err)
+				}
+				return
+			}
+			if err == nil {
+				t.Fatalf("ValidateTrailer() error = nil, want %q", tt.wantErrText)
+			}
+			if err.Error() != tt.wantErrText {
+				t.Fatalf("ValidateTrailer() error = %q, want %q", err.Error(), tt.wantErrText)
+			}
+		})
+	}
+}
+
 func initGitRepo(t *testing.T) string {
 	t.Helper()
 

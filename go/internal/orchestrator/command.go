@@ -18,6 +18,8 @@ import (
 	"all-you-need-is-git/go/internal/statex"
 )
 
+var currentExecutablePath = os.Executable
+
 type CommandParams struct {
 	Config          config.Config
 	BranchName      string
@@ -105,7 +107,7 @@ func (c *Command) Run() error {
 		return err
 	}
 
-	commandLog, logPath, err := prepareCommandLogFile(worktreePath, currentCommitHash)
+	stdoutLogPath, stderrLogPath, err := prepareCommandLogPaths(worktreePath, currentCommitHash)
 	if err != nil {
 		return err
 	}
@@ -132,22 +134,45 @@ func (c *Command) Run() error {
 		}
 	}
 
-	env := c.commandEnv(currentCommitHash, logPath, worktreePath)
-
-	cmd := exec.Command(commandPath)
-	cmd.Dir = worktreePath
-	cmd.Env = env
-	cmd.Stdout = commandLog
-	cmd.Stderr = commandLog
-	cmd.Stdin = nil
-	setDetached(cmd)
-	if err := cmd.Start(); err != nil {
-		_ = commandLog.Close()
+	env := c.commandEnv(currentCommitHash, stdoutLogPath, stderrLogPath, worktreePath)
+	executablePath, err := currentExecutablePath()
+	if err != nil {
 		return err
 	}
-	_ = commandLog.Close()
+
+	cmdArgs := []string{
+		"__supervise",
+		"--worktree-path", worktreePath,
+		"--branch", c.branchName,
+		"--command-path", commandPath,
+		"--origin-state", c.command,
+		"--run-id", runID,
+		"--stdout-log-path", stdoutLogPath,
+		"--stderr-log-path", stderrLogPath,
+	}
+	if c.config.UseRemote != "" {
+		cmdArgs = append(cmdArgs, "--remote", c.config.UseRemote)
+	}
+
+	cmd := exec.Command(executablePath, cmdArgs...)
+	cmd.Dir = worktreePath
+	cmd.Env = env
+	cmd.Stdin = nil
+	devNull, err := os.OpenFile(os.DevNull, os.O_WRONLY, 0)
+	if err != nil {
+		return err
+	}
+	cmd.Stdout = devNull
+	cmd.Stderr = devNull
+	setDetached(cmd)
+	if err := cmd.Start(); err != nil {
+		_ = devNull.Close()
+		return err
+	}
+	_ = devNull.Close()
 	c.logger.Infof("Launched %s in %s", c.command, worktreePath)
-	c.logger.Debugf("Command log: %s", logPath)
+	c.logger.Debugf("Command stdout log: %s", stdoutLogPath)
+	c.logger.Debugf("Command stderr log: %s", stderrLogPath)
 	_ = cmd.Process.Release()
 	return nil
 }
@@ -342,28 +367,27 @@ func resolveStateTrailer(trailers map[string][]string) (string, string) {
 	return state, ""
 }
 
-func prepareCommandLogFile(worktreePath string, commitHash string) (*os.File, string, error) {
+func prepareCommandLogPaths(worktreePath string, commitHash string) (string, string, error) {
 	logsDir := filepath.Join(worktreePath, ".aynig", "logs")
 	if err := os.MkdirAll(logsDir, 0o755); err != nil {
-		return nil, "", err
+		return "", "", err
 	}
-	logPath := filepath.Join(logsDir, commitHash+".log")
-	file, err := os.OpenFile(logPath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0o644)
-	if err != nil {
-		return nil, "", err
-	}
-	return file, logPath, nil
+	stdoutLogPath := filepath.Join(logsDir, commitHash+".stdout.log")
+	stderrLogPath := filepath.Join(logsDir, commitHash+".stderr.log")
+	return stdoutLogPath, stderrLogPath, nil
 }
 
-func (c *Command) commandEnv(commitHash, logPath, worktreePath string) []string {
+func (c *Command) commandEnv(commitHash, stdoutLogPath, stderrLogPath, worktreePath string) []string {
 	env := append([]string{}, os.Environ()...)
 	envNames := envNameSet(env)
 	env = append(env, "BODY="+c.body)
 	envNames["BODY"] = struct{}{}
 	env = append(env, "COMMIT_HASH="+commitHash)
 	envNames["COMMIT_HASH"] = struct{}{}
-	env = append(env, "LOG_PATH="+logPath)
-	envNames["LOG_PATH"] = struct{}{}
+	env = append(env, "STDOUT_LOG_PATH="+stdoutLogPath)
+	envNames["STDOUT_LOG_PATH"] = struct{}{}
+	env = append(env, "STDERR_LOG_PATH="+stderrLogPath)
+	envNames["STDERR_LOG_PATH"] = struct{}{}
 	env = append(env, "WORKTREE_PATH="+worktreePath)
 	envNames["WORKTREE_PATH"] = struct{}{}
 	envNames["ROLE"] = struct{}{}

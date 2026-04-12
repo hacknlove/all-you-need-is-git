@@ -25,5 +25,6 @@ AYNIG runs each command inside a dedicated Git worktree. Worktrees are created u
 
 ## .aynig/logs/
 
-Command stdout/stderr logs are written here as `<commit-hash>.log`. This directory is ignored via `.gitignore`.
+Command stdout/stderr logs are written here as `<commit-hash>.stdout.log` and
+`<commit-hash>.stderr.log`. This directory is ignored via `.gitignore`.
 Keep `.worktrees/` ignored. Commands should not create/manage worktrees manually.

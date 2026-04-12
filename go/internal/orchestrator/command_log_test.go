@@ -9,19 +9,25 @@ import (
 func TestPrepareCommandLogFile(t *testing.T) {
 	worktreePath := t.TempDir()
 
-	file, logPath, err := prepareCommandLogFile(worktreePath, "deadbeef")
+	stdoutLogPath, stderrLogPath, err := prepareCommandLogPaths(worktreePath, "deadbeef")
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if err := file.Close(); err != nil {
-		t.Fatalf("unexpected close error: %v", err)
+
+	expectedStdout := filepath.Join(worktreePath, ".aynig", "logs", "deadbeef.stdout.log")
+	if stdoutLogPath != expectedStdout {
+		t.Fatalf("unexpected stdout log path: got %q want %q", stdoutLogPath, expectedStdout)
 	}
 
-	expected := filepath.Join(worktreePath, ".aynig", "logs", "deadbeef.log")
-	if logPath != expected {
-		t.Fatalf("unexpected log path: got %q want %q", logPath, expected)
+	expectedStderr := filepath.Join(worktreePath, ".aynig", "logs", "deadbeef.stderr.log")
+	if stderrLogPath != expectedStderr {
+		t.Fatalf("unexpected stderr log path: got %q want %q", stderrLogPath, expectedStderr)
 	}
-	if _, err := os.Stat(logPath); err != nil {
-		t.Fatalf("expected log file to exist: %v", err)
+
+	logsDir := filepath.Join(worktreePath, ".aynig", "logs")
+	if info, err := os.Stat(logsDir); err != nil {
+		t.Fatalf("expected logs directory to exist: %v", err)
+	} else if !info.IsDir() {
+		t.Fatalf("expected logs directory, got file")
 	}
 }

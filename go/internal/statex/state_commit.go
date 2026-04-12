@@ -3,6 +3,7 @@ package statex
 import (
 	"errors"
 	"fmt"
+	"regexp"
 	"strings"
 
 	"all-you-need-is-git/go/internal/gitx"
@@ -11,6 +12,22 @@ import (
 type Trailer struct {
 	Key   string
 	Value string
+}
+
+var trailerKeyPattern = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9_-]*$`)
+
+func ValidateTrailer(trailer Trailer) error {
+	key := strings.TrimSpace(trailer.Key)
+	if key == "" {
+		return errors.New("Invalid trailer: empty key")
+	}
+	if !trailerKeyPattern.MatchString(key) {
+		return fmt.Errorf("Invalid trailer key: %q", trailer.Key)
+	}
+	if strings.Contains(trailer.Value, "\n") || strings.Contains(trailer.Value, "\r") {
+		return fmt.Errorf("Invalid trailer value for %q: newlines are not allowed", key)
+	}
+	return nil
 }
 
 func BuildCommitMessage(subject string, prompt string, trailers []Trailer) string {

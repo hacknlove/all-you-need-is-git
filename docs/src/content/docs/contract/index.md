@@ -61,10 +61,27 @@ Metadata is delivered as environment variables.
 AYNIG:
 
 - does not modify the repository during execution
-- does not create final commits
-- does not decide the next state
+- does not infer the next state
+- does not interpret business semantics
 
-**Only the command advances the state machine.**
+The command declares the next state by emitting a line on stdout:
+
+```text
+SET_STATE {"state":"review","subject":"review: ready","body":"..."}
+```
+
+AYNIG watches stdout, keeps the last valid `SET_STATE` line it sees, and
+creates the final commit after the command exits successfully.
+
+The payload may include `"keep_trailers": true` to preserve existing
+non-reserved `dwp-*` trailers from the current `working` commit.
+
+If the command exits non-zero, AYNIG ignores any observed `SET_STATE` line and
+marks the branch as `stalled` with diagnostic context from stdout/stderr.
+
+If the command exits zero without emitting a valid `SET_STATE`, AYNIG writes a
+fresh `working` commit with the same trailers to keep the lease alive while
+waiting for any spawned follow-up process.
 
 ## 4. Working lease (one runner at a time)
 

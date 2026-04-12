@@ -31,4 +31,26 @@ dwp-state: <state>
 <key>: <value>
 ```
 
-Only the workflow command decides the next state by creating a new commit with a new `dwp-state` trailer.
+## Output protocol
+
+The command declares the next state by writing a single-line JSON payload to stdout:
+
+```text
+SET_STATE {"state":"review","subject":"review: ready","body":"Line 1\nLine 2"}
+```
+
+Optional fields:
+
+- `keep_trailers: true` copies existing non-reserved `dwp-*` trailers from the current `working` commit into the final state commit.
+- `trailers: [...]` appends explicit trailers after any copied ones, so repeated keys can override by position.
+- `trailers: [...]` must not include runner-managed keys such as `dwp-state`, `dwp-source`, `dwp-origin-state`, `dwp-run-id`, `dwp-runner-id`, `dwp-lease-seconds`, or `dwp-stalled-run`.
+
+Rules:
+
+- The runner only interprets stdout for this protocol.
+- The prefix must be exactly `SET_STATE ` at the beginning of the line.
+- The payload must be valid JSON on a single line.
+- If multiple valid `SET_STATE` lines are emitted, the last one wins.
+- The runner creates the final commit only if the command exits with code `0`.
+- If the command exits non-zero, the runner ignores `SET_STATE` and marks the branch as `stalled`.
+- If the command exits `0` without any valid `SET_STATE`, the runner emits a fresh `working` commit and keeps waiting.

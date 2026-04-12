@@ -46,6 +46,8 @@ Commands receive metadata via env vars such as:
 
 - `BODY`
 - `COMMIT_HASH`
+- `STDOUT_LOG_PATH`
+- `STDERR_LOG_PATH`
 - `FOO`
 - `BAZ`
 
@@ -53,4 +55,17 @@ Commands receive metadata via env vars such as:
 
 Branch logs use the resolved log level after trailers are parsed. Early branch logs are buffered and flushed once the level is known.
 
-Command stdout/stderr is written to `.aynig/logs/<commit-hash>.log`, where `<commit-hash>` is the commit that triggered the command.
+Command stdout/stderr is written to `.aynig/logs/<commit-hash>.stdout.log` and
+`.aynig/logs/<commit-hash>.stderr.log`, where `<commit-hash>` is the commit
+that triggered the command.
+
+AYNIG watches stdout for lines that begin with `SET_STATE ` and applies the
+last valid one after the command exits successfully. stderr is not parsed for state
+transitions.
+
+If the command exits non-zero, AYNIG marks the branch as `stalled` and records
+the exit code plus recent stdout/stderr lines in the commit body.
+
+If the command exits zero without a valid `SET_STATE`, AYNIG refreshes the
+`working` commit and keeps waiting in case the command spawned a follow-up
+process.

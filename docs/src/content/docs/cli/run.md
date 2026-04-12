@@ -26,8 +26,15 @@ It is the main entry point for processing AYNIG state transitions.
   `.aynig/roles/<role>/command/<state>` before `.aynig/command/<state>`.
 - Log level precedence is `--log-level` > `dwp-log-level` trailer >
   `LOG_LEVEL` > default `error`.
-- Command stdout and stderr are written to `.aynig/logs/<commit-hash>.log`.
-- The command also receives that log path in `LOG_PATH`.
+- Command stdout and stderr are written to separate files:
+  `.aynig/logs/<commit-hash>.stdout.log` and `.aynig/logs/<commit-hash>.stderr.log`.
+- The command receives those paths in `STDOUT_LOG_PATH` and `STDERR_LOG_PATH`.
+- AYNIG watches stdout for lines that begin with `SET_STATE ` and applies the
+  last valid one after the command exits successfully.
+- If the command exits non-zero, AYNIG marks the branch as `stalled` with a
+  diagnostic body that includes the exit code and recent log lines.
+- If the command exits zero without a valid `SET_STATE`, AYNIG writes a fresh
+  `working` commit and keeps the lease alive.
 
 ## Options
 

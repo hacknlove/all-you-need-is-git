@@ -39,7 +39,7 @@ Then humans also need to coordinate with agents through a different interface, l
 
 ### AYNIG's approach
 
-AYNIG takes a different approach: it uses Git commits as the single source of truth for the workflow. Humans and agents interact through Git, using commit trailers to signal whose turn it is and what to do next. AYNIG runners read the latest commit, run the appropriate command, and check the new commit, ensuring that the workflow progresses smoothly and reliably.
+AYNIG takes a different approach: it uses Git commits as the single source of truth for the workflow. Humans and agents interact through Git, using commit trailers to signal whose turn it is and what to do next. AYNIG runners read the latest commit, run the appropriate command, watch for `SET_STATE {...}` on stdout, and then materialize the new commit, ensuring that the workflow progresses smoothly and reliably.
 Humans can still interact with each other through their preferred channels, and manually with agents when needed, but AYNIG provides them with a clear, auditable, and robust protocol to handle the main parts of the workflow.
 
 

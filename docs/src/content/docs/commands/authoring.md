@@ -20,7 +20,8 @@ cat > .aynig/command/review <<'EOF'
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "Review requested: $BODY"
+echo "Review requested: $BODY" >&2
+printf '%s\n' 'SET_STATE {"state":"done","subject":"review: done","body":"Review completed.","keep_trailers":true}'
 EOF
 
 chmod +x .aynig/command/review
@@ -30,6 +31,9 @@ chmod +x .aynig/command/review
 
 - Commands run with the working directory set to the worktree.
 - Keep commands idempotent when possible.
-- Commands should emit a new commit advancing the workflow by setting a new `dwp-state`.
-- Use `LOG_PATH` when a command needs to append related diagnostics to the run log.
+- Commands should emit a `SET_STATE {...}` line on stdout instead of creating the final commit directly.
+- Use `"keep_trailers": true` when the next state should preserve existing workflow metadata such as `dwp-attempt`, `dwp-issue`, or similar `dwp-*` trailers.
+- The runner watches stdout for lines that begin with `SET_STATE ` and applies the last valid one only if the command exits successfully.
+- A non-zero exit moves the branch to `stalled`; a zero exit with no valid `SET_STATE` refreshes `working`.
+- stderr is not parsed for state transitions.
 - Honor `LOG_LEVEL` if your command supports verbosity.

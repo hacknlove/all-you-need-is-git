@@ -64,7 +64,7 @@ dwp-state: human-turn
 aynig run
 ```
 
-AYNIG will read `HEAD`, resolve the command for `dwp-state: human-turn`, execute it, and then the command should produce a new commit advancing the state.
+AYNIG will read `HEAD`, resolve the command for `dwp-state: human-turn`, execute it, and then watch stdout for a `SET_STATE {...}` line to materialize the next state commit.
 
 ## What a command can do
 
