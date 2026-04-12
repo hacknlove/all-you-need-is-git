@@ -27,7 +27,8 @@
 - `working` is reserved for leases; never use it as a terminal state.
 
 ## INPUTS YOU RECEIVE
-- Environment variables (if provided by runner): `AYNIG_BODY`, `AYNIG_COMMIT_HASH`, `AYNIG_LOG_LEVEL`, `AYNIG_TRAILER_*`.
+- Environment variables (if provided by runner): `BODY`, `COMMIT_HASH`, `LOG_PATH`, `LOG_LEVEL`, `ROLE`, `WORKTREE_PATH`.
+- Commit trailers are also exposed as uppercase env vars, with dashes converted to underscores. Example: `dwp-state` -> `DWP_STATE`.
 
 ## COMMIT TRAILER RULES
 - Trailer lines use `key: value` in the commit footer.
