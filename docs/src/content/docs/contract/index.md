@@ -71,7 +71,14 @@ SET_STATE {"state":"review","subject":"review: ready","body":"..."}
 ```
 
 AYNIG watches stdout, keeps the last valid `SET_STATE` line it sees, and
-creates the final commit after the command exits.
+creates the final commit after the command exits successfully.
+
+If the command exits non-zero, AYNIG ignores any observed `SET_STATE` line and
+marks the branch as `stalled` with diagnostic context from stdout/stderr.
+
+If the command exits zero without emitting a valid `SET_STATE`, AYNIG writes a
+fresh `working` commit with the same trailers to keep the lease alive while
+waiting for any spawned follow-up process.
 
 ## 4. Working lease (one runner at a time)
 

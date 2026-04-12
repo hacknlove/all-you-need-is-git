@@ -32,6 +32,7 @@ chmod +x .aynig/command/review
 - Commands run with the working directory set to the worktree.
 - Keep commands idempotent when possible.
 - Commands should emit a `SET_STATE {...}` line on stdout instead of creating the final commit directly.
-- The runner watches stdout for lines that begin with `SET_STATE ` and applies the last valid one after the command exits.
+- The runner watches stdout for lines that begin with `SET_STATE ` and applies the last valid one only if the command exits successfully.
+- A non-zero exit moves the branch to `stalled`; a zero exit with no valid `SET_STATE` refreshes `working`.
 - stderr is not parsed for state transitions.
 - Honor `LOG_LEVEL` if your command supports verbosity.

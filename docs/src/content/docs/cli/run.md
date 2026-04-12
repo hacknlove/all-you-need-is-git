@@ -30,7 +30,11 @@ It is the main entry point for processing AYNIG state transitions.
   `.aynig/logs/<commit-hash>.stdout.log` and `.aynig/logs/<commit-hash>.stderr.log`.
 - The command receives those paths in `STDOUT_LOG_PATH` and `STDERR_LOG_PATH`.
 - AYNIG watches stdout for lines that begin with `SET_STATE ` and applies the
-  last valid one after the command exits.
+  last valid one after the command exits successfully.
+- If the command exits non-zero, AYNIG marks the branch as `stalled` with a
+  diagnostic body that includes the exit code and recent log lines.
+- If the command exits zero without a valid `SET_STATE`, AYNIG writes a fresh
+  `working` commit and keeps the lease alive.
 
 ## Options
 

@@ -3,11 +3,13 @@ package orchestrator
 import (
 	"bufio"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"all-you-need-is-git/go/internal/gitx"
@@ -106,9 +108,18 @@ func Supervise(opts SuperviseOptions) error {
 	}
 	if waitErr != nil {
 		supervisorLogf(stderrLog, "command exited with error: %v", waitErr)
+		if err := applyFailedCommandResult(opts, waitErr, opts.StdoutLogPath, opts.StderrLogPath); err != nil {
+			supervisorLogf(stderrLog, "failed to mark branch as stalled: %v", err)
+			return err
+		}
+		return nil
 	}
 	if !captured.result.valid {
-		supervisorLogf(stderrLog, "no valid SET_STATE line found; leaving branch in working")
+		supervisorLogf(stderrLog, "no valid SET_STATE line found; refreshing working state")
+		if err := refreshWorkingState(opts); err != nil {
+			supervisorLogf(stderrLog, "failed to refresh working state: %v", err)
+			return err
+		}
 		return nil
 	}
 
@@ -173,18 +184,11 @@ func parseSetStateLine(line string) (commandResult, bool, error) {
 }
 
 func applyCommandResult(opts SuperviseOptions, result commandResult) error {
-	headCommit, err := gitx.ReadCommitInDir(opts.WorktreePath, "HEAD")
+	_, ok, err := currentWorkingHead(opts)
 	if err != nil {
 		return err
 	}
-	headState, invalidState := resolveStateTrailer(headCommit.Trailers)
-	if invalidState != "" {
-		return fmt.Errorf("invalid HEAD state trailer: %s", invalidState)
-	}
-	if headState != "working" {
-		return nil
-	}
-	if strings.TrimSpace(firstTrailer(headCommit.Trailers["dwp-run-id"], "")) != strings.TrimSpace(opts.RunID) {
+	if !ok {
 		return nil
 	}
 
@@ -220,6 +224,144 @@ func applyCommandResult(opts SuperviseOptions, result commandResult) error {
 		return err
 	}
 	return pushCurrentBranchInDir(opts.WorktreePath, opts.Remote)
+}
+
+func applyFailedCommandResult(opts SuperviseOptions, waitErr error, stdoutLogPath string, stderrLogPath string) error {
+	headCommit, ok, err := currentWorkingHead(opts)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return nil
+	}
+
+	exitCode := exitCodeFromError(waitErr)
+	body := buildFailureBody(exitCode, stdoutLogPath, stderrLogPath)
+	originState := strings.TrimSpace(firstTrailer(headCommit.Trailers["dwp-origin-state"], opts.OriginState))
+	trailers := []statex.Trailer{
+		{Key: "dwp-state", Value: "stalled"},
+		{Key: "dwp-stalled-run", Value: strings.TrimSpace(opts.RunID)},
+	}
+	if originState != "" {
+		trailers = append(trailers, statex.Trailer{Key: "dwp-origin-state", Value: originState})
+	}
+	if strings.TrimSpace(opts.Remote) != "" {
+		trailers = append(trailers, statex.Trailer{Key: "dwp-source", Value: "git:" + strings.TrimSpace(opts.Remote)})
+	}
+
+	if err := statex.CommitState(opts.WorktreePath, "chore: stalled", body, trailers); err != nil {
+		return err
+	}
+	return pushCurrentBranchInDir(opts.WorktreePath, opts.Remote)
+}
+
+func refreshWorkingState(opts SuperviseOptions) error {
+	headCommit, ok, err := currentWorkingHead(opts)
+	if err != nil {
+		return err
+	}
+	if !ok {
+		return nil
+	}
+
+	trailers := copyAllTrailers(headCommit.Trailers)
+	body := "command ended without changing the state, waiting in case it spawns any other process that will eventually change the state"
+	if err := statex.CommitState(opts.WorktreePath, "chore: working", body, trailers); err != nil {
+		return err
+	}
+	return pushCurrentBranchInDir(opts.WorktreePath, opts.Remote)
+}
+
+func currentWorkingHead(opts SuperviseOptions) (gitx.CommitMessage, bool, error) {
+	headCommit, err := gitx.ReadCommitInDir(opts.WorktreePath, "HEAD")
+	if err != nil {
+		return gitx.CommitMessage{}, false, err
+	}
+	headState, invalidState := resolveStateTrailer(headCommit.Trailers)
+	if invalidState != "" {
+		return gitx.CommitMessage{}, false, fmt.Errorf("invalid HEAD state trailer: %s", invalidState)
+	}
+	if headState != "working" {
+		return gitx.CommitMessage{}, false, nil
+	}
+	if strings.TrimSpace(firstTrailer(headCommit.Trailers["dwp-run-id"], "")) != strings.TrimSpace(opts.RunID) {
+		return gitx.CommitMessage{}, false, nil
+	}
+	return headCommit, true, nil
+}
+
+func exitCodeFromError(err error) int {
+	if err == nil {
+		return 0
+	}
+	var exitErr *exec.ExitError
+	if errors.As(err, &exitErr) {
+		return exitErr.ExitCode()
+	}
+	return -1
+}
+
+func buildFailureBody(exitCode int, stdoutLogPath string, stderrLogPath string) string {
+	lines := []string{
+		fmt.Sprintf("command exited with code %d", exitCode),
+		"",
+		"last 5 stdout lines:",
+		tailLinesOrPlaceholder(stdoutLogPath, 5),
+		"",
+		"last 5 stderr lines:",
+		tailLinesOrPlaceholder(stderrLogPath, 5),
+	}
+	return strings.Join(lines, "\n")
+}
+
+func tailLinesOrPlaceholder(path string, n int) string {
+	lines, err := tailFileLines(path, n)
+	if err != nil {
+		return fmt.Sprintf("(unable to read log: %v)", err)
+	}
+	if len(lines) == 0 {
+		return "(empty)"
+	}
+	return strings.Join(lines, "\n")
+}
+
+func tailFileLines(path string, n int) ([]string, error) {
+	content, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	normalized := strings.ReplaceAll(string(content), "\r\n", "\n")
+	normalized = strings.TrimRight(normalized, "\n")
+	if normalized == "" {
+		return nil, nil
+	}
+	lines := strings.Split(normalized, "\n")
+	if len(lines) <= n {
+		return lines, nil
+	}
+	return lines[len(lines)-n:], nil
+}
+
+func copyAllTrailers(trailers map[string][]string) []statex.Trailer {
+	keys := make([]string, 0, len(trailers))
+	for key := range trailers {
+		keys = append(keys, key)
+	}
+	sort.Slice(keys, func(i, j int) bool {
+		return strings.ToLower(strings.TrimSpace(keys[i])) < strings.ToLower(strings.TrimSpace(keys[j]))
+	})
+
+	out := make([]statex.Trailer, 0)
+	for _, key := range keys {
+		trimmedKey := strings.TrimSpace(key)
+		if trimmedKey == "" {
+			continue
+		}
+		for _, value := range trailers[key] {
+			out = append(out, statex.Trailer{Key: trimmedKey, Value: strings.TrimSpace(value)})
+		}
+	}
+	return out
 }
 
 func pushCurrentBranchInDir(dir string, remote string) error {

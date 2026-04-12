@@ -45,4 +45,6 @@ Rules:
 - The prefix must be exactly `SET_STATE ` at the beginning of the line.
 - The payload must be valid JSON on a single line.
 - If multiple valid `SET_STATE` lines are emitted, the last one wins.
-- The runner creates the final commit after the command exits.
+- The runner creates the final commit only if the command exits with code `0`.
+- If the command exits non-zero, the runner ignores `SET_STATE` and marks the branch as `stalled`.
+- If the command exits `0` without any valid `SET_STATE`, the runner emits a fresh `working` commit and keeps waiting.

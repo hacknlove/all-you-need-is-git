@@ -33,7 +33,7 @@ func TestParseSetStateLine(t *testing.T) {
 
 func TestSuperviseAppliesLastValidSetState(t *testing.T) {
 	repoDir := initSupervisorTestRepo(t)
-	writeWorkingState(t, repoDir, "run-123")
+	writeWorkingState(t, repoDir, "run-123", []statex.Trailer{})
 
 	commandPath := writeSupervisorCommand(t, repoDir, "state-command.sh", `#!/bin/sh
 printf 'noise before\n'
@@ -74,9 +74,12 @@ printf 'warn on stderr\n' >&2
 	}
 }
 
-func TestSuperviseLeavesWorkingWithoutSetState(t *testing.T) {
+func TestSuperviseRefreshesWorkingWithoutSetState(t *testing.T) {
 	repoDir := initSupervisorTestRepo(t)
-	writeWorkingState(t, repoDir, "run-123")
+	writeWorkingState(t, repoDir, "run-123", []statex.Trailer{
+		{Key: "dwp-note", Value: "carry-me"},
+		{Key: "dwp-attempt", Value: "2"},
+	})
 	before := runGitOutput(t, repoDir, "rev-parse", "HEAD")
 
 	commandPath := writeSupervisorCommand(t, repoDir, "no-state.sh", `#!/bin/sh
@@ -97,19 +100,96 @@ printf 'nothing to see here\n' >&2
 	}
 
 	after := runGitOutput(t, repoDir, "rev-parse", "HEAD")
-	if before != after {
-		t.Fatalf("expected HEAD to remain unchanged, before=%s after=%s", before, after)
+	if before == after {
+		t.Fatalf("expected HEAD to advance, before=%s after=%s", before, after)
+	}
+
+	commit, err := gitx.ReadCommitInDir(repoDir, "HEAD")
+	if err != nil {
+		t.Fatalf("ReadCommitInDir failed: %v", err)
+	}
+	if state := firstTrailer(commit.Trailers["dwp-state"], ""); state != "working" {
+		t.Fatalf("expected HEAD to stay in working, got %q", state)
+	}
+	if runID := firstTrailer(commit.Trailers["dwp-run-id"], ""); runID != "run-123" {
+		t.Fatalf("expected run id to be preserved, got %q", runID)
+	}
+	if note := firstTrailer(commit.Trailers["dwp-note"], ""); note != "carry-me" {
+		t.Fatalf("expected dwp-note trailer to be preserved, got %q", note)
+	}
+	if attempt := firstTrailer(commit.Trailers["dwp-attempt"], ""); attempt != "2" {
+		t.Fatalf("expected dwp-attempt trailer to be preserved, got %q", attempt)
+	}
+	if !strings.Contains(commit.Body, "command ended without changing the state") {
+		t.Fatalf("unexpected working body: %q", commit.Body)
 	}
 
 	stderrLog := readFile(t, stderrLogPath)
-	if !strings.Contains(stderrLog, "no valid SET_STATE line found") {
+	if !strings.Contains(stderrLog, "no valid SET_STATE line found; refreshing working state") {
 		t.Fatalf("stderr log missing supervisor note:\n%s", stderrLog)
+	}
+}
+
+func TestSuperviseMarksStalledWhenCommandFails(t *testing.T) {
+	repoDir := initSupervisorTestRepo(t)
+	writeWorkingState(t, repoDir, "run-123", []statex.Trailer{})
+
+	commandPath := writeSupervisorCommand(t, repoDir, "fails.sh", `#!/bin/sh
+printf 'line-1\n'
+printf 'line-2\n'
+printf 'line-3\n'
+printf 'line-4\n'
+printf 'line-5\n'
+printf 'line-6\n'
+printf 'SET_STATE {"state":"done","body":"too early"}\n'
+printf 'err-1\n' >&2
+printf 'err-2\n' >&2
+printf 'err-3\n' >&2
+printf 'err-4\n' >&2
+printf 'err-5\n' >&2
+printf 'err-6\n' >&2
+exit 7
+`)
+	stdoutLogPath := filepath.Join(repoDir, ".aynig", "logs", "stdout.log")
+	stderrLogPath := filepath.Join(repoDir, ".aynig", "logs", "stderr.log")
+
+	if err := Supervise(SuperviseOptions{
+		WorktreePath:  repoDir,
+		CommandPath:   commandPath,
+		RunID:         "run-123",
+		StdoutLogPath: stdoutLogPath,
+		StderrLogPath: stderrLogPath,
+	}); err != nil {
+		t.Fatalf("Supervise failed: %v", err)
+	}
+
+	commit, err := gitx.ReadCommitInDir(repoDir, "HEAD")
+	if err != nil {
+		t.Fatalf("ReadCommitInDir failed: %v", err)
+	}
+	if state := firstTrailer(commit.Trailers["dwp-state"], ""); state != "stalled" {
+		t.Fatalf("expected stalled state, got %q", state)
+	}
+	if stalledRun := firstTrailer(commit.Trailers["dwp-stalled-run"], ""); stalledRun != "run-123" {
+		t.Fatalf("expected stalled run trailer, got %q", stalledRun)
+	}
+	if !strings.Contains(commit.Body, "command exited with code 7") {
+		t.Fatalf("expected exit code in stalled body, got %q", commit.Body)
+	}
+	if !strings.Contains(commit.Body, "line-3\nline-4\nline-5\nline-6\nSET_STATE {\"state\":\"done\",\"body\":\"too early\"}") {
+		t.Fatalf("expected stdout tail in stalled body, got %q", commit.Body)
+	}
+	if strings.Contains(commit.Body, "line-1") {
+		t.Fatalf("expected stalled body to include only the stdout tail, got %q", commit.Body)
+	}
+	if !strings.Contains(commit.Body, "err-3\nerr-4\nerr-5\nerr-6\naynig __supervise: command exited with error: exit status 7") {
+		t.Fatalf("expected stderr tail in stalled body, got %q", commit.Body)
 	}
 }
 
 func TestSuperviseSkipsStateUpdateWhenRunIDChanges(t *testing.T) {
 	repoDir := initSupervisorTestRepo(t)
-	writeWorkingState(t, repoDir, "run-123")
+	writeWorkingState(t, repoDir, "run-123", []statex.Trailer{})
 	before := runGitOutput(t, repoDir, "rev-parse", "HEAD")
 
 	commandPath := writeSupervisorCommand(t, repoDir, "mismatch.sh", `#!/bin/sh
@@ -152,14 +232,16 @@ func initSupervisorTestRepo(t *testing.T) string {
 	return repoDir
 }
 
-func writeWorkingState(t *testing.T, repoDir string, runID string) {
+func writeWorkingState(t *testing.T, repoDir string, runID string, extraTrailers []statex.Trailer) {
 	t.Helper()
-	err := statex.CommitState(repoDir, "chore: working", "lease", []statex.Trailer{
+	trailers := []statex.Trailer{
 		{Key: "dwp-state", Value: "working"},
 		{Key: "dwp-origin-state", Value: "review"},
 		{Key: "dwp-run-id", Value: runID},
 		{Key: "dwp-lease-seconds", Value: "300"},
-	})
+	}
+	trailers = append(trailers, extraTrailers...)
+	err := statex.CommitState(repoDir, "chore: working", "lease", trailers)
 	if err != nil {
 		t.Fatalf("CommitState failed: %v", err)
 	}

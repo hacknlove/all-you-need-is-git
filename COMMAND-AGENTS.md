@@ -34,6 +34,9 @@
 - The runner watches stdout for lines that begin with `SET_STATE `.
 - The text after `SET_STATE ` must be a single-line JSON object.
 - The last valid `SET_STATE` line wins.
+- The runner only applies `SET_STATE` if your process exits with code `0`.
+- If your process exits non-zero, AYNIG moves the branch to `stalled`.
+- If your process exits `0` without any valid `SET_STATE`, AYNIG refreshes `working` and keeps waiting.
 - The runner does not parse stderr for state transitions.
 
 ## COMMIT TRAILER RULES
