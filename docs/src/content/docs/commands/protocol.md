@@ -31,4 +31,18 @@ dwp-state: <state>
 <key>: <value>
 ```
 
-Only the workflow command decides the next state by creating a new commit with a new `dwp-state` trailer.
+## Output protocol
+
+The command declares the next state by writing a single-line JSON payload to stdout:
+
+```text
+SET_STATE {"state":"review","subject":"review: ready","body":"Line 1\nLine 2"}
+```
+
+Rules:
+
+- The runner only interprets stdout for this protocol.
+- The prefix must be exactly `SET_STATE ` at the beginning of the line.
+- The payload must be valid JSON on a single line.
+- If multiple valid `SET_STATE` lines are emitted, the last one wins.
+- The runner creates the final commit after the command exits.

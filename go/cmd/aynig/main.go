@@ -8,6 +8,7 @@ import (
 
 	"all-you-need-is-git/go/internal/commands"
 	"all-you-need-is-git/go/internal/config"
+	"all-you-need-is-git/go/internal/orchestrator"
 )
 
 var version = "dev"
@@ -24,6 +25,8 @@ func main() {
 		fmt.Printf("%s %s\n", version, buildTimestampUnix)
 	case "run":
 		runCmd(os.Args[2:])
+	case "__supervise":
+		superviseCmd(os.Args[2:])
 	case "set-working":
 		setWorkingCmd(os.Args[2:])
 	case "set-state":
@@ -89,6 +92,33 @@ func runCmd(args []string) {
 
 	if err := commands.Run(cfg); err != nil {
 		fmt.Fprintln(os.Stderr, "Error trying to set up the Repository:", err)
+		os.Exit(1)
+	}
+}
+
+func superviseCmd(args []string) {
+	fs := flag.NewFlagSet("__supervise", flag.ExitOnError)
+	worktreePath := fs.String("worktree-path", "", "Worktree path for the supervised command")
+	branch := fs.String("branch", "", "Branch being supervised")
+	commandPath := fs.String("command-path", "", "Executable path of the state command")
+	originState := fs.String("origin-state", "", "State that triggered the command")
+	runID := fs.String("run-id", "", "Run identifier of the working lease")
+	remote := fs.String("remote", "", "Remote to push after applying the final state")
+	stdoutLogPath := fs.String("stdout-log-path", "", "Path to the stdout log")
+	stderrLogPath := fs.String("stderr-log-path", "", "Path to the stderr log")
+	fs.Parse(args)
+
+	if err := orchestrator.Supervise(orchestrator.SuperviseOptions{
+		WorktreePath:  *worktreePath,
+		BranchName:    *branch,
+		CommandPath:   *commandPath,
+		OriginState:   *originState,
+		RunID:         *runID,
+		Remote:        *remote,
+		StdoutLogPath: *stdoutLogPath,
+		StderrLogPath: *stderrLogPath,
+	}); err != nil {
+		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 }

@@ -7,7 +7,7 @@ This guide builds the smallest end-to-end workflow:
 
 - You create a commit with `dwp-state: build`
 - AYNIG runs `.aynig/command/build`
-- The command emits a new commit advancing the state
+- The command emits `SET_STATE {...}` and AYNIG writes the next state commit
 
 ## 1) Initialize the repo
 
@@ -25,7 +25,7 @@ set -euo pipefail
 echo "Build requested: ${BODY}" > build.out
 
 git add build.out
-git commit -m "build: done" -m $'Build completed.\n\ndwp-state: done'
+printf '%s\n' 'SET_STATE {"state":"done","subject":"build: done","body":"Build completed."}'
 EOF
 
 chmod +x .aynig/command/build
@@ -56,5 +56,5 @@ aynig run
 
 ## Notes
 
-- AYNIG does not decide the next state — the command does.
+- AYNIG does not infer the next state — the command declares it with `SET_STATE {...}`.
 - Use `COMMANDS.md` in your repo to document which states exist.

@@ -71,7 +71,7 @@ func TestGetWorkspaceUsesRepoRootForCurrentBranch(t *testing.T) {
 	}
 }
 
-func TestCommandEnvIncludesLogPath(t *testing.T) {
+func TestCommandEnvIncludesLogPaths(t *testing.T) {
 	cmd := NewCommand(CommandParams{
 		Config: config.Config{Role: "reviewer"},
 		Trailers: map[string][]string{
@@ -82,13 +82,15 @@ func TestCommandEnvIncludesLogPath(t *testing.T) {
 		LogLevel: "debug",
 	})
 
-	logPath := filepath.Join("/tmp", ".aynig", "logs", "deadbeef.log")
-	env := cmd.commandEnv("deadbeef", logPath, "/tmp/worktree")
+	stdoutLogPath := filepath.Join("/tmp", ".aynig", "logs", "deadbeef.stdout.log")
+	stderrLogPath := filepath.Join("/tmp", ".aynig", "logs", "deadbeef.stderr.log")
+	env := cmd.commandEnv("deadbeef", stdoutLogPath, stderrLogPath, "/tmp/worktree")
 
 	wantEntries := []string{
 		"BODY=prompt body",
 		"COMMIT_HASH=deadbeef",
-		"LOG_PATH=" + logPath,
+		"STDOUT_LOG_PATH=" + stdoutLogPath,
+		"STDERR_LOG_PATH=" + stderrLogPath,
 		"WORKTREE_PATH=/tmp/worktree",
 		"LOG_LEVEL=debug",
 		"ROLE=reviewer",
@@ -109,17 +111,18 @@ func TestCommandEnvDoesNotOverrideInheritedOrReservedEnvNames(t *testing.T) {
 	cmd := NewCommand(CommandParams{
 		Config: config.Config{Role: "reviewer"},
 		Trailers: map[string][]string{
-			"path":      {"/tmp/evil-bin"},
-			"home":      {"/tmp/evil-home"},
-			"role":      {"other"},
-			"log-path":  {"/tmp/other.log"},
-			"dwp-state": {"review"},
+			"path":            {"/tmp/evil-bin"},
+			"home":            {"/tmp/evil-home"},
+			"role":            {"other"},
+			"stdout-log-path": {"/tmp/other.stdout.log"},
+			"stderr-log-path": {"/tmp/other.stderr.log"},
+			"dwp-state":       {"review"},
 		},
 		Body:     "prompt body",
 		LogLevel: "debug",
 	})
 
-	env := cmd.commandEnv("deadbeef", "/tmp/log", "/tmp/worktree")
+	env := cmd.commandEnv("deadbeef", "/tmp/stdout.log", "/tmp/stderr.log", "/tmp/worktree")
 
 	if !containsEnvEntry(env, "PATH=/tmp/original-path") {
 		t.Fatalf("expected inherited PATH to be preserved: %v", env)
@@ -136,8 +139,11 @@ func TestCommandEnvDoesNotOverrideInheritedOrReservedEnvNames(t *testing.T) {
 	if containsEnvEntry(env, "ROLE=other") {
 		t.Fatalf("unexpected trailer override for ROLE: %v", env)
 	}
-	if containsEnvEntry(env, "LOG_PATH=/tmp/other.log") {
-		t.Fatalf("unexpected trailer override for LOG_PATH: %v", env)
+	if containsEnvEntry(env, "STDOUT_LOG_PATH=/tmp/other.stdout.log") {
+		t.Fatalf("unexpected trailer override for STDOUT_LOG_PATH: %v", env)
+	}
+	if containsEnvEntry(env, "STDERR_LOG_PATH=/tmp/other.stderr.log") {
+		t.Fatalf("unexpected trailer override for STDERR_LOG_PATH: %v", env)
 	}
 }
 
@@ -152,7 +158,7 @@ func TestCommandEnvReservesRoleEvenWhenUnset(t *testing.T) {
 		LogLevel: "debug",
 	})
 
-	env := cmd.commandEnv("deadbeef", "/tmp/log", "/tmp/worktree")
+	env := cmd.commandEnv("deadbeef", "/tmp/stdout.log", "/tmp/stderr.log", "/tmp/worktree")
 
 	if containsEnvEntry(env, "ROLE=reviewer") {
 		t.Fatalf("unexpected trailer-created ROLE when no role was configured: %v", env)

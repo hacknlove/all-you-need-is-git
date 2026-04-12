@@ -12,7 +12,11 @@ type CommitMessage struct {
 }
 
 func ReadCommit(branch string) (CommitMessage, error) {
-	out, err := Run("", "log", branch, "-1", "--pretty=format:%s%x1f%b%x1f%cI")
+	return ReadCommitInDir("", branch)
+}
+
+func ReadCommitInDir(dir string, branch string) (CommitMessage, error) {
+	out, err := Run(dir, "log", branch, "-1", "--pretty=format:%s%x1f%b%x1f%cI")
 	if err != nil {
 		return CommitMessage{}, err
 	}
@@ -31,7 +35,7 @@ func ReadCommit(branch string) (CommitMessage, error) {
 		fullMessage += "\n\n" + body
 	}
 	if fullMessage != "" {
-		parsed, err := ParseCommitTrailers("", fullMessage)
+		parsed, err := ParseCommitTrailers(dir, fullMessage)
 		if err != nil {
 			return CommitMessage{}, err
 		}

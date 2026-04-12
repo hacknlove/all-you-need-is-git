@@ -61,10 +61,17 @@ Metadata is delivered as environment variables.
 AYNIG:
 
 - does not modify the repository during execution
-- does not create final commits
-- does not decide the next state
+- does not infer the next state
+- does not interpret business semantics
 
-**Only the command advances the state machine.**
+The command declares the next state by emitting a line on stdout:
+
+```text
+SET_STATE {"state":"review","subject":"review: ready","body":"..."}
+```
+
+AYNIG watches stdout, keeps the last valid `SET_STATE` line it sees, and
+creates the final commit after the command exits.
 
 ## 4. Working lease (one runner at a time)
 

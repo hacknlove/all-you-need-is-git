@@ -37,7 +37,8 @@ AYNIG:
 2. extracts trailers
 3. resolves the command
 4. executes
-5. validates the result by looking only at the new `HEAD`
+5. watches command stdout for `SET_STATE {...}` lines
+6. materializes the result by writing a new `HEAD`
 
 AYNIG never interprets business semantics.
 
@@ -69,10 +70,17 @@ Metadata is delivered as environment variables.
 AYNIG:
 
 * does not modify the repository during execution
-* does not create final commits
-* does not decide the next state
+* does not infer the next state
+* does not interpret business semantics
 
-**Only the command advances the state machine.**
+The command declares the next state by emitting a line on stdout:
+
+```text
+SET_STATE {"state":"review","subject":"review: ready","body":"..."}
+```
+
+AYNIG watches stdout, keeps the **last valid** `SET_STATE` line it sees, and
+creates the final commit after the command exits.
 
 ---
 
@@ -138,13 +146,15 @@ History is never scanned.
 
 A tick is valid when, after execution:
 
+* the command emitted a valid `SET_STATE {...}` line on stdout
 * `HEAD` contains `dwp-state: <state>`
 * `state != working`
 
 That commit is the **tick output**.
 
-AYNIG does not search previous commits nor attempt to reconstruct history.
-It only observes the latest state.
+AYNIG does not search previous commits nor attempt to reconstruct history. It
+only applies the last valid `SET_STATE` observed in the current run and then
+observes the latest state.
 
 Reason: avoid duplication, loops, and temporal ambiguity.
 
@@ -181,6 +191,7 @@ AYNIG does not:
 * define workflows
 * interpret states
 * scan history
+* parse stderr for state transitions
 * decide merges
 * resolve semantic conflicts
 * guarantee task success

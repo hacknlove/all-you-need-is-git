@@ -6,7 +6,7 @@ description: Design guidance for state machines on top of AYNIG.
 Design workflows as explicit state machines:
 
 - Each state has a single command: `.aynig/command/<state>`
-- A command does work and emits the next state by creating a commit
+- A command does work and emits the next state by writing `SET_STATE {...}` to stdout
 - Keep policies (retries, approvals, gates) in workflow code, not in AYNIG
 
 Prefer small, idempotent commands and stable trailer conventions.
