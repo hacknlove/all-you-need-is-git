@@ -25,7 +25,7 @@ set -euo pipefail
 echo "Build requested: ${BODY}" > build.out
 
 git add build.out
-printf '%s\n' 'SET_STATE {"state":"done","subject":"build: done","body":"Build completed."}'
+printf '%s\n' 'SET_STATE {"state":"done","subject":"build: done","body":"Build completed.","keep_trailers":true}'
 EOF
 
 chmod +x .aynig/command/build

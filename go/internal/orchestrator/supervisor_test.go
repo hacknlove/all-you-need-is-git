@@ -31,6 +31,20 @@ func TestParseSetStateLine(t *testing.T) {
 	}
 }
 
+func TestParseSetStateLineReadsKeepTrailers(t *testing.T) {
+	line := "SET_STATE {\"state\":\"review\",\"keep_trailers\":true}\n"
+	result, ok, err := parseSetStateLine(line)
+	if err != nil {
+		t.Fatalf("parseSetStateLine returned error: %v", err)
+	}
+	if !ok {
+		t.Fatalf("expected SET_STATE line to be recognized")
+	}
+	if !result.KeepTrailers {
+		t.Fatalf("expected keep_trailers to be true")
+	}
+}
+
 func TestSuperviseAppliesLastValidSetState(t *testing.T) {
 	repoDir := initSupervisorTestRepo(t)
 	writeWorkingState(t, repoDir, "run-123", []statex.Trailer{})
@@ -71,6 +85,62 @@ printf 'warn on stderr\n' >&2
 	stderrLog := readFile(t, stderrLogPath)
 	if !strings.Contains(stderrLog, "warn on stderr") {
 		t.Fatalf("stderr log missing command output:\n%s", stderrLog)
+	}
+}
+
+func TestSuperviseKeepsWorkflowTrailersWhenRequested(t *testing.T) {
+	repoDir := initSupervisorTestRepo(t)
+	writeWorkingState(t, repoDir, "run-123", []statex.Trailer{
+		{Key: "dwp-attempt", Value: "2"},
+		{Key: "dwp-max-attempts", Value: "4"},
+		{Key: "dwp-note", Value: "old-note"},
+		{Key: "dwp-issue", Value: "42"},
+	})
+
+	commandPath := writeSupervisorCommand(t, repoDir, "keep.sh", `#!/bin/sh
+printf 'SET_STATE {"state":"review","keep_trailers":true,"trailers":[{"key":"dwp-note","value":"new-note"}]}\n'
+`)
+	stdoutLogPath := filepath.Join(repoDir, ".aynig", "logs", "stdout.log")
+	stderrLogPath := filepath.Join(repoDir, ".aynig", "logs", "stderr.log")
+
+	if err := Supervise(SuperviseOptions{
+		WorktreePath:  repoDir,
+		CommandPath:   commandPath,
+		RunID:         "run-123",
+		StdoutLogPath: stdoutLogPath,
+		StderrLogPath: stderrLogPath,
+	}); err != nil {
+		t.Fatalf("Supervise failed: %v", err)
+	}
+
+	commit, err := gitx.ReadCommitInDir(repoDir, "HEAD")
+	if err != nil {
+		t.Fatalf("ReadCommitInDir failed: %v", err)
+	}
+	if state := firstTrailer(commit.Trailers["dwp-state"], ""); state != "review" {
+		t.Fatalf("expected review state, got %q", state)
+	}
+	if attempt := firstTrailer(commit.Trailers["dwp-attempt"], ""); attempt != "2" {
+		t.Fatalf("expected dwp-attempt trailer to be preserved, got %q", attempt)
+	}
+	if maxAttempts := firstTrailer(commit.Trailers["dwp-max-attempts"], ""); maxAttempts != "4" {
+		t.Fatalf("expected dwp-max-attempts trailer to be preserved, got %q", maxAttempts)
+	}
+	if issue := firstTrailer(commit.Trailers["dwp-issue"], ""); issue != "42" {
+		t.Fatalf("expected dwp-issue trailer to be preserved, got %q", issue)
+	}
+	notes := commit.Trailers["dwp-note"]
+	if len(notes) != 2 || notes[0] != "old-note" || notes[1] != "new-note" {
+		t.Fatalf("expected old and new dwp-note trailers, got %#v", notes)
+	}
+	if originState := firstTrailer(commit.Trailers["dwp-origin-state"], ""); originState != "" {
+		t.Fatalf("expected working-only dwp-origin-state to be dropped, got %q", originState)
+	}
+	if runID := firstTrailer(commit.Trailers["dwp-run-id"], ""); runID != "" {
+		t.Fatalf("expected working-only dwp-run-id to be dropped, got %q", runID)
+	}
+	if lease := firstTrailer(commit.Trailers["dwp-lease-seconds"], ""); lease != "" {
+		t.Fatalf("expected working-only dwp-lease-seconds to be dropped, got %q", lease)
 	}
 }
 

@@ -82,6 +82,9 @@ SET_STATE {"state":"review","subject":"review: ready","body":"..."}
 AYNIG watches stdout, keeps the **last valid** `SET_STATE` line it sees, and
 creates the final commit after the command exits successfully.
 
+The payload may include `"keep_trailers": true` to preserve existing
+non-reserved `dwp-*` trailers from the current `working` commit.
+
 If the command exits non-zero, AYNIG ignores any observed `SET_STATE` line and
 marks the branch as `stalled` with diagnostic context from stdout/stderr.
 

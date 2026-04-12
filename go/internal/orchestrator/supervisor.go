@@ -30,10 +30,11 @@ type SuperviseOptions struct {
 }
 
 type commandResult struct {
-	State    string          `json:"state"`
-	Subject  string          `json:"subject"`
-	Body     string          `json:"body"`
-	Trailers []resultTrailer `json:"trailers"`
+	State        string          `json:"state"`
+	Subject      string          `json:"subject"`
+	Body         string          `json:"body"`
+	KeepTrailers bool            `json:"keep_trailers"`
+	Trailers     []resultTrailer `json:"trailers"`
 }
 
 type resultTrailer struct {
@@ -184,7 +185,7 @@ func parseSetStateLine(line string) (commandResult, bool, error) {
 }
 
 func applyCommandResult(opts SuperviseOptions, result commandResult) error {
-	_, ok, err := currentWorkingHead(opts)
+	headCommit, ok, err := currentWorkingHead(opts)
 	if err != nil {
 		return err
 	}
@@ -208,6 +209,17 @@ func applyCommandResult(opts SuperviseOptions, result commandResult) error {
 	trailers := []statex.Trailer{{Key: "dwp-state", Value: state}}
 	if strings.TrimSpace(opts.Remote) != "" {
 		trailers = append(trailers, statex.Trailer{Key: "dwp-source", Value: "git:" + strings.TrimSpace(opts.Remote)})
+	}
+	if result.KeepTrailers {
+		reserved := map[string]struct{}{
+			"dwp-state":         {},
+			"dwp-source":        {},
+			"dwp-origin-state":  {},
+			"dwp-run-id":        {},
+			"dwp-runner-id":     {},
+			"dwp-lease-seconds": {},
+		}
+		trailers = appendCopiedDwpTrailers(trailers, headCommit.Trailers, reserved)
 	}
 	for _, trailer := range result.Trailers {
 		key := strings.TrimSpace(trailer.Key)
@@ -359,6 +371,33 @@ func copyAllTrailers(trailers map[string][]string) []statex.Trailer {
 		}
 		for _, value := range trailers[key] {
 			out = append(out, statex.Trailer{Key: trimmedKey, Value: strings.TrimSpace(value)})
+		}
+	}
+	return out
+}
+
+func appendCopiedDwpTrailers(out []statex.Trailer, headTrailers map[string][]string, reserved map[string]struct{}) []statex.Trailer {
+	keys := make([]string, 0, len(headTrailers))
+	for key := range headTrailers {
+		lower := strings.ToLower(strings.TrimSpace(key))
+		if !strings.HasPrefix(lower, "dwp-") {
+			continue
+		}
+		if _, blocked := reserved[lower]; blocked {
+			continue
+		}
+		keys = append(keys, key)
+	}
+	sort.Slice(keys, func(i, j int) bool {
+		return strings.ToLower(strings.TrimSpace(keys[i])) < strings.ToLower(strings.TrimSpace(keys[j]))
+	})
+	for _, key := range keys {
+		normalizedKey := strings.ToLower(strings.TrimSpace(key))
+		for _, value := range headTrailers[key] {
+			if strings.TrimSpace(value) == "" {
+				continue
+			}
+			out = append(out, statex.Trailer{Key: normalizedKey, Value: strings.TrimSpace(value)})
 		}
 	}
 	return out

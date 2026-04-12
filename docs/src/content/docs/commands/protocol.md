@@ -39,6 +39,11 @@ The command declares the next state by writing a single-line JSON payload to std
 SET_STATE {"state":"review","subject":"review: ready","body":"Line 1\nLine 2"}
 ```
 
+Optional fields:
+
+- `keep_trailers: true` copies existing non-reserved `dwp-*` trailers from the current `working` commit into the final state commit.
+- `trailers: [...]` appends explicit trailers after any copied ones, so repeated keys can override by position.
+
 Rules:
 
 - The runner only interprets stdout for this protocol.
