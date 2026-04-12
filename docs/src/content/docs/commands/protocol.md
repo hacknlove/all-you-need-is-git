@@ -43,6 +43,7 @@ Optional fields:
 
 - `keep_trailers: true` copies existing non-reserved `dwp-*` trailers from the current `working` commit into the final state commit.
 - `trailers: [...]` appends explicit trailers after any copied ones, so repeated keys can override by position.
+- `trailers: [...]` must not include runner-managed keys such as `dwp-state`, `dwp-source`, `dwp-origin-state`, `dwp-run-id`, `dwp-runner-id`, `dwp-lease-seconds`, or `dwp-stalled-run`.
 
 Rules:
 

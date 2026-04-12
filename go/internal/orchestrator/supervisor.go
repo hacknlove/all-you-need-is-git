@@ -226,16 +226,32 @@ func applyCommandResult(opts SuperviseOptions, result commandResult) error {
 		if key == "" {
 			return fmt.Errorf("invalid trailer in SET_STATE payload: empty key")
 		}
-		if strings.EqualFold(key, "dwp-state") {
-			return fmt.Errorf("invalid trailer in SET_STATE payload: dwp-state is managed by state")
+		if _, blocked := reservedPayloadTrailerKeys()[strings.ToLower(key)]; blocked {
+			return fmt.Errorf("invalid trailer in SET_STATE payload: %s is managed by aynig", key)
 		}
-		trailers = append(trailers, statex.Trailer{Key: key, Value: strings.TrimSpace(trailer.Value)})
+		parsed := statex.Trailer{Key: key, Value: strings.TrimSpace(trailer.Value)}
+		if err := statex.ValidateTrailer(parsed); err != nil {
+			return err
+		}
+		trailers = append(trailers, parsed)
 	}
 
 	if err := statex.CommitState(opts.WorktreePath, subject, result.Body, trailers); err != nil {
 		return err
 	}
 	return pushCurrentBranchInDir(opts.WorktreePath, opts.Remote)
+}
+
+func reservedPayloadTrailerKeys() map[string]struct{} {
+	return map[string]struct{}{
+		"dwp-state":         {},
+		"dwp-source":        {},
+		"dwp-origin-state":  {},
+		"dwp-run-id":        {},
+		"dwp-runner-id":     {},
+		"dwp-lease-seconds": {},
+		"dwp-stalled-run":   {},
+	}
 }
 
 func applyFailedCommandResult(opts SuperviseOptions, waitErr error, stdoutLogPath string, stderrLogPath string) error {

@@ -144,6 +144,66 @@ printf 'SET_STATE {"state":"review","keep_trailers":true,"trailers":[{"key":"dwp
 	}
 }
 
+func TestSuperviseRejectsReservedPayloadTrailerKeys(t *testing.T) {
+	repoDir := initSupervisorTestRepo(t)
+	writeWorkingState(t, repoDir, "run-123", []statex.Trailer{})
+
+	commandPath := writeSupervisorCommand(t, repoDir, "reserved.sh", `#!/bin/sh
+printf 'SET_STATE {"state":"review","trailers":[{"key":"dwp-run-id","value":"fake"}]}\n'
+`)
+	stdoutLogPath := filepath.Join(repoDir, ".aynig", "logs", "stdout.log")
+	stderrLogPath := filepath.Join(repoDir, ".aynig", "logs", "stderr.log")
+
+	err := Supervise(SuperviseOptions{
+		WorktreePath:  repoDir,
+		CommandPath:   commandPath,
+		RunID:         "run-123",
+		StdoutLogPath: stdoutLogPath,
+		StderrLogPath: stderrLogPath,
+	})
+	if err == nil || !strings.Contains(err.Error(), "dwp-run-id is managed by aynig") {
+		t.Fatalf("expected reserved trailer error, got %v", err)
+	}
+
+	commit, readErr := gitx.ReadCommitInDir(repoDir, "HEAD")
+	if readErr != nil {
+		t.Fatalf("ReadCommitInDir failed: %v", readErr)
+	}
+	if state := firstTrailer(commit.Trailers["dwp-state"], ""); state != "working" {
+		t.Fatalf("expected HEAD to remain in working, got %q", state)
+	}
+}
+
+func TestSuperviseRejectsMalformedPayloadTrailerValues(t *testing.T) {
+	repoDir := initSupervisorTestRepo(t)
+	writeWorkingState(t, repoDir, "run-123", []statex.Trailer{})
+
+	commandPath := writeSupervisorCommand(t, repoDir, "bad-trailer.sh", `#!/bin/sh
+printf 'SET_STATE {"state":"review","trailers":[{"key":"dwp-note","value":"line1\\nline2"}]}\n'
+`)
+	stdoutLogPath := filepath.Join(repoDir, ".aynig", "logs", "stdout.log")
+	stderrLogPath := filepath.Join(repoDir, ".aynig", "logs", "stderr.log")
+
+	err := Supervise(SuperviseOptions{
+		WorktreePath:  repoDir,
+		CommandPath:   commandPath,
+		RunID:         "run-123",
+		StdoutLogPath: stdoutLogPath,
+		StderrLogPath: stderrLogPath,
+	})
+	if err == nil || !strings.Contains(err.Error(), "newlines are not allowed") {
+		t.Fatalf("expected malformed trailer error, got %v", err)
+	}
+
+	commit, readErr := gitx.ReadCommitInDir(repoDir, "HEAD")
+	if readErr != nil {
+		t.Fatalf("ReadCommitInDir failed: %v", readErr)
+	}
+	if state := firstTrailer(commit.Trailers["dwp-state"], ""); state != "working" {
+		t.Fatalf("expected HEAD to remain in working, got %q", state)
+	}
+}
+
 func TestSuperviseRefreshesWorkingWithoutSetState(t *testing.T) {
 	repoDir := initSupervisorTestRepo(t)
 	writeWorkingState(t, repoDir, "run-123", []statex.Trailer{

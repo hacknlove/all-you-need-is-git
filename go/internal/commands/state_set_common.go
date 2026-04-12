@@ -66,7 +66,11 @@ func parseTrailerArg(raw string) (statex.Trailer, error) {
 	if key == "" {
 		return statex.Trailer{}, fmt.Errorf("Invalid trailer format: %q (empty key)", raw)
 	}
-	return statex.Trailer{Key: key, Value: value}, nil
+	trailer := statex.Trailer{Key: key, Value: value}
+	if err := statex.ValidateTrailer(trailer); err != nil {
+		return statex.Trailer{}, err
+	}
+	return trailer, nil
 }
 
 func resolveDwpRemote(cliRemote string, headTrailers map[string][]string) string {
