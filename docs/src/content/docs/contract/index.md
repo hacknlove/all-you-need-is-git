@@ -5,114 +5,124 @@ description: The minimum guarantees of the AYNIG runner.
 
 # AYNIG Runner Contract (v0)
 
-This document defines the minimum responsibilities of the AYNIG runner.
-AYNIG does not implement workflows or policies; it provides a **deterministic, Git-based execution mechanism** that other tools can build on.
+This page mirrors the canonical contract at the repository root in `CONTRACT.md`.
 
-The canonical contract lives at the repository root in `CONTRACT.md`.
+AYNIG is a small Git-based execution kernel: workflows define meaning; the
+runner provides dispatch, locking, logging, and state materialization.
 
-The source of truth is always the Git branch (local or remote in `remote` mode).
+The source of truth is always the latest commit (`HEAD`) on a branch.
 
-## 1. Model
+## 1. State Events
 
-AYNIG interprets each commit as a **state event**.
+AYNIG treats each commit as a workflow event:
 
-A commit contains:
+- title: human-readable only
+- body: prompt delivered to the command
+- trailers: structured metadata
 
-- **title** → human-only (ignored by the system)
-- **body** → prompt delivered to the command
-- **trailers** → structured metadata
-
-The mandatory trailer is:
+The required trailer is:
 
 ```text
 dwp-state: <state>
 ```
 
-`dwp-state` must appear in the trailer block. If multiple are present, last wins.
+`dwp-state` must be in the trailer block. If it appears more than once, the
+last value wins.
 
-The `<state>` value is the dispatch key of the command to execute.
-
-AYNIG:
+For each selected branch, AYNIG:
 
 1. reads `HEAD`
 2. extracts trailers
-3. resolves the command
-4. executes
-5. watches command stdout for `SET_STATE {...}` lines
-6. materializes the result by writing a new `HEAD`
+3. resolves the command for `dwp-state`
+4. creates a `working` lease commit
+5. runs the command under supervision
+6. materializes the command result as a new `HEAD`
 
-AYNIG never interprets business semantics.
+AYNIG never interprets workflow-specific state semantics.
 
-## 2. Command selection
+## 2. Command Dispatch
 
-`dwp-state: <state>` → executable command.
+`dwp-state: <state>` maps to an executable command:
 
-If a role is specified (`--role <name>` or `ROLE`), AYNIG first looks for
-`.aynig/roles/<role>/command/<state>` and falls back to `.aynig/command/<state>`.
+```text
+.aynig/command/<state>
+```
 
-AYNIG does not define what a state means; it only uses it as a selector.
-Semantics belong to upper layers (frameworks, policies, profiles).
+When `--role <name>` or `ROLE` is set, AYNIG tries this path first:
 
-## 3. Execution
+```text
+.aynig/roles/<role>/command/<state>
+```
 
-The command receives:
+If no role-specific command exists, AYNIG falls back to `.aynig/command/<state>`.
 
-- body (prompt)
-- trailers
-- commit hash
-- runner configuration
+## 3. Command Inputs And Logs
 
-Metadata is delivered as environment variables. Common variables are `BODY`,
-`COMMIT_HASH`, `WORKTREE_PATH`, `STDOUT_LOG_PATH`, `STDERR_LOG_PATH`,
-`LOG_LEVEL`, and `ROLE`. Commit trailers are also exposed as uppercase
-environment variables with dashes converted to underscores, unless that would
-overwrite an existing or reserved variable.
+Commands run with the working directory set to the selected worktree.
 
-AYNIG:
+Common environment variables:
 
-- does not modify the repository during execution
-- does not infer the next state
-- does not interpret business semantics
+- `BODY`
+- `COMMIT_HASH`
+- `WORKTREE_PATH`
+- `STDOUT_LOG_PATH`
+- `STDERR_LOG_PATH`
+- `LOG_LEVEL`
+- `ROLE`
 
-Command stdout and stderr are logged separately under `.aynig/logs/` as
-`<commit-hash>.stdout.log` and `<commit-hash>.stderr.log`.
+Commit trailers are also exposed as uppercase environment variables with dashes
+converted to underscores, unless that would overwrite an existing or reserved
+variable.
 
-The command declares the next state by emitting a line on stdout:
+Command stdout and stderr are logged separately:
+
+```text
+.aynig/logs/<commit-hash>.stdout.log
+.aynig/logs/<commit-hash>.stderr.log
+```
+
+AYNIG watches stdout for state protocol lines. It does not parse stderr for
+state transitions.
+
+## 4. Command Output Protocol
+
+A command declares the next state by emitting a single-line JSON payload on
+stdout:
 
 ```text
 SET_STATE {"state":"review","subject":"review: ready","body":"..."}
 ```
 
-AYNIG watches stdout, keeps the last valid `SET_STATE` line it sees, and
-creates the final commit after the command exits successfully.
+Rules:
 
-The payload may include `"keep_trailers": true` to preserve existing
-non-reserved `dwp-*` trailers from the current `working` commit.
+- the line must start with `SET_STATE `
+- the payload must be valid JSON on one line
+- `state` is required and cannot be `working`
+- the last valid `SET_STATE` line wins
+- the runner applies it only if the command exits with code `0`
 
-If the command exits non-zero, AYNIG ignores any observed `SET_STATE` line and
-marks the branch as `stalled` with diagnostic context from stdout/stderr.
+Optional payload fields:
 
-If the command exits zero without emitting a valid `SET_STATE`, AYNIG writes a
-fresh `working` commit with the same trailers to keep the lease alive while
-waiting for any spawned follow-up process.
+- `subject`: final commit title; defaults to `chore: set <state>`
+- `body`: final commit body
+- `keep_trailers: true`: copies non-reserved `dwp-*` trailers from `working`
+- `trailers`: extra final commit trailers
 
-## 4. Working lease (one runner at a time)
-
-AYNIG prevents two runners from working on the same branch at the same time by using Git commits.
-
-Before executing, the runner creates a commit:
+`trailers` must not include runner-managed keys:
 
 ```text
-dwp-state: working
+dwp-state
+dwp-source
+dwp-origin-state
+dwp-run-id
+dwp-runner-id
+dwp-lease-seconds
+dwp-stalled-run
 ```
 
-and pushes it to the branch.
+## 5. Working Lease
 
-If the push fails (the branch advanced), another runner won the execution → abort.
-
-This behaves like a **remote compare-and-swap** without external coordination.
-
-### Reserved `working` trailers
+Before running a command, AYNIG claims the branch by creating:
 
 ```text
 dwp-state: working
@@ -122,61 +132,23 @@ dwp-runner-id: <host-id>
 dwp-lease-seconds: <ttl>
 ```
 
-Reason: enable distributed runners without local locks.
-
-## 5. Lease and liveness
-
-While executing, the command must renew the lease:
-
-- all intermediate commits → `dwp-state: working`
-- same `dwp-run-id`
-- implicit heartbeat update (committer date)
-
-AYNIG uses the **committer timestamp of HEAD** as the liveness signal.
-
-Takeover is allowed when:
+When remote mode is active, it also records:
 
 ```text
-HEAD == working
-and
-now > committer_date + lease-seconds
+dwp-source: git:<remote>
 ```
 
-Reason:
+The push of this `working` commit is the compare-and-swap: if the push fails,
+another runner advanced the branch first.
 
-- prevent permanent blocking
-- avoid dependence on local processes
-- tolerate machine crashes
-
-History is never scanned.
-
-## 6. Valid completion
-
-A tick is valid when, after execution:
-
-- the command emitted a valid `SET_STATE {...}` line on stdout
-- the command exited successfully
-- `HEAD` contains `dwp-state: <state>`
-- `state != working`
-
-That commit is the **tick output**.
-
-AYNIG does not search previous commits nor attempt to reconstruct history. It
-only applies the last valid `SET_STATE` observed in the current run and then
-observes the latest state.
-
-Reason: avoid duplication, loops, and temporal ambiguity.
-
-## 7. Takeover
-
-If a runner finds:
+Liveness is based on the committer timestamp of `HEAD`:
 
 ```text
-dwp-state: working
-lease expired
+HEAD is working
+and now > committer_date + dwp-lease-seconds
 ```
 
-it may recover the branch by creating:
+When that is true, another runner may recover the branch by creating:
 
 ```text
 dwp-state: stalled
@@ -184,45 +156,50 @@ dwp-stalled-run: <run-id>
 dwp-origin-state: <state>
 ```
 
-and continue evaluation.
+## 6. Completion Outcomes
 
-Reason: self-healing system without external coordination or mandatory human intervention.
+Successful completion:
 
-## 8. What AYNIG does not do
+- command exits `0`
+- command emitted a valid `SET_STATE`
+- runner writes a non-`working` final state commit
+
+Command failure:
+
+- command exits non-zero
+- runner ignores any observed `SET_STATE`
+- runner writes `dwp-state: stalled` with diagnostic stdout/stderr context
+
+No declared state:
+
+- command exits `0`
+- no valid `SET_STATE` was emitted
+- runner writes a fresh `working` commit with the same trailers
+
+That final `working` commit keeps the lease alive in case the command spawned
+another process that will eventually advance the branch.
+
+## 7. What AYNIG Does Not Do
 
 AYNIG does not:
 
-- retry commands
 - define workflows
-- interpret states
-- scan history
-- parse stderr for state transitions
+- interpret non-reserved states
+- retry commands
+- scan history to infer state
+- parse stderr for transitions
 - decide merges
 - resolve semantic conflicts
 - guarantee task success
 
-Those belong to tools and workflows built on top.
+Those are workflow or policy concerns.
 
-Reason: keep AYNIG small, deterministic, and universal.
-
-## 9. System guarantees
+## 8. Guarantees
 
 AYNIG guarantees:
 
-1. A single active executor per branch
-2. Auditable execution (everything is a commit)
-3. Recovery after crashes
+1. one active executor per branch
+2. auditable state transitions through commits
+3. recovery from abandoned `working` leases
 4. HEAD-based determinism
-5. Distributed compatibility without external services
-
-## Summary
-
-AYNIG turns Git into:
-
-- a place to store workflow events
-- a distributed lock
-- a state machine
-
-The runner acts as a simple loop: execute → check → observe.
-
-All intelligence lives above it.
+5. distributed execution without external coordination services
