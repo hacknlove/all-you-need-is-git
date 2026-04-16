@@ -48,7 +48,7 @@ AYNIG never interprets business semantics.
 
 `dwp-state: <state>` → executable command.
 
-If a role is specified (`--role <name>` or `AYNIG_ROLE`), AYNIG first looks for
+If a role is specified (`--role <name>` or `ROLE`), AYNIG first looks for
 `.aynig/roles/<role>/command/<state>` and falls back to `.aynig/command/<state>`.
 
 AYNIG does not define what a state means; it only uses it as a selector.
@@ -65,13 +65,20 @@ The command receives:
 * commit hash
 * runner configuration
 
-Metadata is delivered as environment variables.
+Metadata is delivered as environment variables. Common variables are `BODY`,
+`COMMIT_HASH`, `WORKTREE_PATH`, `STDOUT_LOG_PATH`, `STDERR_LOG_PATH`,
+`LOG_LEVEL`, and `ROLE`. Commit trailers are also exposed as uppercase
+environment variables with dashes converted to underscores, unless that would
+overwrite an existing or reserved variable.
 
 AYNIG:
 
 * does not modify the repository during execution
 * does not infer the next state
 * does not interpret business semantics
+
+Command stdout and stderr are logged separately under `.aynig/logs/` as
+`<commit-hash>.stdout.log` and `<commit-hash>.stderr.log`.
 
 The command declares the next state by emitting a line on stdout:
 

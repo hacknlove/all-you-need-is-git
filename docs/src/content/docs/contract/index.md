@@ -28,15 +28,18 @@ The mandatory trailer is:
 dwp-state: <state>
 ```
 
-The `<state>` value is the key used to select the command to execute.
+`dwp-state` must appear in the trailer block. If multiple are present, last wins.
+
+The `<state>` value is the dispatch key of the command to execute.
 
 AYNIG:
 
 1. reads `HEAD`
 2. extracts trailers
-3. selects the command
-4. executes it
-5. checks the result by looking only at the new `HEAD`
+3. resolves the command
+4. executes
+5. watches command stdout for `SET_STATE {...}` lines
+6. materializes the result by writing a new `HEAD`
 
 AYNIG never interprets business semantics.
 
@@ -44,8 +47,11 @@ AYNIG never interprets business semantics.
 
 `dwp-state: <state>` → executable command.
 
-AYNIG does not define what a state means; it only uses it to select a command.
-Meaning belongs to your workflow.
+If a role is specified (`--role <name>` or `ROLE`), AYNIG first looks for
+`.aynig/roles/<role>/command/<state>` and falls back to `.aynig/command/<state>`.
+
+AYNIG does not define what a state means; it only uses it as a selector.
+Semantics belong to upper layers (frameworks, policies, profiles).
 
 ## 3. Execution
 
@@ -56,13 +62,20 @@ The command receives:
 - commit hash
 - runner configuration
 
-Metadata is delivered as environment variables.
+Metadata is delivered as environment variables. Common variables are `BODY`,
+`COMMIT_HASH`, `WORKTREE_PATH`, `STDOUT_LOG_PATH`, `STDERR_LOG_PATH`,
+`LOG_LEVEL`, and `ROLE`. Commit trailers are also exposed as uppercase
+environment variables with dashes converted to underscores, unless that would
+overwrite an existing or reserved variable.
 
 AYNIG:
 
 - does not modify the repository during execution
 - does not infer the next state
 - does not interpret business semantics
+
+Command stdout and stderr are logged separately under `.aynig/logs/` as
+`<commit-hash>.stdout.log` and `<commit-hash>.stderr.log`.
 
 The command declares the next state by emitting a line on stdout:
 
@@ -126,7 +139,7 @@ Takeover is allowed when:
 ```text
 HEAD == working
 and
-now > committer_date + lease-seconds (+grace)
+now > committer_date + lease-seconds
 ```
 
 Reason:
@@ -139,15 +152,18 @@ History is never scanned.
 
 ## 6. Valid completion
 
-A step is valid when, after execution:
+A tick is valid when, after execution:
 
+- the command emitted a valid `SET_STATE {...}` line on stdout
+- the command exited successfully
 - `HEAD` contains `dwp-state: <state>`
 - `state != working`
 
-That commit is the **step output**.
+That commit is the **tick output**.
 
-AYNIG does not search previous commits nor attempt to reconstruct history.
-It only observes the latest state.
+AYNIG does not search previous commits nor attempt to reconstruct history. It
+only applies the last valid `SET_STATE` observed in the current run and then
+observes the latest state.
 
 Reason: avoid duplication, loops, and temporal ambiguity.
 
@@ -180,6 +196,7 @@ AYNIG does not:
 - define workflows
 - interpret states
 - scan history
+- parse stderr for state transitions
 - decide merges
 - resolve semantic conflicts
 - guarantee task success

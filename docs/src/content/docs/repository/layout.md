@@ -14,6 +14,8 @@ A minimal AYNIG repository typically includes:
       command/
         <state>
   COMMANDS.md   # optional, documents available states
+  CONTRACT.md   # runner contract copied by aynig init
+  logs/         # stdout/stderr logs, ignored by git
 .worktrees/     # ephemeral; created/cleaned by AYNIG
 ```
 
