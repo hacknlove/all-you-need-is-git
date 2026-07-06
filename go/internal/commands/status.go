@@ -3,13 +3,14 @@ package commands
 import (
 	"fmt"
 	"os"
-	"path/filepath"
+	"path"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
 
 	"all-you-need-is-git/go/internal/gitx"
+	"all-you-need-is-git/go/internal/orchestrator"
 )
 
 func leaseStatusForState(state string, leaseSecondsRaw string, committerDate string) string {
@@ -35,6 +36,7 @@ type StatusOptions struct {
 	Role          string
 	Branch        string
 	BranchPattern string
+	CommandsRef   string
 }
 
 type branchStatus struct {
@@ -61,13 +63,20 @@ func Status(options StatusOptions) error {
 		roleName = strings.TrimSpace(os.Getenv("ROLE"))
 	}
 
+	// Same defaulting as `aynig run`: empty means the default branch, "same"
+	// (returned here as an empty ref) means each inspected branch.
+	commandsRef, _, _, err := orchestrator.ResolveCommandsRef(repoRoot, options.CommandsRef, "")
+	if err != nil {
+		return err
+	}
+
 	branches, err := resolveStatusBranches(options)
 	if err != nil {
 		return err
 	}
 
 	for i, branch := range branches {
-		status, err := readBranchStatus(branch, repoRoot, roleName)
+		status, err := readBranchStatus(branch, repoRoot, roleName, commandsRef)
 		if err != nil {
 			return err
 		}
@@ -110,7 +119,7 @@ func resolveStatusBranches(options StatusOptions) ([]string, error) {
 	return []string{strings.TrimSpace(branch)}, nil
 }
 
-func readBranchStatus(branch string, repoRoot string, roleName string) (branchStatus, error) {
+func readBranchStatus(branch string, repoRoot string, roleName string, commandsRef string) (branchStatus, error) {
 	branchRef := localBranchRef(branch)
 	headCommit, err := gitx.Run("", "rev-parse", branchRef)
 	if err != nil {
@@ -153,7 +162,12 @@ func readBranchStatus(branch string, repoRoot string, roleName string) (branchSt
 		shouldResolveCommand = false
 	}
 	if shouldResolveCommand && commandState != "" && commandState != "working" {
-		commandStatus, commandPath = resolveCommandPath(repoRoot, roleName, commandState)
+		ref := commandsRef
+		if ref == "" {
+			// --commands-ref same: commands come from the inspected branch.
+			ref = branchRef
+		}
+		commandStatus, commandPath = resolveCommandPath(repoRoot, ref, roleName, commandState)
 	} else if !shouldResolveCommand {
 		commandStatus = "lease"
 	}
@@ -210,23 +224,28 @@ func localBranchRef(branch string) string {
 	return "refs/heads/" + branch
 }
 
-func resolveCommandPath(repoRoot string, roleName string, commandState string) (string, string) {
-	commandStatus := "missing"
-	commandPath := ""
+// resolveCommandPath reports whether the command for commandState exists in
+// the tree of ref, mirroring how `aynig run` resolves commands: the
+// role-specific command wins when it is an executable blob, otherwise the base
+// command is checked. Paths are reported in `<ref>:<path>` notation.
+func resolveCommandPath(repoRoot string, ref string, roleName string, commandState string) (string, string) {
 	if roleName != "" {
-		rolePath := filepath.Join(repoRoot, ".aynig", "roles", filepath.FromSlash(roleName), "command", commandState)
-		if info, statErr := os.Stat(rolePath); statErr == nil {
-			if info.Mode().IsRegular() && info.Mode()&0o111 != 0 {
-				return "exists", rolePath
-			}
-			return "missing", rolePath
+		rolePath := path.Join(".aynig", "roles", roleName, "command", commandState)
+		if strings.HasPrefix(rolePath, ".aynig/roles/") && treeEntryIsExecutable(repoRoot, ref, rolePath) {
+			return "exists", ref + ":" + rolePath
 		}
 	}
-	commandPath = filepath.Join(repoRoot, ".aynig", "command", commandState)
-	if info, statErr := os.Stat(commandPath); statErr == nil {
-		if info.Mode().IsRegular() && info.Mode()&0o111 != 0 {
-			commandStatus = "exists"
-		}
+	basePath := path.Join(".aynig", "command", commandState)
+	if !strings.HasPrefix(basePath, ".aynig/command/") {
+		return "missing", ""
 	}
-	return commandStatus, commandPath
+	if treeEntryIsExecutable(repoRoot, ref, basePath) {
+		return "exists", ref + ":" + basePath
+	}
+	return "missing", ref + ":" + basePath
+}
+
+func treeEntryIsExecutable(repoRoot string, ref string, treePath string) bool {
+	mode, err := gitx.LsTreeEntryMode(repoRoot, ref, treePath)
+	return err == nil && mode == "100755"
 }

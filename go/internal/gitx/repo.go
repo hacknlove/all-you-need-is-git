@@ -73,6 +73,40 @@ func RevParse(dir string, arg string) (string, error) {
 	return strings.TrimSpace(out), nil
 }
 
+func RevParseVerify(dir string, ref string) (string, error) {
+	out, err := Run(dir, "rev-parse", "--verify", ref+"^{commit}")
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(out), nil
+}
+
+func RemoteHead(dir string, remote string) (string, error) {
+	out, err := Run(dir, "rev-parse", "--abbrev-ref", remote+"/HEAD")
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(out), nil
+}
+
+// LsTreeEntryMode returns the mode of treePath at ref (e.g. "100755"), or ""
+// when the path does not exist in that tree.
+func LsTreeEntryMode(dir string, ref string, treePath string) (string, error) {
+	out, err := Run(dir, "ls-tree", ref, "--", treePath)
+	if err != nil {
+		return "", err
+	}
+	line := strings.TrimSpace(out)
+	if line == "" {
+		return "", nil
+	}
+	fields := strings.Fields(line)
+	if len(fields) < 3 {
+		return "", nil
+	}
+	return fields[0], nil
+}
+
 func Commit(dir string, message string, allowEmpty bool) error {
 	args := []string{"commit"}
 	if allowEmpty {

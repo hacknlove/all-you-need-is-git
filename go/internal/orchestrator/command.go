@@ -271,35 +271,66 @@ func (c *Command) getCommandPath(worktreePath string) (string, error) {
 	return commandPath, nil
 }
 
+// commandsBase returns the checkout that .aynig commands are resolved from:
+// the pinned commands checkout when configured, or the event branch worktree.
+func (c *Command) commandsBase(worktreePath string) string {
+	if strings.TrimSpace(c.config.CommandsRoot) != "" {
+		return c.config.CommandsRoot
+	}
+	return worktreePath
+}
+
 func (c *Command) findCommandPath(worktreePath string, commandName string) (string, error) {
+	commandsBase := c.commandsBase(worktreePath)
 	roleName := strings.TrimSpace(c.config.Role)
 	roleEnv := strings.TrimSpace(os.Getenv("ROLE"))
 	if roleName == "" {
 		roleName = roleEnv
 	}
 	if roleName != "" {
-		roleDir := filepath.Join(worktreePath, ".aynig", "roles", filepath.FromSlash(roleName), "command")
-		rolePath, err := c.resolveCommandPath(roleDir, commandName)
+		rolesRoot := filepath.Join(commandsBase, ".aynig", "roles")
+		roleDir, ok, err := containedPath(rolesRoot, roleName+"/command")
 		if err != nil {
 			return "", err
 		}
-		if rolePath != "" {
-			return rolePath, nil
+		if !ok {
+			c.logger.Warnf("Ignoring role %q (resolves outside %s)", roleName, rolesRoot)
+		} else {
+			rolePath, err := c.resolveCommandPath(roleDir, commandName)
+			if err != nil {
+				return "", err
+			}
+			if rolePath != "" {
+				return rolePath, nil
+			}
 		}
 	}
-	baseDir := filepath.Join(worktreePath, ".aynig", "command")
+	baseDir := filepath.Join(commandsBase, ".aynig", "command")
 	return c.resolveCommandPath(baseDir, commandName)
 }
 
-func (c *Command) resolveCommandPath(baseDir string, commandName string) (string, error) {
+// containedPath joins rel (slash-separated) under baseDir and reports whether
+// the result stays inside baseDir after path normalization.
+func containedPath(baseDir string, rel string) (string, bool, error) {
 	baseDirAbs, err := filepath.Abs(baseDir)
+	if err != nil {
+		return "", false, err
+	}
+	joined := filepath.Join(baseDirAbs, filepath.FromSlash(rel))
+	if !strings.HasPrefix(joined, baseDirAbs+string(os.PathSeparator)) {
+		return joined, false, nil
+	}
+	return joined, true, nil
+}
+
+func (c *Command) resolveCommandPath(baseDir string, commandName string) (string, error) {
+	commandPath, ok, err := containedPath(baseDir, commandName)
 	if err != nil {
 		return "", err
 	}
-	commandPath := filepath.Join(baseDirAbs, filepath.FromSlash(commandName))
 	c.logger.Debugf("Trying command path: %s", commandPath)
-	if !strings.HasPrefix(commandPath, baseDirAbs+string(os.PathSeparator)) {
-		c.logger.Infof("Command path not found at %s (outside base directory %s)", commandPath, baseDirAbs)
+	if !ok {
+		c.logger.Infof("Command path not found at %s (outside base directory %s)", commandPath, baseDir)
 		return "", nil
 	}
 	info, err := os.Stat(commandPath)
@@ -390,6 +421,8 @@ func (c *Command) commandEnv(commitHash, stdoutLogPath, stderrLogPath, worktreeP
 	envNames["STDERR_LOG_PATH"] = struct{}{}
 	env = append(env, "WORKTREE_PATH="+worktreePath)
 	envNames["WORKTREE_PATH"] = struct{}{}
+	env = append(env, "COMMANDS_PATH="+filepath.Join(c.commandsBase(worktreePath), ".aynig"))
+	envNames["COMMANDS_PATH"] = struct{}{}
 	envNames["ROLE"] = struct{}{}
 	if c.logLevel != "" {
 		env = append(env, "LOG_LEVEL="+c.logLevel)

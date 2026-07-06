@@ -46,6 +46,14 @@ esac
 aynig set-working "human-turn" --lease-seconds 3600
 ```
 
+Commit the command to your default branch — commands are executed from there,
+not from the branch that emits the event:
+
+```bash
+git add .aynig
+git commit -m "chore: add human-turn command"
+```
+
 ## 4) Create a commit with a state
 
 Create a commit whose **message** includes a `dwp-state:` trailer:
@@ -65,6 +73,10 @@ aynig run
 ```
 
 AYNIG will read `HEAD`, resolve the command for `dwp-state: human-turn`, execute it, and then watch stdout for a `SET_STATE {...}` line to materialize the next state commit.
+
+While experimenting, `aynig run --commands-ref same` resolves commands from
+each event branch instead of the default branch, so you can iterate on
+commands without committing them to your default branch first.
 
 ## What a command can do
 

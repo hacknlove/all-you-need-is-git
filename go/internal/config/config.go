@@ -9,6 +9,12 @@ type Config struct {
 	LogLevelSet   bool
 	LeaseSeconds  int
 	RepoRoot      string
+	// CommandsRef selects the committish that .aynig commands are resolved
+	// from: empty means the default branch, "same" means the event branch.
+	CommandsRef string
+	// CommandsRoot is the materialized checkout of CommandsRef; empty means
+	// commands resolve from each event branch's worktree.
+	CommandsRoot string
 }
 
 func Default() Config {
@@ -20,5 +26,6 @@ func Default() Config {
 		LogLevel:      "error",
 		LogLevelSet:   false,
 		LeaseSeconds:  300,
+		CommandsRef:   "",
 	}
 }

@@ -13,6 +13,8 @@ For every actionable commit, AYNIG:
 
 Commands run with the working directory set to the worktree. Worktrees are created under `.worktrees/` and reused across runs when possible.
 
+The trusted commands ref is also materialized there, as a detached checkout named `commands-<hash>`. It is pinned to a commit and shared by all branches in a run; stale ones can be removed with `git worktree remove` when no runner is active.
+
 This guarantees:
 
 - clean, reproducible snapshots

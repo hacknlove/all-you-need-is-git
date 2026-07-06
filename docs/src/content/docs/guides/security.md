@@ -19,13 +19,32 @@ If an attacker can push a commit that sets:
 dwp-state: <some-state>
 ```
 
-they can potentially cause a runner to execute `.aynig/command/<some-state>`.
+they can cause a runner to execute the command registered for that state.
+
+By default, commands are resolved from a **trusted commands ref** (the default
+branch, or whatever `--commands-ref` selects) — never from the event branch.
+Pushing a branch that redefines `.aynig/command/<state>` does not change what
+a runner executes; changing a command requires landing it on the trusted ref,
+where branch protection and code review apply.
+
+Two limits to keep in mind:
+
+- Whoever can write to the trusted ref controls what runners execute. Protect
+  it accordingly.
+- The commit `BODY` and trailers still come from the event branch. They are
+  attacker-controlled *input* to your commands — including prompts delivered
+  to agents — even though the command *code* is trusted.
+
+`--commands-ref same` disables this protection and resolves commands from each
+event branch. Only use it in fully trusted environments.
 
 ## Recommendations
 
-- Run workflows on dedicated branches.
-- Restrict who can push to those branches.
+- Keep the default trusted commands ref; pin `--commands-ref` to a commit for
+  the strongest guarantee.
+- Restrict who can push to the trusted ref and to the branches runners watch.
 - Keep `.aynig/command/` small and reviewable.
+- Treat `BODY` and trailers as untrusted input in your commands.
 - Prefer running in a sandboxed environment (CI runner / container / VM).
 - Avoid storing secrets in the repo; use environment injection.
 

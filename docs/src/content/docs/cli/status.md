@@ -22,8 +22,13 @@ It is a read-only command intended for quick inspection and debugging.
   when the current state is `working`.
 - Uses `command: lease` when the current commit is `working` but there is no
   origin state to resolve.
+- Resolves commands from the same trusted commands ref as `aynig run`: the
+  default branch unless `--commands-ref` selects another ref, or
+  `--commands-ref same` selects each inspected branch. Command lookups read
+  the committed tree of that ref, so the report matches what `run` would
+  execute, not what happens to be in the current checkout.
 - Prefers `.aynig/roles/<role>/command/<state>` over `.aynig/command/<state>` when
-  a role is provided.
+  a role is provided and the role command is executable.
 - With `--branch` or a positional branch name, inspects that branch directly.
 - With `--branch-pattern` or a positional glob such as `"1-*"`, prints one
   status block per matching branch.
@@ -63,6 +68,19 @@ Example:
 aynig status --branch-pattern "1-*"
 ```
 
+### `--commands-ref <ref>`
+
+Branch, tag, or commit whose `.aynig` commands are inspected. Uses the same
+default as `aynig run`: the repository's default branch (`master` or `main`).
+Pass `same` to resolve commands from each inspected branch instead.
+
+Examples:
+
+```bash
+aynig status --branch 1-bootstrap --commands-ref release
+aynig status --branch 1-bootstrap --commands-ref same
+```
+
 ## Output
 
 The command prints lines in this shape:
@@ -75,10 +93,14 @@ dwp-origin-state: <state>
 dwp-run-id: <run-id>
 lease: <status>
 command: <exists|missing|lease>
-command-path: <path>
+command-path: <ref>:<path>
 ```
 
 Some lines appear only when the related data exists.
+
+`command-path` uses Git revision notation (for example
+`master:.aynig/command/build`), pointing at the commands ref the command is
+resolved from. You can inspect it with `git show <command-path>`.
 
 ## Examples
 

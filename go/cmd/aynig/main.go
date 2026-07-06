@@ -63,6 +63,9 @@ func runCmd(args []string) {
 		fmt.Fprintln(out, "Usage of run:")
 		fmt.Fprintln(out, "  --role <name>")
 		fmt.Fprintln(out, "        Use role-specific commands from .aynig/roles/<name>/command when available")
+		fmt.Fprintln(out, "  --commands-ref <ref>")
+		fmt.Fprintln(out, "        Branch, tag, or commit whose .aynig commands are executed")
+		fmt.Fprintln(out, "        Default: the default branch; use 'same' to resolve commands from each event branch")
 		fmt.Fprintln(out, "  --current-branch <mode>")
 		fmt.Fprintln(out, "        How to handle the current branch: skip (default), include, only (default \"skip\")")
 		fmt.Fprintln(out, "  --log-level <level>")
@@ -78,6 +81,7 @@ func runCmd(args []string) {
 	useRemote := fs.String("remote", "", "Use remote branches instead of local (specify remote name, e.g., origin)")
 	currentBranch := fs.String("current-branch", config.Default().CurrentBranch, "How to handle the current branch: skip (default), include, only")
 	role := fs.String("role", "", "Use role-specific commands from .aynig/roles/<name>/command when available")
+	commandsRef := fs.String("commands-ref", config.Default().CommandsRef, "Branch, tag, or commit whose .aynig commands are executed (default: the default branch; 'same' resolves from each event branch)")
 	logLevel := &stringFlag{value: config.Default().LogLevel}
 	fs.Var(logLevel, "log-level", "Log verbosity: debug, info, warn, error")
 	fs.Parse(args)
@@ -87,6 +91,7 @@ func runCmd(args []string) {
 	cfg.UseRemote = *useRemote
 	cfg.CurrentBranch = *currentBranch
 	cfg.Role = *role
+	cfg.CommandsRef = *commandsRef
 	cfg.LogLevel = logLevel.value
 	cfg.LogLevelSet = logLevel.set
 
@@ -270,6 +275,7 @@ func statusCmd(args []string) {
 	role := fs.String("role", "", "Use role-specific commands from .aynig/roles/<name>/command when available")
 	branch := fs.String("branch", "", "Inspect a specific local branch without checking it out")
 	branchPattern := fs.String("branch-pattern", "", "Inspect all local branches matching the given pattern")
+	commandsRef := fs.String("commands-ref", config.Default().CommandsRef, "Branch, tag, or commit whose .aynig commands are inspected (default: the default branch; 'same' resolves from each inspected branch)")
 	fs.Usage = func() {
 		out := fs.Output()
 		fmt.Fprintln(out, "Usage of status:")
@@ -280,6 +286,9 @@ func statusCmd(args []string) {
 		fmt.Fprintln(out, "        Inspect a specific local branch without checking it out")
 		fmt.Fprintln(out, "  --branch-pattern <pattern>")
 		fmt.Fprintln(out, "        Inspect all local branches matching the given pattern")
+		fmt.Fprintln(out, "  --commands-ref <ref>")
+		fmt.Fprintln(out, "        Branch, tag, or commit whose .aynig commands are inspected")
+		fmt.Fprintln(out, "        Default: the default branch; use 'same' to resolve commands from each inspected branch")
 	}
 	fs.Parse(args)
 	if fs.NArg() > 1 {
@@ -301,7 +310,7 @@ func statusCmd(args []string) {
 		}
 	}
 
-	if err := commands.Status(commands.StatusOptions{Role: *role, Branch: *branch, BranchPattern: *branchPattern}); err != nil {
+	if err := commands.Status(commands.StatusOptions{Role: *role, Branch: *branch, BranchPattern: *branchPattern, CommandsRef: *commandsRef}); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}

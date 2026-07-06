@@ -50,6 +50,19 @@ When `--role <name>` or `ROLE` is set, AYNIG tries this path first:
 
 If no role-specific command exists, AYNIG falls back to `.aynig/command/<state>`.
 
+Commands are resolved from a trusted **commands ref**, not from the event
+branch:
+
+* by default, the repository's default branch (`<remote>/HEAD` in remote
+  mode; `master` or `main` locally)
+* `--commands-ref <ref>` selects any branch, tag, or commit instead
+* `--commands-ref same` resolves commands from each event branch (a branch
+  can then redefine its own commands)
+
+The commands ref is materialized once per run as a detached checkout under
+the worktree directory. State trailers and bodies still come from the event
+branch; only the command code comes from the commands ref.
+
 ## 3. Command Inputs And Logs
 
 Commands run with the working directory set to the selected worktree.
@@ -59,6 +72,7 @@ Common environment variables:
 * `BODY`
 * `COMMIT_HASH`
 * `WORKTREE_PATH`
+* `COMMANDS_PATH` (the `.aynig` directory commands were resolved from)
 * `STDOUT_LOG_PATH`
 * `STDERR_LOG_PATH`
 * `LOG_LEVEL`

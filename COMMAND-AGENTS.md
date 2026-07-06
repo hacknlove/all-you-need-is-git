@@ -27,7 +27,8 @@
 - `working` is reserved for leases; never use it as a terminal state.
 
 ## INPUTS YOU RECEIVE
-- Environment variables (if provided by runner): `BODY`, `COMMIT_HASH`, `LOG_LEVEL`, `ROLE`, `STDOUT_LOG_PATH`, `STDERR_LOG_PATH`, `WORKTREE_PATH`.
+- Environment variables (if provided by runner): `BODY`, `COMMANDS_PATH`, `COMMIT_HASH`, `LOG_LEVEL`, `ROLE`, `STDOUT_LOG_PATH`, `STDERR_LOG_PATH`, `WORKTREE_PATH`.
+- `COMMANDS_PATH` is the `.aynig` directory your command was resolved from. Commands run from a trusted commands ref (default branch unless the runner overrides it), so relative `.aynig/...` paths under the worktree may differ from your own files; use `COMMANDS_PATH` to reference them.
 - Commit trailers are also exposed as uppercase env vars, with dashes converted to underscores. Example: `dwp-state` -> `DWP_STATE`.
 
 ## OUTPUT PROTOCOL

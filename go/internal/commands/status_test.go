@@ -16,47 +16,52 @@ func TestLeaseStatusForStateNonWorkingIsNA(t *testing.T) {
 }
 
 func TestResolveCommandPathPrefersRole(t *testing.T) {
-	repoRoot := t.TempDir()
-	rolePath := filepath.Join(repoRoot, ".aynig", "roles", "ops", "command", "build")
-	if err := os.MkdirAll(filepath.Dir(rolePath), 0o755); err != nil {
-		t.Fatalf("mkdir failed: %v", err)
-	}
-	if err := os.WriteFile(rolePath, []byte("#!/bin/sh\n"), 0o755); err != nil {
-		t.Fatalf("write failed: %v", err)
-	}
+	repoDir := newStatusTestRepo(t)
+	writeRepoFile(t, repoDir, ".aynig/roles/ops/command/build", "#!/bin/sh\n", 0o755)
+	writeRepoFile(t, repoDir, ".aynig/command/build", "#!/bin/sh\n", 0o755)
+	commitTree(t, repoDir, "add commands")
 
-	status, path := resolveCommandPath(repoRoot, "ops", "build")
+	status, path := resolveCommandPath(repoDir, "main", "ops", "build")
 	if status != "exists" {
 		t.Fatalf("expected exists, got %q", status)
 	}
-	if path != rolePath {
+	if path != "main:.aynig/roles/ops/command/build" {
 		t.Fatalf("unexpected path: %q", path)
 	}
 }
 
 func TestResolveCommandPathFallsBackToBase(t *testing.T) {
-	repoRoot := t.TempDir()
-	basePath := filepath.Join(repoRoot, ".aynig", "command", "build")
-	if err := os.MkdirAll(filepath.Dir(basePath), 0o755); err != nil {
-		t.Fatalf("mkdir failed: %v", err)
-	}
-	if err := os.WriteFile(basePath, []byte("#!/bin/sh\n"), 0o755); err != nil {
-		t.Fatalf("write failed: %v", err)
-	}
+	repoDir := newStatusTestRepo(t)
+	writeRepoFile(t, repoDir, ".aynig/command/build", "#!/bin/sh\n", 0o755)
+	commitTree(t, repoDir, "add commands")
 
-	status, path := resolveCommandPath(repoRoot, "ops", "build")
+	status, path := resolveCommandPath(repoDir, "main", "ops", "build")
 	if status != "exists" {
 		t.Fatalf("expected exists, got %q", status)
 	}
-	if path != basePath {
+	if path != "main:.aynig/command/build" {
+		t.Fatalf("unexpected path: %q", path)
+	}
+}
+
+func TestResolveCommandPathNonExecutableIsMissing(t *testing.T) {
+	repoDir := newStatusTestRepo(t)
+	writeRepoFile(t, repoDir, ".aynig/command/build", "#!/bin/sh\n", 0o644)
+	commitTree(t, repoDir, "add non-executable command")
+
+	status, path := resolveCommandPath(repoDir, "main", "", "build")
+	if status != "missing" {
+		t.Fatalf("expected missing, got %q", status)
+	}
+	if path != "main:.aynig/command/build" {
 		t.Fatalf("unexpected path: %q", path)
 	}
 }
 
 func TestStatusReadsSpecificBranchWithoutCheckout(t *testing.T) {
 	repoDir := newStatusTestRepo(t)
-	writeExecutable(t, filepath.Join(repoDir, ".aynig", "command", "build"))
-	commitEmpty(t, repoDir, "seed", "body")
+	writeRepoFile(t, repoDir, ".aynig/command/build", "#!/bin/sh\n", 0o755)
+	commitTree(t, repoDir, "seed")
 	createBranchCommit(t, repoDir, "1-bootstrap", "feat: bootstrap", "body\n\ndwp-state: build\ndwp-run-id: run-123")
 
 	output := captureStatusOutput(t, repoDir, StatusOptions{Branch: "1-bootstrap"})
@@ -81,9 +86,9 @@ func TestStatusReadsSpecificBranchWithoutCheckout(t *testing.T) {
 
 func TestStatusReadsBranchPattern(t *testing.T) {
 	repoDir := newStatusTestRepo(t)
-	writeExecutable(t, filepath.Join(repoDir, ".aynig", "command", "build"))
-	writeExecutable(t, filepath.Join(repoDir, ".aynig", "command", "review"))
-	commitEmpty(t, repoDir, "seed", "body")
+	writeRepoFile(t, repoDir, ".aynig/command/build", "#!/bin/sh\n", 0o755)
+	writeRepoFile(t, repoDir, ".aynig/command/review", "#!/bin/sh\n", 0o755)
+	commitTree(t, repoDir, "seed")
 	createBranchCommit(t, repoDir, "1-bootstrap", "feat: bootstrap", "body\n\ndwp-state: build")
 	createBranchCommit(t, repoDir, "1-probing", "feat: probing", "body\n\ndwp-state: review")
 	createBranchCommit(t, repoDir, "other", "feat: other", "body\n\ndwp-state: build")
@@ -110,9 +115,9 @@ func TestStatusReadsBranchPattern(t *testing.T) {
 
 func TestStatusPrefersLocalBranchRefOverMatchingTag(t *testing.T) {
 	repoDir := newStatusTestRepo(t)
-	writeExecutable(t, filepath.Join(repoDir, ".aynig", "command", "build"))
-	writeExecutable(t, filepath.Join(repoDir, ".aynig", "command", "review"))
-	commitEmpty(t, repoDir, "seed", "body")
+	writeRepoFile(t, repoDir, ".aynig/command/build", "#!/bin/sh\n", 0o755)
+	writeRepoFile(t, repoDir, ".aynig/command/review", "#!/bin/sh\n", 0o755)
+	commitTree(t, repoDir, "seed")
 	createBranchCommit(t, repoDir, "foo", "feat: branch foo", "body\n\ndwp-state: build")
 	runGit(t, repoDir, "tag", "foo", "main")
 
@@ -129,6 +134,77 @@ func TestStatusPrefersLocalBranchRefOverMatchingTag(t *testing.T) {
 	}
 	if !strings.Contains(output, "command: exists\n") {
 		t.Fatalf("expected branch command resolution, got %q", output)
+	}
+}
+
+func TestStatusIgnoresCommandsFromEventBranchByDefault(t *testing.T) {
+	repoDir := newStatusTestRepo(t)
+	commitEmpty(t, repoDir, "seed", "body")
+	runGit(t, repoDir, "checkout", "-b", "1-evil")
+	writeRepoFile(t, repoDir, ".aynig/command/build", "#!/bin/sh\n", 0o755)
+	runGit(t, repoDir, "add", "-A")
+	runGit(t, repoDir, "commit", "-m", "feat: evil", "-m", "body\n\ndwp-state: build")
+	runGit(t, repoDir, "checkout", "main")
+
+	output := captureStatusOutput(t, repoDir, StatusOptions{Branch: "1-evil"})
+
+	if !strings.Contains(output, "command: missing\n") {
+		t.Fatalf("expected command missing on the default commands ref, got %q", output)
+	}
+	if !strings.Contains(output, "command-path: main:.aynig/command/build\n") {
+		t.Fatalf("expected command path on the default branch, got %q", output)
+	}
+}
+
+func TestStatusCommandsRefSameResolvesFromInspectedBranch(t *testing.T) {
+	repoDir := newStatusTestRepo(t)
+	commitEmpty(t, repoDir, "seed", "body")
+	runGit(t, repoDir, "checkout", "-b", "1-evil")
+	writeRepoFile(t, repoDir, ".aynig/command/build", "#!/bin/sh\n", 0o755)
+	runGit(t, repoDir, "add", "-A")
+	runGit(t, repoDir, "commit", "-m", "feat: evil", "-m", "body\n\ndwp-state: build")
+	runGit(t, repoDir, "checkout", "main")
+
+	output := captureStatusOutput(t, repoDir, StatusOptions{Branch: "1-evil", CommandsRef: "same"})
+
+	if !strings.Contains(output, "command: exists\n") {
+		t.Fatalf("expected command from the inspected branch, got %q", output)
+	}
+	if !strings.Contains(output, "command-path: refs/heads/1-evil:.aynig/command/build\n") {
+		t.Fatalf("expected command path on the inspected branch, got %q", output)
+	}
+}
+
+func TestStatusExplicitCommandsRef(t *testing.T) {
+	repoDir := newStatusTestRepo(t)
+	commitEmpty(t, repoDir, "seed", "body")
+	runGit(t, repoDir, "checkout", "-b", "commands")
+	writeRepoFile(t, repoDir, ".aynig/command/build", "#!/bin/sh\n", 0o755)
+	commitTree(t, repoDir, "add commands")
+	runGit(t, repoDir, "checkout", "main")
+	createBranchCommit(t, repoDir, "1-bootstrap", "feat: bootstrap", "body\n\ndwp-state: build")
+
+	output := captureStatusOutput(t, repoDir, StatusOptions{Branch: "1-bootstrap", CommandsRef: "commands"})
+
+	if !strings.Contains(output, "command: exists\n") {
+		t.Fatalf("expected command from the explicit commands ref, got %q", output)
+	}
+	if !strings.Contains(output, "command-path: commands:.aynig/command/build\n") {
+		t.Fatalf("expected command path on the commands ref, got %q", output)
+	}
+}
+
+func TestStatusUnknownCommandsRefFails(t *testing.T) {
+	repoDir := newStatusTestRepo(t)
+	commitEmpty(t, repoDir, "seed", "body")
+	chdir(t, repoDir)
+
+	err := Status(StatusOptions{CommandsRef: "does-not-exist"})
+	if err == nil {
+		t.Fatal("expected an error for an unknown commands ref")
+	}
+	if !strings.Contains(err.Error(), "cannot resolve commands ref") {
+		t.Fatalf("unexpected error: %v", err)
 	}
 }
 
@@ -154,17 +230,24 @@ func commitEmpty(t *testing.T, repoDir string, subject string, body string) {
 	runGit(t, repoDir, "commit", "--allow-empty", "-m", subject, "-m", body)
 }
 
-func writeExecutable(t *testing.T, path string) {
+func writeRepoFile(t *testing.T, repoDir string, relPath string, content string, mode os.FileMode) {
 	t.Helper()
-	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+	fullPath := filepath.Join(repoDir, filepath.FromSlash(relPath))
+	if err := os.MkdirAll(filepath.Dir(fullPath), 0o755); err != nil {
 		t.Fatalf("mkdir failed: %v", err)
 	}
-	if err := os.WriteFile(path, []byte("#!/bin/sh\n"), 0o755); err != nil {
+	if err := os.WriteFile(fullPath, []byte(content), mode); err != nil {
 		t.Fatalf("write failed: %v", err)
 	}
 }
 
-func captureStatusOutput(t *testing.T, repoDir string, options StatusOptions) string {
+func commitTree(t *testing.T, repoDir string, subject string) {
+	t.Helper()
+	runGit(t, repoDir, "add", "-A")
+	runGit(t, repoDir, "commit", "-m", subject)
+}
+
+func chdir(t *testing.T, dir string) {
 	t.Helper()
 	cwd, err := os.Getwd()
 	if err != nil {
@@ -173,9 +256,14 @@ func captureStatusOutput(t *testing.T, repoDir string, options StatusOptions) st
 	t.Cleanup(func() {
 		_ = os.Chdir(cwd)
 	})
-	if err := os.Chdir(repoDir); err != nil {
+	if err := os.Chdir(dir); err != nil {
 		t.Fatalf("chdir failed: %v", err)
 	}
+}
+
+func captureStatusOutput(t *testing.T, repoDir string, options StatusOptions) string {
+	t.Helper()
+	chdir(t, repoDir)
 
 	stdout := os.Stdout
 	pipeR, pipeW, err := os.Pipe()

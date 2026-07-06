@@ -24,6 +24,9 @@ It is the main entry point for processing AYNIG state transitions.
   the current local branch, such as `origin/main`.
 - `--role` and `ROLE` make AYNIG check
   `.aynig/roles/<role>/command/<state>` before `.aynig/command/<state>`.
+- Commands are resolved from a trusted commands ref (the default branch unless
+  `--commands-ref` overrides it), never from the event branch, so a branch
+  cannot redefine the commands a runner executes.
 - Log level precedence is `--log-level` > `dwp-log-level` trailer >
   `LOG_LEVEL` > default `error`.
 - Command stdout and stderr are written to separate files:
@@ -68,6 +71,27 @@ Example:
 
 ```bash
 aynig run --role reviewer
+```
+
+### `--commands-ref <ref>`
+
+Selects the branch, tag, or commit whose `.aynig` commands are executed. The
+default is the repository's default branch (`<remote>/HEAD` in remote mode,
+`master` or `main` locally). Use `same` to resolve commands from each event
+branch, which restores the pre-trusted-ref behavior and lets any branch
+redefine its own commands.
+
+Examples:
+
+```bash
+# pin commands to an immutable commit (strongest guarantee)
+aynig run --commands-ref 3f2a9c1
+
+# develop a workflow on a feature branch
+aynig run --commands-ref my-feature --current-branch only
+
+# resolve commands from each event branch (trusted environments only)
+aynig run --commands-ref same
 ```
 
 ### `--current-branch <mode>`

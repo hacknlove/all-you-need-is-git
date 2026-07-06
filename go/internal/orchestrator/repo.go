@@ -50,6 +50,12 @@ func (r *Repo) Run() error {
 		}
 	}
 
+	commandsRoot, err := r.prepareCommandsRoot()
+	if err != nil {
+		return err
+	}
+	r.config.CommandsRoot = commandsRoot
+
 	current, err := gitx.BranchCurrent(repoRoot)
 	if err != nil {
 		return err
